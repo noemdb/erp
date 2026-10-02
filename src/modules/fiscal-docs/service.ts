@@ -171,6 +171,8 @@ export async function createPurchaseDocument(
 
 export type PurchaseBookRow = {
   id?: string;
+  kind: string;
+  status: string;
   fechaFiscal: string;
   rif: string;
   razonSocial: string;

@@ -1,5 +1,6 @@
 # CHANGELOG docs/
 
+- 2026-10-02: Catálogo de proveedores en `/compras/nueva` (Modal amplio con buscador; autocompleta RIF/razón; inactivos deshabilitados).
 - 2026-10-02: Compras manual completa (skill beautiful-ui): servicio con kind, afectada + Inv.3, recepción y multilínea (exento incluido en Inv.1); `/compras/nueva` con shadcn (Card/Button/Badge, iconos MUI, preview Inv.1 en vivo). Compatibilidad con entrada plana F1 intacta; typecheck + test + lint + build verdes.
 - 2026-10-01: Ledger de emisiones conectado (2.0.5 §5.3): append post-commit IVA/ISLR, `certSeq` por formato, `reconcileSeries` + `series:reconcile`, runbook restore. Test con restore simulado (GAP_DB).
 - 2026-10-01: Comparador 2.A contra golden real (infra): `golden:inspect` sin PII + `golden:compare` con bitácora D1–D5 y decisiones vigentes + scripts en `package.json` + tests. Gate bloqueado hasta golden validado.
