@@ -9,7 +9,7 @@ import { compareWorkbooks, buildSampleWorkbook, normValue, canonicalRows, applyA
 describe("evidencias 1.0.3 (infra; gate con golden real)", () => {
   it("HTML versionado es determinista y cambia con los datos", () => {
     const meta = { empresa: "Demo", periodo: "2026-09" };
-    const rows = [{ fechaFiscal: "2026-09-05", rif: "J-1", razonSocial: "P", docNumber: "F-1", controlNumber: "C-1", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00" }];
+    const rows = [{ kind: "invoice", status: "validated", fechaFiscal: "2026-09-05", rif: "J-1", razonSocial: "P", docNumber: "F-1", controlNumber: "C-1", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00" }];
     const a = renderPurchaseBookHtml(meta, rows);
     const b = renderPurchaseBookHtml(meta, rows);
     expect(a.sha256).toBe(b.sha256);

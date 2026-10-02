@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Dev local tras proxy Apache (erp.local): el dev server solo acepta
+  // localhost por defecto y responde "Unauthorized" al HMR cross-host.
+  allowedDevOrigins: ["erp.local", "192.168.2.10"],
   async headers() {
     return [
       {

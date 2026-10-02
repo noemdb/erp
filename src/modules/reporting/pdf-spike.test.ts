@@ -42,7 +42,7 @@ describe("spike PDF Chromium (2.0.3 §3)", () => {
     const evil = `<img src="http://evil.test/x.png"><iframe src="http://evil.test/f"></iframe><script>fetch("http://evil.test/s")</script>`;
     // Capa 1 (plantillas): el dato llega escapado como texto.
     const { html } = renderPurchaseBookHtml({ empresa: "Demo", periodo: "2026-09" }, [
-      { fechaFiscal: "2026-09-05", rif: "J-1", razonSocial: evil, docNumber: "F-1", controlNumber: "C", baseImponible: "1.00", ivaCausado: "0.16", total: "1.16" },
+      { kind: "invoice", status: "validated", fechaFiscal: "2026-09-05", rif: "J-1", razonSocial: evil, docNumber: "F-1", controlNumber: "C", baseImponible: "1.00", ivaCausado: "0.16", total: "1.16" },
     ]);
     expect(html).not.toContain("<script>");
     expect(html).not.toContain("<iframe");
@@ -57,7 +57,7 @@ describe("spike PDF Chromium (2.0.3 §3)", () => {
 
   it("L4: raster primera página ≈ baseline (tolerancia 2%)", async () => {
     const { html } = renderPurchaseBookHtml({ empresa: "Demo", periodo: "2026-09" }, [
-      { fechaFiscal: "2026-09-05", rif: "J-12345678-9", razonSocial: "Proveedor Uno", docNumber: "F-1", controlNumber: "C-1", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00" },
+      { kind: "invoice", status: "validated", fechaFiscal: "2026-09-05", rif: "J-12345678-9", razonSocial: "Proveedor Uno", docNumber: "F-1", controlNumber: "C-1", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00" },
     ]);
     const { pdf } = await renderPdf(html, { orientation: "landscape" });
     const dir = mkdtempSync(join(tmpdir(), "pdfspike-"));

@@ -189,6 +189,8 @@ export async function getPurchaseBook(ctx: { companyId: string; userId: string }
     const docs = await tx
       .select({
         id: purchaseDocuments.id,
+        kind: purchaseDocuments.kind,
+        status: purchaseDocuments.status,
         fechaFiscal: purchaseDocuments.fechaFiscal,
         docNumber: purchaseDocuments.docNumber,
         controlNumber: purchaseDocuments.controlNumber,
@@ -208,6 +210,8 @@ export async function getPurchaseBook(ctx: { companyId: string; userId: string }
       const [p] = await tx.select().from(parties).where(eq(parties.id, d.partyId)).limit(1);
       out.push({
         id: d.id,
+        kind: d.kind,
+        status: d.status,
         fechaFiscal: d.fechaFiscal,
         rif: p?.rifOriginal ?? "",
         razonSocial: p?.razonSocial ?? "",
