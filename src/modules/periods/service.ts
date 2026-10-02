@@ -1,9 +1,10 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { withTenant, type DrizzleTx } from "@/modules/tenancy/with-tenant";
+import { authorize } from "@/modules/tenancy/authorize";
 import { record } from "@/modules/audit/record";
-import { fiscalPeriods, purchaseDocuments } from "@/db/schema";
+import { companies, fiscalPeriods, purchaseDocuments } from "@/db/schema";
 import { checkCloseCore } from "./checklist";
 
 export type Ctx = { companyId: string; userId: string };
@@ -68,4 +69,87 @@ export async function listPeriods(ctx: Ctx) {
   return withTenant(ctx, (tx: DrizzleTx) =>
     tx.select().from(fiscalPeriods).where(eq(fiscalPeriods.companyId, ctx.companyId)).limit(100),
   );
+}
+
+export const CreatePeriodSchema = z.object({
+  kind: z.enum(["monthly", "biweekly"]),
+  year: z.number().int().min(2000).max(2100),
+  month: z.number().int().min(1).max(12),
+  /** Solo quincenal: Q1 = días 1–15, Q2 = día 16 en adelante. */
+  half: z.enum(["Q1", "Q2"]).optional(),
+}).refine((v) => v.kind === "monthly" || v.half !== undefined, {
+  message: "Indica la quincena (Q1/Q2).",
+  path: ["half"],
+});
+
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+/** Rango Postgres para el período solicitado. Mensual o quincenal. */
+export function rangeForPeriod(input: z.output<typeof CreatePeriodSchema>): { kind: string; range: string } {
+  const { kind, year, month, half } = input;
+  const mm = pad2(month);
+  if (kind === "monthly") {
+    const nextMonth = month === 12 ? `01` : pad2(month + 1);
+    const nextYear = month === 12 ? year + 1 : year;
+    return { kind, range: `[${year}-${mm}-01,${nextYear}-${nextMonth}-01)` };
+  }
+  const nextMonth = month === 12 ? `01` : pad2(month + 1);
+  const nextYear = month === 12 ? year + 1 : year;
+  if (half === "Q1") return { kind, range: `[${year}-${mm}-01,${year}-${mm}-16)` };
+  return { kind, range: `[${year}-${mm}-16,${nextYear}-${nextMonth}-01)` };
+}
+
+export type CreatePeriodResult =
+  | { ok: true; id: string; created: boolean }
+  | { ok: false; error: { code: string; message: string } };
+
+/** Registro manual de un período fiscal (idempotente por empresa+tipo+rango). Solo contador. */
+export async function createPeriod(ctx: Ctx, input: z.input<typeof CreatePeriodSchema>): Promise<CreatePeriodResult> {
+  const parsed = CreatePeriodSchema.safeParse(input);
+  if (!parsed.success)
+    return { ok: false, error: { code: "VALIDATION_ERROR", message: "Período inválido: revisa año, mes y quincena." } };
+  const auth = await authorize(ctx.companyId, ctx.userId, "periods.close");
+  if (!auth.ok)
+    return { ok: false, error: { code: "FORBIDDEN", message: "Solo el contador puede registrar períodos." } };
+  const { kind, range } = rangeForPeriod(parsed.data);
+  return withTenant(ctx, async (tx: DrizzleTx) => {
+    const [company] = await tx.select({ id: companies.id }).from(companies).where(eq(companies.id, ctx.companyId)).limit(1);
+    if (!company)
+      return { ok: false as const, error: { code: "NOT_FOUND", message: "Empresa no existe." } };
+    const existing = await tx
+      .select()
+      .from(fiscalPeriods)
+      .where(and(eq(fiscalPeriods.companyId, ctx.companyId), eq(fiscalPeriods.kind, kind), eq(fiscalPeriods.range, range)))
+      .limit(1);
+    if (existing[0]) return { ok: true as const, id: existing[0].id, created: false };
+    await tx.execute(sql`
+      INSERT INTO fiscal_periods (company_id, kind, range, status)
+      VALUES (${ctx.companyId}, ${kind}, ${range}, 'open')
+      ON CONFLICT (company_id, kind, range) DO NOTHING
+    `);
+    const rows = await tx
+      .select()
+      .from(fiscalPeriods)
+      .where(and(eq(fiscalPeriods.companyId, ctx.companyId), eq(fiscalPeriods.kind, kind), eq(fiscalPeriods.range, range)))
+      .limit(1);
+    const found = rows[0];
+    if (!found)
+      return { ok: false as const, error: { code: "PERIOD_CLOSED", message: "No se pudo registrar el período (reintenta)." } };
+    await record(
+      tx,
+      {
+        companyId: ctx.companyId,
+        actorUserId: ctx.userId,
+        action: "create",
+        entityType: "fiscal_period",
+        entityId: found.id,
+        before: null,
+        after: { kind, range, status: found.status },
+      },
+      `tx-period-${found.id}-create`,
+    );
+    return { ok: true as const, id: found.id, created: true };
+  });
 }

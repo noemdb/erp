@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { confirmImportAction } from "@/modules/imports/actions";
+import CheckCircle from "@mui/icons-material/CheckCircle";
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/toast";
+import { confirmImportAction } from "@/modules/imports/actions";
 
 export function ConfirmButton({ companyId, batchId }: { companyId: string; batchId: string }) {
   const router = useRouter();
@@ -13,7 +15,7 @@ export function ConfirmButton({ companyId, batchId }: { companyId: string; batch
   const [busy, setBusy] = useState(false);
   return (
     <div>
-      <button
+      <Button
         disabled={busy}
         onClick={async () => {
           setBusy(true);
@@ -39,15 +41,22 @@ export function ConfirmButton({ companyId, batchId }: { companyId: string; batch
         }}
       >
         {busy ? (
-          <span className="inline-flex items-center gap-2">
+          <>
             <Spinner label="Confirmando importación" />
             Confirmando…
-          </span>
+          </>
         ) : (
-          "Confirmar (importar válidas)"
+          <>
+            <CheckCircle aria-hidden />
+            Confirmar (importar válidas)
+          </>
         )}
-      </button>
-      {msg && <p role="status">{msg}</p>}
+      </Button>
+      {msg && (
+        <p role="status" className="mt-2 text-sm text-periwinkle-500">
+          {msg}
+        </p>
+      )}
     </div>
   );
 }

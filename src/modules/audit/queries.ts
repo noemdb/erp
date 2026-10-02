@@ -1,15 +1,26 @@
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, gte, lte } from "drizzle-orm";
 import { withTenant } from "@/modules/tenancy/with-tenant";
 import { auditEvents, purchaseDocuments } from "@/db/schema";
 
 export type Ctx = { companyId: string; userId: string };
 
+export type AuditFilter = {
+  entityType?: string;
+  entityId?: string;
+  action?: string;
+  from?: string | Date;
+  to?: string | Date;
+};
+
 /** Bitácora filtrable (auditor: solo lectura). Límite 500 por página v1. */
-export async function listAuditEvents(ctx: Ctx, filter?: { entityType?: string; entityId?: string }) {
+export async function listAuditEvents(ctx: Ctx, filter?: AuditFilter) {
   return withTenant(ctx, async (tx) => {
     const conds = [eq(auditEvents.companyId, ctx.companyId)];
     if (filter?.entityType) conds.push(eq(auditEvents.entityType, filter.entityType));
     if (filter?.entityId) conds.push(eq(auditEvents.entityId, filter.entityId));
+    if (filter?.action) conds.push(eq(auditEvents.action, filter.action));
+    if (filter?.from) conds.push(gte(auditEvents.occurredAt, new Date(filter.from)));
+    if (filter?.to) conds.push(lte(auditEvents.occurredAt, new Date(filter.to)));
     return tx.select().from(auditEvents).where(and(...conds)).orderBy(desc(auditEvents.occurredAt)).limit(500);
   });
 }

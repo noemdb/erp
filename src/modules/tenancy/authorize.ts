@@ -4,10 +4,10 @@ import { companyUser } from "@/db/schema";
 
 export type Role = "admin" | "administrativo" | "contador" | "auditor" | "supplier";
 
-/** Permisos mínimos v1 (matriz completa en SECURITY.md). */
+/** Permisos mínimos v1 (matriz completa en SECURITY.md). audit.read: solo lectura para todos los roles con acceso a la empresa (API.md). */
 const ROLE_ACTIONS: Record<Role, string[]> = {
-  admin: ["users.manage", "companies.manage", "reports.read"],
-  administrativo: ["docs.create", "imports.run", "reports.read"],
+  admin: ["users.manage", "companies.manage", "reports.read", "audit.read"],
+  administrativo: ["docs.create", "imports.run", "reports.read", "audit.read"],
   contador: [
     "docs.create",
     "imports.run",
@@ -15,6 +15,7 @@ const ROLE_ACTIONS: Record<Role, string[]> = {
     "withholdings.issue",
     "periods.close",
     "reports.read",
+    "audit.read",
   ],
   auditor: ["reports.read", "audit.read"],
   supplier: [],

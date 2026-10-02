@@ -15,7 +15,9 @@ import { Reveal } from "@/components/ui/reveal";
 import { AppHeader, PageFooter } from "@/components/layout/app-shell";
 import { getSessionUser, listMemberships } from "@/modules/identity/session";
 import { getCompanyContext } from "@/modules/tenancy/repo";
+import { authorize } from "@/modules/tenancy/authorize";
 import { listPeriods } from "@/modules/periods/service";
+import { CreatePeriodDialog } from "./create-period-dialog";
 
 const statusMeta: Record<
   string,
@@ -65,6 +67,10 @@ export default async function PeriodosPage({
   const base = `/c/${companyId}`;
 
   const rows = await listPeriods({ companyId, userId: user.id });
+  const auth = await authorize(companyId, user.id, "periods.close");
+  const canManage = auth.ok;
+  const defaultKind =
+    ctx.company?.periodKind === "biweekly" ? "biweekly" : "monthly";
   const sorted = [...rows].sort((a, b) =>
     String(b.range ?? "").localeCompare(String(a.range ?? "")),
   );
@@ -104,6 +110,14 @@ export default async function PeriodosPage({
             aria-hidden
           />
           <div className="relative">
+            {canManage && (
+              <div className="mt-4 sm:absolute sm:right-0 sm:top-0 sm:mt-0">
+                <CreatePeriodDialog
+                  companyId={companyId}
+                  defaultKind={defaultKind}
+                />
+              </div>
+            )}
             <Badge variant="outline" className="rounded-md px-3 py-1">
               Control y cierre · Períodos fiscales
             </Badge>

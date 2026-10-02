@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { validateBatchAction } from "@/modules/imports/actions";
+import FactCheck from "@mui/icons-material/FactCheck";
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/toast";
+import { validateBatchAction } from "@/modules/imports/actions";
 
 export function ValidateButton({ companyId, batchId }: { companyId: string; batchId: string }) {
   const router = useRouter();
@@ -13,16 +15,21 @@ export function ValidateButton({ companyId, batchId }: { companyId: string; batc
   const [busy, setBusy] = useState(false);
   return (
     <div>
-      <button
+      <Button
         disabled={busy}
         onClick={async () => {
           setBusy(true);
           setError(null);
           try {
             const res = await validateBatchAction(companyId, batchId);
-            if (!res.ok) setError(`${res.error.code}: ${res.error.message}`);
-            else {
-              toast({ title: "Lote validado", variant: "success" });
+            if (!res.ok) {
+              setError(`${res.error.code}: ${res.error.message}`);
+            } else {
+              toast({
+                title: "Lote validado",
+                description: `${res.valid} válidas · ${res.warning} advertencias · ${res.rejected} rechazadas`,
+                variant: "success",
+              });
               router.refresh();
             }
           } catch {
@@ -33,15 +40,22 @@ export function ValidateButton({ companyId, batchId }: { companyId: string; batc
         }}
       >
         {busy ? (
-          <span className="inline-flex items-center gap-2">
+          <>
             <Spinner label="Validando lote" />
             Validando…
-          </span>
+          </>
         ) : (
-          "Validar"
+          <>
+            <FactCheck aria-hidden />
+            Validar filas
+          </>
         )}
-      </button>
-      {error && <p role="alert">{error}</p>}
+      </Button>
+      {error && (
+        <p role="alert" className="mt-2 text-sm text-red-700">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

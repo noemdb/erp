@@ -1,7 +1,8 @@
 # Pendientes de implementación — ERP-TributarioLite (TERCERA_REV)
 
 > **Estado:** resumen de trabajo, no sustituye la fuente de verdad.
-> **Fecha:** 2026-10-02
+> **Fecha:** 2026-10-02 (actualizado hoy con verificación directa; sin commit: todo lo de
+> la sesión sigue sin commitear, y solo se commitea con orden explícita).
 > **Fuentes:** `docs/TODO.md`, `docs/CHANGELOG.md`, `docs/DECISIONS.md` (ADR-001–028),
 > `pendientes/TERCERA_REV/consolidado-docs-2026-10-02.md` y verificación directa del repo.
 > **Stack vigente:** Next.js 16 (build `--webpack`) + PostgreSQL + Drizzle; no usar Prisma ni Docker.
@@ -9,8 +10,15 @@
 Desde la SEGUNDA_REV se sumó: branding por empresa (migración 0020), compras manual completa con
 multilínea + preview Inv.1 en vivo, catálogo de proveedores con modal buscador, ledger de emisiones +
 `series:reconcile`, comparador 2.A contra golden real (infra) y las evidencias 2.0.3.
-**Estado medido hoy:** 46 archivos / 73 tests → 67 verdes, 5 fallan (Chromium ausente en este host),
-1 omitido; typecheck verde; lint 0 errores / 5 warnings.
+**Estado medido hoy:** 46 archivos / 73 tests → **72 verdes, 1 falla** (`least-privilege`: password
+de `app_runtime` en este entorno, preexistente y verificado con `git stash`);
+los 5 fallos por Chromium del snapshot anterior **ya no existen** (`/usr/bin/google-chrome`
+presente: `pdf-spike` 4/4 y `render-job` verdes). typecheck verde; lint 0 errores / 5 warnings.
+**Nuevo desde el snapshot:** front con skill beautiful-ui en períodos (registro manual),
+terceros (nuevo + detalle), importaciones (lista + subida + lote + plantilla CSV),
+reglas (lista + borrador + detalle), configuración (perfil fiscal + G7 + resumen G2) y
+plazos (tablero + formularios); backend nuevo `createPeriod`, `updateFiscalProfile`,
+`GET imports/template?kind=` y seeder `seed:company-rules` (sin commitear).
 Lo pendiente sigue siendo casi todo **decisión fiscal del contador, muestras reales o
 infraestructura de producción**; el código no debe adelantarlas.
 
@@ -36,7 +44,15 @@ infraestructura de producción**; el código no debe adelantarlas.
 
 ## 2. Funcionalidad pendiente (condicionada)
 
-- [ ] **UI períodos en curso:** páginas/botones/revalidación modificados sin commitear; terminar, probar y commitear.
+- [x] **UI períodos:** registro manual implementado (`createPeriod` mensual/quincenal idempotente +
+  `createPeriodAction` + diálogo con toast en `/periodos`); falta commitear.
+- [x] **UI beautify sesión:** terceros, importaciones (+ `GET imports/template?kind=` con columnas del
+  validador), reglas (+ diálogo de concepto ISLR), configuración (`updateFiscalProfile` admin con
+  guard de `period_kind`, verificado en Neon) y plazos; primitivos nuevos `ui/input`, `ui/avatar`;
+  diálogos + toasts en períodos y perfil de tercero. Todo sin commitear.
+- [ ] **Seeder `seed:company-rules`** (nuevo, sin commitear: `src/db/seed-company-rules.ts` +
+  script `seed:company-rules`): carga la matriz como borrador→activo idempotente. ⚠️ Tensión con
+  “no cargar valores hasta firma”: usar solo con matriz firmada o marcar seed como sintético/no fiscal.
 - [ ] **Catálogos:** cargar valores reales solo con matriz firmada (el workflow borrador→activo ya funciona).
 - [ ] **Modo Z:** validar con mes real por sucursal (estructura lista + control de convivencia).
 - [ ] **Plazos:** norma/artículo/vigencia por tipo + caso real (tablas y tablero listos, sin valores por defecto).
@@ -47,23 +63,24 @@ infraestructura de producción**; el código no debe adelantarlas.
 
 ## 3. Reportes y comprobantes
 
-- [ ] Instalar Chromium en el host de CI/dev dedicado (o fijar `CHROME_PATH` válido) para que los
-  5 tests de `pdf-spike`/`render-job` corran; re-aprobar baselines en ese host (ADR-026).
+- [x] Chromium resuelto en este host (`/usr/bin/google-chrome`; baselines válidos aquí).
+  Queda re-aprobar baselines si cambia el host de CI (ADR-026).
 - [ ] Comparación celda a celda contra golden real (comparador con clasificación listo, probado con fixtures).
 - [ ] Período real M2/M5 con diferencias clasificadas y aprobadas.
 
 ## 4. Pruebas de aceptación
 
-- [ ] Dorados firmados 100% verdes (infraestructura: manifest, garantías, `acceptance:evidence`;
-  hoy 67/73 técnicos verdes, resto bloqueado por Chromium).
+- [x] Infraestructura: manifest, garantías, `acceptance:evidence`; hoy **72/73 técnicos verdes**
+  (único rojo: `least-privilege` por password de entorno, no por código).
+- [ ] Dorados firmados 100% verdes (bloqueado por contador, no por infra).
 - [ ] Playwright E2E por rol con navegadores (existe E2E por servicios; Playwright ni instalado).
 - [ ] Piloto 1–3 empresas y paralelo Excel vs sistema.
 
 ## 5. F7 — Operación y go-live
 
 - [ ] **Prioritario:** `serverc` / `serverc.pub` (clave privada SSH) en la raíz del repo, sin `.gitignore`
-  ni trackeo: rotar/eliminar según runbook `rotacion-secretos.md`.
-- [ ] Entrecomillar `DATABASE_URL` en `.env` (el `&` sin comillas trunca el valor con `source` en bash).
+  ni trackeo: rotar/eliminar según runbook `rotacion-secretos.md`. **Sigue presente hoy.**
+- [x] `DATABASE_URL` entrecomillado en `.env` (ya empieza con comilla; resuelto).
 - [ ] Activar `DB_LEAST_PRIVILEGE=true` en staging/prod (rol verificado; dev sigue con owner hasta migrar
   seeds de pruebas a contexto explícito).
 - [ ] Migrar seeds de pruebas a `withTenant` para que dev también corra con el rol mínimo.
@@ -81,6 +98,13 @@ infraestructura de producción**; el código no debe adelantarlas.
 
 ## Ya implementado en esta revisión (pendiente solo de validación externa)
 
+- Front beautiful-ui sin commitear: períodos (registro manual + diálogo + toast), terceros
+  (nuevo con perfil opcional + detalle con ficha/historial/bitácora/diálogos), importaciones
+  (lista + subida + lote + `GET imports/template?kind=`), reglas (lista + borrador con vista %
+  en vivo + diálogo de concepto + detalle con flujo), configuración (perfil fiscal empresa +
+  G7 + resumen G2) y plazos (tablero + formularios). Primitivos `ui/input`, `ui/avatar`.
+- Backend sin commitear: `createPeriod` (idempotente, verificado), `updateFiscalProfile`
+  (admin + audit + guard `period_kind`, verificado en Neon con 3 casos), plantilla CSV por kind.
 - Branding por empresa (logo + color distintivo) + hero del panel.
 - Compras manual completa con multilínea y preview Inv.1 en vivo; catálogo de proveedores con buscador.
 - Ledger de emisiones + `reconcileSeries` + `series:reconcile` con runbook de restore.

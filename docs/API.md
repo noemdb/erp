@@ -58,6 +58,10 @@
 - RIF: valida estructura, guarda original + normalizado (`citext`).
 - Solo admin. `period_kind` inmutable si existen períodos cerrados (requiere ADR).
 
+### `updateFiscalProfile(companyId, { condicionIva, contribuyenteEspecialDesde?, agenteRetencionIva, agenteRetencionIslr, periodKind })`
+- Solo admin (`companies.manage`). Escribe `audit_events(action:config)` en la misma TX con antes/después.
+- `periodKind monthly|biweekly`: si cambia con períodos `closed`/`reopened` existentes → `VALIDATION_ERROR`.
+
 ### `createBranch(companyId, { codigo, nombre, direccion })`
 - `UNIQUE(company_id, codigo)`. Opcional v1, `branch_id` nullable en documentos.
 
@@ -108,6 +112,9 @@ Común: `fecha_fiscal` determina `fiscal_period_id`, nunca se sustituye por fech
 - Archivos grandes: encola job `pg-boss` con progreso. Re-subida mismo `sha256` no duplica.
 - `GET /api/companies/[companyId]/imports/[batchId]/rejected.csv` descarga rechazadas para corrección.
 
+### `GET /api/companies/[companyId]/imports/template?kind=` (Route Handler, descarga)
+- `kind purchases|sales|z_reports`. Requiere sesión + `reports.read`. Retorna CSV con BOM, columnas canónicas del validador + 1 fila de ejemplo, como `attachment` (`plantilla-*.csv`). Tipos de retención aún no soportados por el validador no tienen plantilla.
+
 ## withholdings — IVA / ISLR
 
 ### Criterio G2 y comparación previa ISLR
@@ -152,9 +159,15 @@ Estados: `open→under_review→closed→reopened→under_review→closed`.
 - `reopen`: solicitud → autorización contador → motivo + responsable. Nueva versión reportes, hash anterior conservado. Correcciones post-cierre como `fiscal_adjustments` en período abierto referenciando original.
 - Solo contador cierra/reabre.
 
+### `createPeriod(companyId, { kind, year, month, half? })`
+- Registro manual desde `/c/[companyId]/periodos` (formulario visible solo para contador). `kind monthly|biweekly`; `half Q1/Q2` obligatorio si quincenal. Rangos: mensual `[YYYY-MM-01,next-01)`, Q1 `[YYYY-MM-01,YYYY-MM-16)`, Q2 `[YYYY-MM-16,next-01)`.
+- Idempotente por `UNIQUE(company_id, kind, range)`: si ya existe retorna `{ ok:true, id, created:false }` sin duplicar. Escribe `audit_events(action:create)` en la misma TX.
+- La creación automática al registrar documentos (`resolvePeriod`) se mantiene; el formulario es atajo explícito.
+- Errores: `FORBIDDEN` (no contador), `VALIDATION_ERROR` (año/mes/quincena), `NOT_FOUND` (empresa).
+
 ## audit y attachments
 
-### `listAuditEvents(companyId, { entity_type?, entity_id?, from?, to? })` — solo lectura (todos los roles, auditor solo lectura). `REVOKE UPDATE,DELETE` en DB.
+### `listAuditEvents(companyId, { entity_type?, entity_id?, action?, from?, to? })` — solo lectura (todos los roles con `audit.read` o `reports.read`, auditor solo lectura). `REVOKE UPDATE,DELETE` en DB. La UI `/c/[companyId]/auditoria` expone estos filtros + línea de tiempo por documento de compra (origen lote/fila) y exporta CSV con los mismos filtros.
 ### `uploadAttachment(companyId, { entityType, entityId, originalName, claimedMime }, bytes)` + `GET /api/companies/[companyId]/archivos/[id]?exp=&sig=&uid=`
 - Tipo por magic bytes (PDF/PNG/JPEG/CSV/XLSX), límite `MAX_UPLOAD_MB`, nombre sanitizado, dedup por sha256, driver UploadThing (`storage_key`) o fs. Descarga valida firma HMAC (attachment+empresa+usuario, TTL ≤15 min), permiso y empresa; audita subida/descarga/anulación.
 

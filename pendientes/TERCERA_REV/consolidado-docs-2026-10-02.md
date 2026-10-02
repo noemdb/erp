@@ -158,8 +158,10 @@ Sin API pública en v1. Server Actions tipadas para mutaciones; Route Handlers s
 `applyMappingProfile/validateBatch/confirmImport`, `configureAbonoCriterionAction` (solo contador, con motivo),
 `previewIslrAction` (dual sin emitir), `previewWithholding/issueWithholding/voidWithholding/reissueWithholding/listWithholdings`,
 reportes (`purchase-book/sales-book/iva-summary/iva-withholdings/islr-withholdings/conciliation`),
-`sendPeriodToReview/closePeriod/requestReopen/approveReopen`,
+`sendPeriodToReview/closePeriod/requestReopen/approveReopen`, `createPeriod` (manual idempotente),
+`updateFiscalProfile` (solo admin, con guard de `periodKind`),
 `listAuditEvents`, `uploadAttachment`, health.
+Route nuevo: `GET /api/companies/[companyId]/imports/template?kind=` (plantilla CSV por tipo).
 
 **Regla G2 en API:** con `unset`, solo emite evento `payment` si ambos escenarios convergen
 (fecha, período, regla, base, importe/moneda, asignaciones); lo demás bloquea con
@@ -258,8 +260,10 @@ F0 abierta (sin matriz firmada + dorados no se cierra F2).
 
 **Novedades 2026-10-02 (verificadas en repo):** branding por empresa (logo + color distintivo,
 migración 0020); compras manual completa con multilínea + preview Inv.1 en vivo (skill beautiful-ui);
-catálogo de proveedores con modal buscador. **En curso sin commitear:** UI de períodos
-(páginas + botones + revalidación tras acciones).
+catálogo de proveedores con modal buscador. **Sesión posterior sin commitear:** registro manual de
+períodos (`createPeriod` + diálogo), front beautiful-ui en terceros / importaciones (+ plantilla CSV
+descargable) / reglas (+ diálogo de concepto) / configuración (`updateFiscalProfile` admin) / plazos,
+primitivos `ui/input` + `ui/avatar`, y seeder `seed:company-rules` (usar solo con matriz firmada).
 
 **Bloqueos activos:** G8 redondeo (método/etapa/precisión), G4 FX (fecha/tipo tasa BCV, diferencias),
 G2 abono (asiento, base por porción, sustraendo parcial; IVA no consume eventos), G9 ISLR
@@ -269,17 +273,18 @@ CSV/Z sin confirmar), roles (matriz por empresa).
 
 ---
 
-## 10. Estado verificado en este workspace (2026-10-02)
+## 10. Estado verificado en este workspace (2026-10-02, actualizado)
 
 Medido directamente, no copiado de docs:
 
-- **Tests:** 46 archivos / 73 tests → **67 verdes, 5 fallan, 1 omitido**.
-  Los 5 fallos son `pdf-spike.test.ts` + `render-job.test.ts`: requieren Chromium en
-  `/usr/bin/google-chrome`, ausente en este host (ADR-026: baselines solo válidos en su host).
+- **Tests:** 46 archivos / 73 tests → **72 verdes, 1 falla** (`least-privilege`: password de
+  `app_runtime` en este entorno; preexistente, verificado con `git stash`). `pdf-spike` 4/4 y
+  `render-job` verdes (`/usr/bin/google-chrome` presente; baselines válidos en este host).
 - **typecheck:** verde. **lint:** 0 errores, 5 warnings (solo `<img>` vs `next/image` y similares).
-- **Migraciones:** 23 archivos (`0000`–`0022`). **Scripts:** 20 en `package.json`
-  (`goldens:check`, `golden:inspect/compare`, `g8:calibrate`, `g2:divergence`, `catalog:*`,
-  `import:autodetect`, `migration:report`, `series:reconcile`, `acceptance:evidence`, …).
+- **Migraciones:** 23 archivos (`0000`–`0022`, sin cambios). **Scripts:** 21 en `package.json`
+  (+ `seed:company-rules` respecto al snapshot; `goldens:check`, `golden:inspect/compare`,
+  `g8:calibrate`, `g2:divergence`, `catalog:*`, `import:autodetect`, `migration:report`,
+  `series:reconcile`, `acceptance:evidence`, …).
 - **Módulos:** 18 en `src/modules/`. **Fixtures:** 1 dorado ejecutable (IVA-01) + manifest,
   corpus CSV (legacy + Z normal + Z adversarial), baselines PDF, catalog-pack sintético.
 - **Ausencias confirmadas:** Playwright no instalado; `pg-boss` no instalado (sin cola real);
@@ -296,10 +301,10 @@ Medido directamente, no copiado de docs:
 3. `CONVENTIONS.md` §estructura no lista `sales`, `payments`, `rules`, `deadlines`, `received`
    (existen en `src/modules/`) y habla de `tests/` raíz cuando los tests viven junto al código.
 4. `DECISIONS.md` no está en orden numérico (026/027 antes de 024/025). Solo orden.
-5. `.env`: `DATABASE_URL` con `&` sin comillas → `source .env` en bash la trunca en silencio;
-   usar loader dotenv o entrecomillar. (No commitear valores reales.)
-6. `serverc` / `serverc.pub` (clave privada SSH) en la raíz del repo, **sin entrada en `.gitignore`**
-   y sin trackear: rotar/eliminar según runbook `rotacion-secretos.md`. Prioritario.
+5. `.env` resuelto: `DATABASE_URL` ya entrecomillado (verificado hoy).
+6. `serverc` / `serverc.pub` (clave privada SSH) en la raíz del repo, **siguen presentes hoy**,
+   sin entrada en `.gitignore` y sin trackear: rotar/eliminar según runbook
+   `rotacion-secretos.md`. Prioritario.
 7. Cifras de tests en CHANGELOG (“49 tests”, “67 tests”) desactualizadas frente a 73 actuales;
    fijar como snapshot con fecha en futuras entradas.
 
