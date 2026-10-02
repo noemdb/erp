@@ -1,0 +1,17 @@
+{
+  "version": "v0",
+  "fechaCorte": "2026-09-30",
+  "matrizHash": "sintetico-no-firmado",
+  "reglas": [
+    {
+      "kind": "iva",
+      "porcentaje": "0.75",
+      "sustraendo": "0.00",
+      "base": "iva_causado",
+      "vigenciaDesde": "2026-01-01",
+      "fuente": "sintética (prueba de cargador)",
+      "articulo": "—",
+      "dorado": "IVA-01"
+    }
+  ]
+}

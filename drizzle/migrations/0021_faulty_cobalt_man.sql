@@ -1,0 +1,2 @@
+ALTER TABLE "islr_withholdings" ADD COLUMN "render_status" text DEFAULT 'pending' NOT NULL;--> statement-breakpoint
+ALTER TABLE "iva_withholdings" ADD COLUMN "render_status" text DEFAULT 'pending' NOT NULL;

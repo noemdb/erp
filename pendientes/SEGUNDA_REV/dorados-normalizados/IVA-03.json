@@ -1,0 +1,22 @@
+{
+  "id": "IVA-03",
+  "tipo": "iva",
+  "descripcion": "Proveedor contribuyente formal: no se retiene (art. 3 num. 2)",
+  "origen": "candidato",
+  "estadoOrigen": "PROPUESTO_NO_VALIDADO",
+  "alicuota": "0.16",
+  "base": "1000.00",
+  "retencionEsperada": "0.00",
+  "advertencias": [
+    "sin firma (PROPUESTO_NO_VALIDADO)"
+  ],
+  "crudo": {
+    "id": "IVA-03",
+    "tipo": "iva",
+    "descripcion": "Proveedor contribuyente formal: no se retiene (art. 3 num. 2)",
+    "base": "1000.00",
+    "alicuota": "16",
+    "retencion_esperada": "0.00",
+    "estado": "PROPUESTO_NO_VALIDADO"
+  }
+}

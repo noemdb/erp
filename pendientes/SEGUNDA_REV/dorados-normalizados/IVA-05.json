@@ -1,0 +1,24 @@
+{
+  "id": "IVA-05",
+  "tipo": "iva",
+  "descripcion": "Caja chica > 20 U.T.: sí se retiene 75%",
+  "origen": "candidato",
+  "estadoOrigen": "PROPUESTO_NO_VALIDADO",
+  "alicuota": "0.16",
+  "base": "1000.00",
+  "retencionEsperada": "120.00",
+  "advertencias": [
+    "sin firma (PROPUESTO_NO_VALIDADO)"
+  ],
+  "crudo": {
+    "id": "IVA-05",
+    "tipo": "iva",
+    "descripcion": "Caja chica > 20 U.T.: sí se retiene 75%",
+    "base": "1000.00",
+    "alicuota": "16",
+    "monto_operacion": "1160.00",
+    "limite_20UT": "860.00",
+    "retencion_esperada": "120.00",
+    "estado": "PROPUESTO_NO_VALIDADO"
+  }
+}

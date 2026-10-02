@@ -1,0 +1,6 @@
+{
+  "matrizVersion": "borrador-no-firmada",
+  "nota": "Los JSON aquí solo son dorados si están firmados por el contador (gate F2/4.1). Hoy: 1 didáctico. No usar dorados-propuestos-F0.json sin resolver inconsistencias (ver ISLR-09).",
+  "reglas": ["seed-iva-75 (global, pendiente matriz)", "seed-islr-serv (didáctica)"],
+  "casos": ["IVA-01-compra-gravada.json"]
+}

@@ -1,0 +1,60 @@
+--color-icy-aqua-50: #ebfaf6;
+--color-icy-aqua-100: #d7f4ec;
+--color-icy-aqua-200: #afe9da;
+--color-icy-aqua-300: #87dec7;
+--color-icy-aqua-400: #5fd3b4;
+--color-icy-aqua-500: #37c8a1;
+--color-icy-aqua-600: #2ca081;
+--color-icy-aqua-700: #217861;
+--color-icy-aqua-800: #165041;
+--color-icy-aqua-900: #0b2820;
+--color-icy-aqua-950: #081c17;
+
+--color-frozen-water-50: #eef6f4;
+--color-frozen-water-100: #deede8;
+--color-frozen-water-200: #bcdcd2;
+--color-frozen-water-300: #9bcabb;
+--color-frozen-water-400: #79b9a5;
+--color-frozen-water-500: #58a78e;
+--color-frozen-water-600: #468672;
+--color-frozen-water-700: #356455;
+--color-frozen-water-800: #234339;
+--color-frozen-water-900: #12211c;
+--color-frozen-water-950: #0c1714;
+
+--color-periwinkle-50: #efeff6;
+--color-periwinkle-100: #dedfed;
+--color-periwinkle-200: #bec0da;
+--color-periwinkle-300: #9da0c8;
+--color-periwinkle-400: #7c80b6;
+--color-periwinkle-500: #5c61a3;
+--color-periwinkle-600: #494d83;
+--color-periwinkle-700: #373a62;
+--color-periwinkle-800: #252741;
+--color-periwinkle-900: #121321;
+--color-periwinkle-950: #0d0e17;
+
+--color-soft-periwinkle-50: #edecf9;
+--color-soft-periwinkle-100: #dad9f2;
+--color-soft-periwinkle-200: #b6b3e6;
+--color-soft-periwinkle-300: #918cd9;
+--color-soft-periwinkle-400: #6d66cc;
+--color-soft-periwinkle-500: #4840bf;
+--color-soft-periwinkle-600: #3a3399;
+--color-soft-periwinkle-700: #2b2673;
+--color-soft-periwinkle-800: #1d194d;
+--color-soft-periwinkle-900: #0e0d26;
+--color-soft-periwinkle-950: #0a091b;
+
+--color-slate-blue-50: #eeecf9;
+--color-slate-blue-100: #ded8f3;
+--color-slate-blue-200: #bcb2e6;
+--color-slate-blue-300: #9b8bda;
+--color-slate-blue-400: #7a65cd;
+--color-slate-blue-500: #583ec1;
+--color-slate-blue-600: #47329a;
+--color-slate-blue-700: #352574;
+--color-slate-blue-800: #23194d;
+--color-slate-blue-900: #120c27;
+--color-slate-blue-950: #0c091b;
+

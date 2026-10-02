@@ -1,0 +1,28 @@
+{
+  "id": "ISLR-09",
+  "tipo": "islr",
+  "descripcion": "Honorarios a PN NO residente (9.1.a): 34% sobre el 90% del pago",
+  "origen": "candidato",
+  "estadoOrigen": "PROPUESTO_NO_VALIDADO",
+  "porcentaje": "0.34",
+  "base": "1000.00",
+  "baseGravable": "900.00",
+  "retencionEsperada": "306.00",
+  "advertencias": [
+    "INCONSISTENCIA (tipo ISLR-09): base 1000.00 ≠ base gravable 900.00; el contador decide cuál usa la fórmula",
+    "sin firma (PROPUESTO_NO_VALIDADO)"
+  ],
+  "crudo": {
+    "id": "ISLR-09",
+    "tipo": "islr",
+    "descripcion": "Honorarios a PN NO residente (9.1.a): 34% sobre el 90% del pago",
+    "concepto": "9.1.a",
+    "beneficiario": "PNNR",
+    "base": "1000.00",
+    "base_gravable": "900.00",
+    "porcentaje": "34",
+    "retencion_esperada": "306.00",
+    "nota": "Fuera del cálculo automático v1 (propuesta): registrar y marcar 'requiere revisión del contador'",
+    "estado": "PROPUESTO_NO_VALIDADO"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "id": "ISLR-07",
+  "tipo": "islr",
+  "descripcion": "Honorarios PN residente 3%: factura 50.000 pagada en 2 abonos (20.000 y 30.000)",
+  "origen": "candidato",
+  "estadoOrigen": "PENDIENTE_CRITERIO",
+  "advertencias": [
+    "sin firma (PENDIENTE_CRITERIO)"
+  ],
+  "crudo": {
+    "id": "ISLR-07",
+    "tipo": "islr",
+    "descripcion": "Honorarios PN residente 3%: factura 50.000 pagada en 2 abonos (20.000 y 30.000)",
+    "concepto": "9.1.b",
+    "beneficiario": "PNR",
+    "pagos": [
+      {
+        "monto": "20000.00",
+        "retencion": "492.50"
+      },
+      {
+        "monto": "30000.00",
+        "retencion": "792.50"
+      }
+    ],
+    "retencion_esperada_total": "1285.00",
+    "alternativa_sustraendo_una_vez": "1392.50",
+    "nota": "Criterio A (sustraendo por cada pago/abono): total 1285.00. Criterio B (sustraendo una vez por factura): 1392.50. Diferencia 107.50. CONTADOR DEBE ELEGIR.",
+    "estado": "PENDIENTE_CRITERIO"
+  }
+}

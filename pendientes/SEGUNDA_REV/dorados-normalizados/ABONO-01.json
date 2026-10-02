@@ -1,0 +1,20 @@
+{
+  "id": "ABONO-01",
+  "tipo": "evento_retencion",
+  "descripcion": "Contabilidad por causación: factura registrada en CxP el 10/09/2026 y pagada el 05/10/2026",
+  "origen": "candidato",
+  "estadoOrigen": "PROPUESTO_NO_VALIDADO",
+  "advertencias": [
+    "sin firma (PROPUESTO_NO_VALIDADO)"
+  ],
+  "crudo": {
+    "id": "ABONO-01",
+    "tipo": "evento_retencion",
+    "descripcion": "Contabilidad por causación: factura registrada en CxP el 10/09/2026 y pagada el 05/10/2026",
+    "fecha_abono_en_cuenta": "2026-09-10",
+    "fecha_pago": "2026-10-05",
+    "fecha_retencion_esperada": "2026-09-10",
+    "nota": "La retención nace en el abono (primero que ocurre). El pago posterior NO genera una segunda retención.",
+    "estado": "PROPUESTO_NO_VALIDADO"
+  }
+}

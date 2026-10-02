@@ -1,0 +1,32 @@
+{
+  "id": "ISLR-06",
+  "tipo": "islr",
+  "descripcion": "Arrendamiento inmueble a PN residente 3% (9.12)",
+  "origen": "candidato",
+  "estadoOrigen": "PROPUESTO_NO_VALIDADO",
+  "porcentaje": "0.03",
+  "base": "12000.00",
+  "sustraendo": "107.50",
+  "retencionEsperada": "252.50",
+  "advertencias": [
+    "sin firma (PROPUESTO_NO_VALIDADO)"
+  ],
+  "crudo": {
+    "id": "ISLR-06",
+    "tipo": "islr",
+    "descripcion": "Arrendamiento inmueble a PN residente 3% (9.12)",
+    "concepto": "9.12",
+    "beneficiario": "PNR",
+    "base": "12000.00",
+    "porcentaje": "3",
+    "sustraendo": "107.50",
+    "retencion_esperada": "252.50",
+    "formula": "max(0, base*pct - UT*pct*83.3334)",
+    "supuestos": {
+      "UT": "43.00",
+      "factor": "83.3334",
+      "redondeo": "round2 HALF_UP provisional (ADR-014 pendiente)"
+    },
+    "estado": "PROPUESTO_NO_VALIDADO"
+  }
+}

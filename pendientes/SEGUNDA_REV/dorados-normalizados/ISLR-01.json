@@ -1,0 +1,32 @@
+{
+  "id": "ISLR-01",
+  "tipo": "islr",
+  "descripcion": "Servicios/contratista a PN residente 1% (9.11)",
+  "origen": "candidato",
+  "estadoOrigen": "PROPUESTO_NO_VALIDADO",
+  "porcentaje": "1",
+  "base": "10000.00",
+  "sustraendo": "35.83",
+  "retencionEsperada": "64.17",
+  "advertencias": [
+    "sin firma (PROPUESTO_NO_VALIDADO)"
+  ],
+  "crudo": {
+    "id": "ISLR-01",
+    "tipo": "islr",
+    "descripcion": "Servicios/contratista a PN residente 1% (9.11)",
+    "concepto": "9.11",
+    "beneficiario": "PNR",
+    "base": "10000.00",
+    "porcentaje": "1",
+    "sustraendo": "35.83",
+    "retencion_esperada": "64.17",
+    "formula": "max(0, base*pct - UT*pct*83.3334)",
+    "supuestos": {
+      "UT": "43.00",
+      "factor": "83.3334",
+      "redondeo": "round2 HALF_UP provisional (ADR-014 pendiente)"
+    },
+    "estado": "PROPUESTO_NO_VALIDADO"
+  }
+}

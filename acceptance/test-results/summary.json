@@ -1,0 +1,235 @@
+{
+  "fecha": "2026-10-01T19:29:05.339Z",
+  "archivos": 32,
+  "archivosOk": 32,
+  "testsPasados": 48,
+  "testsFallidos": 0,
+  "golden": [
+    {
+      "archivo": "src/modules/rules/workflow.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/tax-engine/engine.test.ts",
+      "ok": true,
+      "passed": 4,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/tax-engine/guarantees.test.ts",
+      "ok": true,
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/tax-engine/properties.test.ts",
+      "ok": true,
+      "passed": 4,
+      "failed": 0
+    }
+  ],
+  "propiedades": [
+    {
+      "archivo": "src/modules/tax-engine/properties.test.ts",
+      "ok": true,
+      "passed": 4,
+      "failed": 0
+    }
+  ],
+  "detalle": [
+    {
+      "archivo": "src/lib/logger.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/audit/record.test.ts",
+      "ok": true,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/deadlines/service.test.ts",
+      "ok": true,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/fiscal-docs/cortes.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/fiscal-docs/service.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/identity/cookie.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/imports/confirm.test.ts",
+      "ok": true,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/imports/service.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/imports/validate.test.ts",
+      "ok": true,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/parties/service.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/payments/service.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/periods/close-guard.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/periods/service.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/received/service.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/reporting/controls.test.ts",
+      "ok": true,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/reporting/e2e-flow.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/reporting/evidence.test.ts",
+      "ok": true,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/reporting/summary.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/rules/workflow.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/sales/service.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/sales/zmode.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/shared/decimal.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/tax-engine/engine.test.ts",
+      "ok": true,
+      "passed": 4,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/tax-engine/guarantees.test.ts",
+      "ok": true,
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/tax-engine/properties.test.ts",
+      "ok": true,
+      "passed": 4,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/tenancy/fuga-matrix.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/tenancy/tenancy-isolation.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/withholdings/issue-islr.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/withholdings/issue-iva.test.ts",
+      "ok": true,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/withholdings/same-doc.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/withholdings/series.test.ts",
+      "ok": true,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/withholdings/sustitucion.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "ISLR-08",
+  "tipo": "islr",
+  "descripcion": "Pago de emisora de tarjeta a PJ domiciliada 5% (9.14): base = monto/(1+alícuota)",
+  "origen": "candidato",
+  "estadoOrigen": "PROPUESTO_NO_VALIDADO",
+  "porcentaje": "0.05",
+  "alicuota": "0.16",
+  "base": "10000.00",
+  "retencionEsperada": "500.00",
+  "advertencias": [
+    "sin firma (PROPUESTO_NO_VALIDADO)"
+  ],
+  "crudo": {
+    "id": "ISLR-08",
+    "tipo": "islr",
+    "descripcion": "Pago de emisora de tarjeta a PJ domiciliada 5% (9.14): base = monto/(1+alícuota)",
+    "concepto": "9.14",
+    "beneficiario": "PJD",
+    "monto_pagado": "11600.00",
+    "alicuota_iva": "16",
+    "base": "10000.00",
+    "porcentaje": "5",
+    "retencion_esperada": "500.00",
+    "formula": "base = monto/((alicuota/100)+1); ret = base*5%",
+    "estado": "PROPUESTO_NO_VALIDADO"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "id": "IVA-01",
+  "descripcion": "Compra servicio 1000 + IVA 16%, retención IVA 75% e ISLR 2% (ejemplo didáctico docs)",
+  "origen": "sintetico",
+  "firma": { "firmado_por": "didáctico-sin-firma", "fecha": "2026-09-30", "fuente_legal": "ejemplo interno, no normativo" },
+  "doc": {
+    "lines": [{ "taxCategory": "general", "taxRate": "0.16", "base": "1000.00" }],
+    "total": "1160.00"
+  },
+  "esperado": { "baseImponible": "1000.00", "ivaCausado": "160.00", "totalValido": true },
+  "iva": {
+    "company": { "agenteRetencionIva": true, "agenteRetencionIslr": true },
+    "counterparty": { "tipoPersona": "juridica", "residente": true, "sujetoRetencionIva": true, "sujetoRetencionIslr": true },
+    "ivaCausado": "160.00",
+    "rule": { "ruleVersionId": "seed-iva-75", "ruleSnapshot": { "porcentaje": "0.75" }, "porcentaje": "0.75" }
+  },
+  "ivaEsperado": { "retainedAmount": "120.00" },
+  "islr": {
+    "baseSujeta": "1000.00",
+    "rule": { "ruleVersionId": "seed-islr-serv", "ruleSnapshot": {}, "porcentaje": "0.02", "sustraendo": "0.00" }
+  },
+  "islrEsperado": { "retainedAmount": "20.00" }
+}

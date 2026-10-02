@@ -1,0 +1,2 @@
+ALTER TABLE "companies" ADD COLUMN "abono_criterion" text DEFAULT 'unset' NOT NULL;--> statement-breakpoint
+ALTER TABLE "companies" ADD CONSTRAINT "chk_companies_abono_criterion" CHECK ("companies"."abono_criterion" IN ('unset', 'payment_only', 'account_credit_or_payment'));

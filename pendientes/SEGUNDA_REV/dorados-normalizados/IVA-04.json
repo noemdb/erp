@@ -1,0 +1,24 @@
+{
+  "id": "IVA-04",
+  "tipo": "iva",
+  "descripcion": "Caja chica ≤ 20 U.T. (860,00): no se retiene (art. 3 num. 7)",
+  "origen": "candidato",
+  "estadoOrigen": "PROPUESTO_NO_VALIDADO",
+  "alicuota": "0.16",
+  "base": "700.00",
+  "retencionEsperada": "0.00",
+  "advertencias": [
+    "sin firma (PROPUESTO_NO_VALIDADO)"
+  ],
+  "crudo": {
+    "id": "IVA-04",
+    "tipo": "iva",
+    "descripcion": "Caja chica ≤ 20 U.T. (860,00): no se retiene (art. 3 num. 7)",
+    "base": "700.00",
+    "alicuota": "16",
+    "monto_operacion": "812.00",
+    "limite_20UT": "860.00",
+    "retencion_esperada": "0.00",
+    "estado": "PROPUESTO_NO_VALIDADO"
+  }
+}

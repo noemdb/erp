@@ -1,0 +1,30 @@
+{
+  "id": "ISLR-04",
+  "tipo": "islr",
+  "descripcion": "Servicios/contratista a PJ domiciliada 2% (9.11)",
+  "origen": "candidato",
+  "estadoOrigen": "PROPUESTO_NO_VALIDADO",
+  "porcentaje": "0.02",
+  "base": "10000.00",
+  "sustraendo": "0.00",
+  "retencionEsperada": "200.00",
+  "advertencias": [
+    "sin firma (PROPUESTO_NO_VALIDADO)"
+  ],
+  "crudo": {
+    "id": "ISLR-04",
+    "tipo": "islr",
+    "descripcion": "Servicios/contratista a PJ domiciliada 2% (9.11)",
+    "concepto": "9.11",
+    "beneficiario": "PJD",
+    "base": "10000.00",
+    "porcentaje": "2",
+    "sustraendo": "0.00",
+    "retencion_esperada": "200.00",
+    "formula": "base*pct",
+    "supuestos": {
+      "minimo": "Sin mínimo en tablas de práctica; el Parágrafo 2° art. 9 fija mínimos nominales de 1997 (Bs.1.250/750) — confirmar con contador"
+    },
+    "estado": "PROPUESTO_NO_VALIDADO"
+  }
+}

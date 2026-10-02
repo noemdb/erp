@@ -1,0 +1,29 @@
+{
+  "id": "ABONO-02",
+  "tipo": "evento_retencion",
+  "descripcion": "Anticipo: pago de 30% el 01/09/2026 antes de la factura; factura registrada el 15/09/2026 por 100%",
+  "origen": "candidato",
+  "estadoOrigen": "PROPUESTO_NO_VALIDADO",
+  "advertencias": [
+    "sin firma (PROPUESTO_NO_VALIDADO)"
+  ],
+  "crudo": {
+    "id": "ABONO-02",
+    "tipo": "evento_retencion",
+    "descripcion": "Anticipo: pago de 30% el 01/09/2026 antes de la factura; factura registrada el 15/09/2026 por 100%",
+    "eventos": [
+      {
+        "tipo": "pago",
+        "fecha": "2026-09-01",
+        "porcion": "30%"
+      },
+      {
+        "tipo": "abono_en_cuenta",
+        "fecha": "2026-09-15",
+        "porcion": "70% restante"
+      }
+    ],
+    "nota": "Cada porción retiene en su propio evento: 30% el 01/09 y 70% el 15/09. Anticipo debe poder asignarse luego a la factura.",
+    "estado": "PROPUESTO_NO_VALIDADO"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "nota": "Corpus sintético G3 (2.0.2 ítem 4 fase B): los 9 casos del roadmap, ejecutables en g3-corpus.test.ts. Ninguno es evidencia real.",
+  "casos": [
+    { "id": "G3-01", "caso": "retención del período, comprobante a tiempo", "monto": "120.00", "ivaFacturas": "160.00", "espera": "concilia" },
+    { "id": "G3-02", "caso": "vinculada a varias facturas", "facturas": 2, "espera": "concilia" },
+    { "id": "G3-03", "caso": "sin factura identificable", "facturas": 0, "espera": "no-concilia" },
+    { "id": "G3-04", "caso": "monto mayor al IVA (exceso)", "monto": "500.00", "ivaFacturas": "160.00", "espera": "exige-motivo" },
+    { "id": "G3-05", "caso": "comprobante duplicado", "espera": "bloqueo-unicidad" },
+    { "id": "G3-06", "caso": "comprobante anulado", "espera": "anulada-con-motivo" },
+    { "id": "G3-07", "caso": "retención de período anterior aplicada a período elegido", "espera": "aplica" },
+    { "id": "G3-08", "caso": "recibida después del cierre (período cerrado)", "espera": "aplica-solo-abierto" },
+    { "id": "G3-09", "caso": "ISLR recibida: fuera del alcance IVA, solo informativa", "espera": "documentar" }
+  ]
+}

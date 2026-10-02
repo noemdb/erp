@@ -1,0 +1,24 @@
+{
+  "id": "IVA-02",
+  "tipo": "iva",
+  "descripcion": "Retención 100% por IVA no discriminado en la factura (art. 5 num. 1)",
+  "origen": "candidato",
+  "estadoOrigen": "PROPUESTO_NO_VALIDADO",
+  "alicuota": "0.16",
+  "baseGravable": "1000.00",
+  "retencionEsperada": "160.00",
+  "advertencias": [
+    "sin firma (PROPUESTO_NO_VALIDADO)"
+  ],
+  "crudo": {
+    "id": "IVA-02",
+    "tipo": "iva",
+    "descripcion": "Retención 100% por IVA no discriminado en la factura (art. 5 num. 1)",
+    "precio_facturado": "1160.00",
+    "alicuota": "16",
+    "base_imponible": "1000.00",
+    "retencion_esperada": "160.00",
+    "formula": "BI=Pfac/((Ai/100)+1); Mret=Pfac-BI",
+    "estado": "PROPUESTO_NO_VALIDADO"
+  }
+}

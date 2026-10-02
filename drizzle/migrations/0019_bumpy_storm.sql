@@ -1,0 +1,1 @@
+ALTER TABLE "withholding_rules" ADD COLUMN "synthetic" boolean DEFAULT false NOT NULL;

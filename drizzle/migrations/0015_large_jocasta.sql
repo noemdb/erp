@@ -1,0 +1,1 @@
+ALTER TABLE "withholding_rules" ALTER COLUMN "status" SET DEFAULT 'active';

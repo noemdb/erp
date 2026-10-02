@@ -1,0 +1,29 @@
+{
+  "fecha": "2026-10-01T19:29:05.339Z",
+  "archivos": [
+    {
+      "archivo": "src/modules/rules/workflow.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/tax-engine/engine.test.ts",
+      "ok": true,
+      "passed": 4,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/tax-engine/guarantees.test.ts",
+      "ok": true,
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/tax-engine/properties.test.ts",
+      "ok": true,
+      "passed": 4,
+      "failed": 0
+    }
+  ]
+}

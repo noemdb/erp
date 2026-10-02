@@ -1,0 +1,25 @@
+{
+  "id": "IVA-01",
+  "tipo": "iva",
+  "descripcion": "Retención ordinaria 75% (Prov. 0054 art. 4)",
+  "origen": "candidato",
+  "estadoOrigen": "PROPUESTO_NO_VALIDADO",
+  "porcentaje": "0.75",
+  "alicuota": "0.16",
+  "base": "1000.00",
+  "retencionEsperada": "120.00",
+  "advertencias": [
+    "sin firma (PROPUESTO_NO_VALIDADO)"
+  ],
+  "crudo": {
+    "id": "IVA-01",
+    "tipo": "iva",
+    "descripcion": "Retención ordinaria 75% (Prov. 0054 art. 4)",
+    "base": "1000.00",
+    "alicuota": "16",
+    "iva_causado": "160.00",
+    "porcentaje_retencion": "75",
+    "retencion_esperada": "120.00",
+    "estado": "PROPUESTO_NO_VALIDADO"
+  }
+}

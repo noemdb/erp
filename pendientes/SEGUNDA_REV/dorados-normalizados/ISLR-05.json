@@ -1,0 +1,30 @@
+{
+  "id": "ISLR-05",
+  "tipo": "islr",
+  "descripcion": "Honorarios a PJ domiciliada 5% (9.1.b)",
+  "origen": "candidato",
+  "estadoOrigen": "PROPUESTO_NO_VALIDADO",
+  "porcentaje": "0.05",
+  "base": "8000.00",
+  "sustraendo": "0.00",
+  "retencionEsperada": "400.00",
+  "advertencias": [
+    "sin firma (PROPUESTO_NO_VALIDADO)"
+  ],
+  "crudo": {
+    "id": "ISLR-05",
+    "tipo": "islr",
+    "descripcion": "Honorarios a PJ domiciliada 5% (9.1.b)",
+    "concepto": "9.1.b",
+    "beneficiario": "PJD",
+    "base": "8000.00",
+    "porcentaje": "5",
+    "sustraendo": "0.00",
+    "retencion_esperada": "400.00",
+    "formula": "base*pct",
+    "supuestos": {
+      "minimo": "Sin mínimo en tablas de práctica; el Parágrafo 2° art. 9 fija mínimos nominales de 1997 (Bs.1.250/750) — confirmar con contador"
+    },
+    "estado": "PROPUESTO_NO_VALIDADO"
+  }
+}
