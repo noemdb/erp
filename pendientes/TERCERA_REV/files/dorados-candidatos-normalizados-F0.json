@@ -1,0 +1,557 @@
+{
+  "version": "0.2",
+  "fecha": "2026-10-02",
+  "contrato": {
+    "porcentajes": "fracción como string decimal (0.03 = 3%)",
+    "base": "`base_gravable` es la base sobre la que se aplica el porcentaje (en IVA se conserva `base_imponible`, término del dominio)",
+    "montos": "string decimal con 2 decimales",
+    "fechas": "ISO 8601 (AAAA-MM-DD)",
+    "redondeo": "round2 HALF_UP PROVISIONAL (ADR-014 / G8 pendiente)",
+    "UT": "43.00 (Prov. SNAT/2025/000048, G.O. 43.140 del 02/06/2025; verificar vigencia a la fecha de corte)"
+  },
+  "aviso": "Candidatos NORMALIZADOS. Ninguno es dorado hasta que el contador lo firme (estado VALIDADO_CONTADOR) y calcule el resultado de forma independiente. `ejecutable:false` = fuera del gate automático hasta resolver la decisión indicada en `notas`/`estado`.",
+  "escenarios": [
+    {
+      "id": "ISLR-01",
+      "tipo": "islr",
+      "descripcion": "Servicios/contratista a persona natural residente 1% (9.11)",
+      "concepto": "9.11",
+      "beneficiario": "PNR",
+      "asOf": "2026-09-15",
+      "entrada": {
+        "monto_operacion": "10000.00",
+        "factor_base": "1.00",
+        "base_gravable": "10000.00"
+      },
+      "parametros": {
+        "porcentaje": "0.01",
+        "sustraendo_ut": true,
+        "ut": "43.00",
+        "factor_sustraendo": "83.3334"
+      },
+      "esperado": {
+        "sustraendo": "35.83",
+        "retencion": "64.17"
+      },
+      "formula": "retencion = max(0, base_gravable * porcentaje - (UT * porcentaje * 83.3334))",
+      "origen": "sintetico",
+      "estado": "CANDIDATO",
+      "ejecutable": true
+    },
+    {
+      "id": "ISLR-02",
+      "tipo": "islr",
+      "descripcion": "Honorarios a persona natural residente 3%, pago bajo el mínimo (9.1.b): el sustraendo anula la retención",
+      "concepto": "9.1.b",
+      "beneficiario": "PNR",
+      "asOf": "2026-09-15",
+      "entrada": {
+        "monto_operacion": "3000.00",
+        "factor_base": "1.00",
+        "base_gravable": "3000.00"
+      },
+      "parametros": {
+        "porcentaje": "0.03",
+        "sustraendo_ut": true,
+        "ut": "43.00",
+        "factor_sustraendo": "83.3334"
+      },
+      "esperado": {
+        "sustraendo": "107.50",
+        "retencion": "0.00"
+      },
+      "formula": "retencion = max(0, base_gravable * porcentaje - (UT * porcentaje * 83.3334))",
+      "origen": "sintetico",
+      "estado": "CANDIDATO",
+      "ejecutable": true
+    },
+    {
+      "id": "ISLR-03",
+      "tipo": "islr",
+      "descripcion": "Honorarios a persona natural residente 3%, pago sobre el mínimo (9.1.b)",
+      "concepto": "9.1.b",
+      "beneficiario": "PNR",
+      "asOf": "2026-09-15",
+      "entrada": {
+        "monto_operacion": "50000.00",
+        "factor_base": "1.00",
+        "base_gravable": "50000.00"
+      },
+      "parametros": {
+        "porcentaje": "0.03",
+        "sustraendo_ut": true,
+        "ut": "43.00",
+        "factor_sustraendo": "83.3334"
+      },
+      "esperado": {
+        "sustraendo": "107.50",
+        "retencion": "1392.50"
+      },
+      "formula": "retencion = max(0, base_gravable * porcentaje - (UT * porcentaje * 83.3334))",
+      "origen": "sintetico",
+      "estado": "CANDIDATO",
+      "ejecutable": true
+    },
+    {
+      "id": "ISLR-04",
+      "tipo": "islr",
+      "descripcion": "Servicios/contratista a persona jurídica domiciliada 2% (9.11)",
+      "concepto": "9.11",
+      "beneficiario": "PJD",
+      "asOf": "2026-09-15",
+      "entrada": {
+        "monto_operacion": "10000.00",
+        "factor_base": "1.00",
+        "base_gravable": "10000.00"
+      },
+      "parametros": {
+        "porcentaje": "0.02",
+        "sustraendo_ut": false,
+        "ut": "43.00",
+        "factor_sustraendo": "83.3334"
+      },
+      "esperado": {
+        "sustraendo": "0.00",
+        "retencion": "200.00"
+      },
+      "formula": "retencion = base_gravable * porcentaje",
+      "origen": "sintetico",
+      "estado": "CANDIDATO",
+      "ejecutable": true,
+      "notas": "Mínimos nominales del art. 9 §2 (Bs. 1.250/750 de 1997) sin efecto práctico según tablas de práctica; el contador debe confirmarlo (decisión de mínimos PJD)."
+    },
+    {
+      "id": "ISLR-05",
+      "tipo": "islr",
+      "descripcion": "Honorarios a persona jurídica domiciliada 5% (9.1.b)",
+      "concepto": "9.1.b",
+      "beneficiario": "PJD",
+      "asOf": "2026-09-15",
+      "entrada": {
+        "monto_operacion": "8000.00",
+        "factor_base": "1.00",
+        "base_gravable": "8000.00"
+      },
+      "parametros": {
+        "porcentaje": "0.05",
+        "sustraendo_ut": false,
+        "ut": "43.00",
+        "factor_sustraendo": "83.3334"
+      },
+      "esperado": {
+        "sustraendo": "0.00",
+        "retencion": "400.00"
+      },
+      "formula": "retencion = base_gravable * porcentaje",
+      "origen": "sintetico",
+      "estado": "CANDIDATO",
+      "ejecutable": true,
+      "notas": "Ver nota de mínimos PJD en ISLR-04."
+    },
+    {
+      "id": "ISLR-06",
+      "tipo": "islr",
+      "descripcion": "Arrendamiento de inmueble a persona natural residente 3% (9.12)",
+      "concepto": "9.12",
+      "beneficiario": "PNR",
+      "asOf": "2026-09-15",
+      "entrada": {
+        "monto_operacion": "12000.00",
+        "factor_base": "1.00",
+        "base_gravable": "12000.00"
+      },
+      "parametros": {
+        "porcentaje": "0.03",
+        "sustraendo_ut": true,
+        "ut": "43.00",
+        "factor_sustraendo": "83.3334"
+      },
+      "esperado": {
+        "sustraendo": "107.50",
+        "retencion": "252.50"
+      },
+      "formula": "retencion = max(0, base_gravable * porcentaje - (UT * porcentaje * 83.3334))",
+      "origen": "sintetico",
+      "estado": "CANDIDATO",
+      "ejecutable": true
+    },
+    {
+      "id": "ISLR-07",
+      "tipo": "islr",
+      "descripcion": "Honorarios a persona natural residente 3%: factura de 50.000,00 pagada en dos abonos (20.000,00 y 30.000,00)",
+      "concepto": "9.1.b",
+      "beneficiario": "PNR",
+      "asOf": "2026-09-15",
+      "entrada": {
+        "pagos": [
+          {
+            "monto_operacion": "20000.00",
+            "base_gravable": "20000.00",
+            "fecha": "2026-09-15"
+          },
+          {
+            "monto_operacion": "30000.00",
+            "base_gravable": "30000.00",
+            "fecha": "2026-09-22"
+          }
+        ]
+      },
+      "parametros": {
+        "porcentaje": "0.03",
+        "sustraendo_ut": true,
+        "ut": "43.00",
+        "factor_sustraendo": "83.3334"
+      },
+      "variantes": [
+        {
+          "criterio_sustraendo": "por_pago",
+          "esperado": {
+            "retenciones_por_pago": [
+              "492.50",
+              "792.50"
+            ],
+            "retencion_total": "1285.00"
+          }
+        },
+        {
+          "criterio_sustraendo": "una_vez_por_factura",
+          "esperado": {
+            "retenciones_por_pago": [
+              "492.50",
+              "900.00"
+            ],
+            "retencion_total": "1392.50"
+          }
+        }
+      ],
+      "diferencia_entre_criterios": "107.50",
+      "formula": "por_pago: suma de max(0, base_i*porcentaje - sustraendo); una_vez_por_factura: sustraendo solo en la primera retención",
+      "origen": "sintetico",
+      "estado": "PENDIENTE_CRITERIO",
+      "ejecutable": false,
+      "notas": "Decisión G2-c del contador. Variante una_vez_por_factura: el sustraendo se aplica solo en la primera retención y la segunda retiene base*porcentaje (900,00); el total equivale a retener sobre la factura completa (1.392,50)."
+    },
+    {
+      "id": "ISLR-08",
+      "tipo": "islr",
+      "descripcion": "Pago a emisora de tarjeta de crédito, persona jurídica domiciliada 5% (9.14): la base es el monto pagado sin IVA",
+      "concepto": "9.14",
+      "beneficiario": "PJD",
+      "asOf": "2026-09-15",
+      "entrada": {
+        "monto_operacion": "11600.00",
+        "alicuota_iva": "0.16",
+        "base_gravable": "10000.00"
+      },
+      "parametros": {
+        "porcentaje": "0.05",
+        "sustraendo_ut": false,
+        "ut": "43.00",
+        "factor_sustraendo": "83.3334"
+      },
+      "esperado": {
+        "sustraendo": "0.00",
+        "retencion": "500.00"
+      },
+      "formula": "base_gravable = monto_operacion / (alicuota_iva + 1); retencion = base_gravable * porcentaje",
+      "origen": "sintetico",
+      "estado": "CANDIDATO",
+      "ejecutable": true
+    },
+    {
+      "id": "ISLR-09",
+      "tipo": "islr",
+      "descripcion": "Honorarios a persona natural NO residente (9.1.a): 34% sobre el 90% del monto pagado",
+      "concepto": "9.1.a",
+      "beneficiario": "PNNR",
+      "asOf": "2026-09-15",
+      "entrada": {
+        "monto_operacion": "1000.00",
+        "factor_base": "0.90",
+        "base_gravable": "900.00"
+      },
+      "parametros": {
+        "porcentaje": "0.34",
+        "sustraendo_ut": false,
+        "ut": "43.00",
+        "factor_sustraendo": "83.3334"
+      },
+      "esperado": {
+        "sustraendo": "0.00",
+        "retencion": "306.00"
+      },
+      "formula": "retencion = base_gravable * porcentaje",
+      "origen": "sintetico",
+      "estado": "FUERA_DE_ALCANCE_V1",
+      "ejecutable": false,
+      "notas": "Corrección: `base_gravable` es 900,00 (90% del monto) y sobre ella se aplica 0.34 → 306,00. Antes mezclaba base 1000 y base_gravable 900. En v1 el sistema registra y marca 'requiere revisión del contador' (sin cálculo automático); pasa a ejecutable si el contador y el cliente incluyen no residentes."
+    },
+    {
+      "id": "IVA-01",
+      "tipo": "iva",
+      "descripcion": "Retención ordinaria del 75% sobre el IVA causado (Prov. SNAT/2025/000054, art. 4)",
+      "asOf": "2026-09-15",
+      "entrada": {
+        "base_imponible": "1000.00",
+        "alicuota": "0.16",
+        "iva_causado": "160.00"
+      },
+      "parametros": {
+        "porcentaje_retencion": "0.75"
+      },
+      "esperado": {
+        "retencion": "120.00"
+      },
+      "formula": "retencion = iva_causado * porcentaje_retencion",
+      "origen": "sintetico",
+      "estado": "CANDIDATO",
+      "ejecutable": true
+    },
+    {
+      "id": "IVA-02",
+      "tipo": "iva",
+      "descripcion": "Retención del 100% por IVA no discriminado en la factura (art. 5, num. 1)",
+      "asOf": "2026-09-15",
+      "entrada": {
+        "precio_facturado": "1160.00",
+        "iva_discriminado": false,
+        "alicuota": "0.16",
+        "base_imponible": "1000.00",
+        "iva_causado": "160.00"
+      },
+      "parametros": {
+        "porcentaje_retencion": "1.00"
+      },
+      "esperado": {
+        "retencion": "160.00"
+      },
+      "formula": "base_imponible = precio_facturado / (alicuota + 1); retencion = (precio_facturado - base_imponible) * porcentaje_retencion",
+      "origen": "sintetico",
+      "estado": "CANDIDATO",
+      "ejecutable": true
+    },
+    {
+      "id": "IVA-03",
+      "tipo": "iva",
+      "descripcion": "Proveedor contribuyente formal: no se retiene (art. 3, num. 2)",
+      "asOf": "2026-09-15",
+      "entrada": {
+        "base_imponible": "1000.00",
+        "alicuota": "0.16",
+        "iva_causado": "160.00",
+        "proveedor_contribuyente_formal": true
+      },
+      "parametros": {
+        "porcentaje_retencion": "0.75"
+      },
+      "esperado": {
+        "retencion": "0.00",
+        "motivo_no_retencion": "proveedor_contribuyente_formal"
+      },
+      "formula": "exclusión previa al cálculo",
+      "origen": "sintetico",
+      "estado": "CANDIDATO",
+      "ejecutable": true
+    },
+    {
+      "id": "IVA-04",
+      "tipo": "iva",
+      "descripcion": "Operación pagada con caja chica de hasta 20 U.T. (860,00): no se retiene (art. 3, num. 7)",
+      "asOf": "2026-09-15",
+      "entrada": {
+        "base_imponible": "700.00",
+        "alicuota": "0.16",
+        "iva_causado": "112.00",
+        "monto_operacion": "812.00",
+        "pagado_con_caja_chica": true
+      },
+      "parametros": {
+        "porcentaje_retencion": "0.75",
+        "limite_caja_chica_ut": "20",
+        "ut": "43.00",
+        "limite_caja_chica": "860.00"
+      },
+      "esperado": {
+        "retencion": "0.00",
+        "motivo_no_retencion": "caja_chica_hasta_limite"
+      },
+      "formula": "si monto_operacion <= 20 * UT y pagado_con_caja_chica: no se retiene",
+      "origen": "sintetico",
+      "estado": "CANDIDATO",
+      "ejecutable": true
+    },
+    {
+      "id": "IVA-05",
+      "tipo": "iva",
+      "descripcion": "Operación con caja chica por encima de 20 U.T.: sí se retiene el 75%",
+      "asOf": "2026-09-15",
+      "entrada": {
+        "base_imponible": "1000.00",
+        "alicuota": "0.16",
+        "iva_causado": "160.00",
+        "monto_operacion": "1160.00",
+        "pagado_con_caja_chica": true
+      },
+      "parametros": {
+        "porcentaje_retencion": "0.75",
+        "limite_caja_chica_ut": "20",
+        "ut": "43.00",
+        "limite_caja_chica": "860.00"
+      },
+      "esperado": {
+        "retencion": "120.00"
+      },
+      "formula": "monto_operacion > limite: retencion = iva_causado * porcentaje_retencion",
+      "origen": "sintetico",
+      "estado": "CANDIDATO",
+      "ejecutable": true
+    },
+    {
+      "id": "ABONO-01",
+      "tipo": "evento_retencion",
+      "asOf": "2026-09-10",
+      "descripcion": "Contabilidad por causación: factura registrada en cuentas por pagar el 10/09/2026 y pagada el 05/10/2026 (servicios a PJD 2%)",
+      "concepto": "9.11",
+      "beneficiario": "PJD",
+      "parametros": {
+        "porcentaje": "0.02",
+        "sustraendo_ut": false
+      },
+      "entrada": {
+        "base_gravable_documento": "10000.00",
+        "eventos": [
+          {
+            "tipo": "account_credit",
+            "fecha": "2026-09-10",
+            "base_gravable": "10000.00"
+          },
+          {
+            "tipo": "payment",
+            "fecha": "2026-10-05",
+            "base_gravable": "10000.00"
+          }
+        ]
+      },
+      "esperado": {
+        "retenciones": [
+          {
+            "evento": 0,
+            "fecha_retencion": "2026-09-10",
+            "retencion": "200.00"
+          },
+          {
+            "evento": 1,
+            "retencion": "0.00",
+            "motivo": "porción ya cubierta por el abono"
+          }
+        ],
+        "retencion_total": "200.00"
+      },
+      "origen": "sintetico",
+      "estado": "PENDIENTE_CRITERIO",
+      "ejecutable": false,
+      "notas": "Depende de G2-a (qué registro cuenta como abono) y del criterio de la empresa."
+    },
+    {
+      "id": "ABONO-02",
+      "tipo": "evento_retencion",
+      "asOf": "2026-09-01",
+      "descripcion": "Anticipo del 30% pagado el 01/09/2026 antes de la factura; factura registrada el 15/09/2026 por el 100%",
+      "concepto": "9.11",
+      "beneficiario": "PJD",
+      "parametros": {
+        "porcentaje": "0.02",
+        "sustraendo_ut": false
+      },
+      "entrada": {
+        "base_gravable_documento": "10000.00",
+        "eventos": [
+          {
+            "tipo": "payment",
+            "fecha": "2026-09-01",
+            "base_gravable": "3000.00"
+          },
+          {
+            "tipo": "account_credit",
+            "fecha": "2026-09-15",
+            "base_gravable": "7000.00",
+            "nota": "porción restante"
+          }
+        ]
+      },
+      "esperado": {
+        "retenciones": [
+          {
+            "evento": 0,
+            "fecha_retencion": "2026-09-01",
+            "retencion": "60.00"
+          },
+          {
+            "evento": 1,
+            "fecha_retencion": "2026-09-15",
+            "retencion": "140.00"
+          }
+        ],
+        "retencion_total": "200.00"
+      },
+      "origen": "sintetico",
+      "estado": "PENDIENTE_CRITERIO",
+      "ejecutable": false,
+      "notas": "Depende de G2-b (base atribuible por porción: se asume proporcional) y G2-d (anticipos)."
+    },
+    {
+      "id": "ABONO-03",
+      "tipo": "evento_retencion",
+      "asOf": "2026-09-10",
+      "descripcion": "Abono previo y pagos parciales posteriores: factura registrada el 10/09/2026; pagos el 05/10 y el 20/10",
+      "concepto": "9.11",
+      "beneficiario": "PJD",
+      "parametros": {
+        "porcentaje": "0.02",
+        "sustraendo_ut": false
+      },
+      "entrada": {
+        "base_gravable_documento": "10000.00",
+        "eventos": [
+          {
+            "tipo": "account_credit",
+            "fecha": "2026-09-10",
+            "base_gravable": "10000.00"
+          },
+          {
+            "tipo": "payment",
+            "fecha": "2026-10-05",
+            "base_gravable": "4000.00"
+          },
+          {
+            "tipo": "payment",
+            "fecha": "2026-10-20",
+            "base_gravable": "6000.00"
+          }
+        ]
+      },
+      "esperado": {
+        "retenciones": [
+          {
+            "evento": 0,
+            "fecha_retencion": "2026-09-10",
+            "retencion": "200.00"
+          },
+          {
+            "evento": 1,
+            "retencion": "0.00"
+          },
+          {
+            "evento": 2,
+            "retencion": "0.00"
+          }
+        ],
+        "retencion_total": "200.00"
+      },
+      "origen": "sintetico",
+      "estado": "PENDIENTE_CRITERIO",
+      "ejecutable": false,
+      "notas": "Depende de G2-a/G2-b. Con persona natural residente intervendría además G2-c (sustraendo parcial; ver ISLR-07)."
+    }
+  ]
+}

@@ -2,7 +2,17 @@ import Link from "next/link";
 import MenuBook from "@mui/icons-material/MenuBook";
 import { Badge } from "@/components/ui/badge";
 import { DocsShell, getDocsSession, StatusBadge } from "./_components";
+import { FlowButton, type FlowProcess } from "./_flows";
 import { DOC_SECTIONS } from "./content";
+
+const FLOWS_BY_HREF: Record<string, FlowProcess> = {
+  "/docs/registrar/compras": "compras",
+  "/docs/registrar/ventas": "ventas",
+  "/docs/registrar/pagos": "pagos",
+  "/docs/comprobantes/iva": "iva",
+  "/docs/comprobantes/islr": "islr",
+  "/docs/comprobantes/recibidas": "recibidas",
+};
 
 export default async function DocsPage() {
   const { user, companyCount } = await getDocsSession();
@@ -16,33 +26,37 @@ export default async function DocsPage() {
         <MenuBook className="h-8 w-8" aria-hidden />
         Documentación
       </h1>
-      <div className="mt-4 max-w-2xl space-y-3 text-sm text-periwinkle-700">
+      <div className="mt-4 w-full space-y-3 text-sm text-periwinkle-700">
+
+        <p className="mt-4 max-w-2xl text-sm text-periwinkle-500">
+          Guía ordenada para el usuario final: se registra una sola vez en{" "}
+          <strong>Registrar</strong>, el sistema deriva comprobantes, libros y
+          cierres. Vocabulario según glosario fiscal (documento fiscal, base
+          imponible, comprobante, período fiscal).
+        </p>
+        
         <p>
           <strong className="text-[#120c27]">¿Qué es este sistema?</strong>{" "}
-          ERP-TributarioLite es el sistema web multiempresa donde se registran
-          compras, ventas, pagos y retenciones una sola vez para derivar
-          libros de IVA, resumen y comprobantes IVA/ISLR en PDF/Excel.
+          Es tu aliado para dejar atrás el Excel lleno de fórmulas frágiles:
+          aquí anotas cada compra, venta o pago una sola vez, y el sistema se
+          encarga de armar tus libros, tus comprobantes y tu resumen sin que
+          tengas que copiar nada a mano.
         </p>
         <p>
           <strong className="text-[#120c27]">¿Para qué es este sistema?</strong>{" "}
-          Para que administrativos, contadores y auditores dejen el Excel
-          frágil y el software legacy: cada hecho fiscal entra una vez como
-          fuente única de verdad y el motor versionado calcula, numera sin
-          huecos y congela cierres con trazabilidad total.
+          Para que cierres el mes tranquilo: sin cifras que no cuadran, sin
+          números de comprobante repetidos o saltados, sin miedo a que un
+          error de dedo te cueste una multa. Todo queda guardado, ordenado y
+          con su explicación.
         </p>
         <p>
           <strong className="text-[#120c27]">¿Para qué sirve?</strong> Sirve
-          para importar o registrar documentos, emitir comprobantes
-          inmutables, generar libros y resumen reproducibles, cerrar períodos
-          y responder “¿de dónde salió esta cifra?” en ≤3 clics.
+          para trabajar menos y con más confianza: subes o registras tus
+          documentos, emites tus comprobantes con un clic, descargas tus
+          libros y, si alguien pregunta “¿de dónde salió este número?”,
+          llegas al documento original en segundos.
         </p>
       </div>
-      <p className="mt-4 max-w-2xl text-sm text-periwinkle-500">
-        Guía ordenada para el usuario final: se registra una sola vez en{" "}
-        <strong>Registrar</strong>, el sistema deriva comprobantes, libros y
-        cierres. Vocabulario según glosario fiscal (documento fiscal, base
-        imponible, comprobante, período fiscal).
-      </p>
       <div className="mt-8 space-y-6">
         {DOC_SECTIONS.map((s) => (
           <section
@@ -64,12 +78,18 @@ export default async function DocsPage() {
                   className="rounded-md border border-periwinkle-100 px-4 py-3"
                 >
                   {p.available ? (
-                    <Link
-                      href={p.href}
-                      className="text-sm font-semibold text-[#352574] hover:underline"
-                    >
-                      {p.title} →
-                    </Link>
+                    <span className="flex flex-wrap items-center justify-between gap-2">
+                      <Link
+                        href={p.href}
+                        className="text-sm font-semibold text-[#352574] hover:underline"
+                      >
+                        {p.title} →
+                      </Link>
+                      {(() => {
+                        const proc = FLOWS_BY_HREF[p.href];
+                        return proc ? <FlowButton process={proc} /> : null;
+                      })()}
+                    </span>
                   ) : (
                     <p className="text-sm font-semibold text-periwinkle-400">
                       {p.title} · pronto

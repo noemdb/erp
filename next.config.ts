@@ -17,6 +17,13 @@ const nextConfig: NextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         ],
       },
+      {
+        // Diagramas interactivos de /docs embebidos en iframe mismo-origen.
+        // Va DESPUÉS de la regla global para prevalecer sobre DENY.
+        // SAMEORIGIN mantiene la protección anti-clickjacking externa.
+        source: "/docs/flujos/:path*",
+        headers: [{ key: "X-Frame-Options", value: "SAMEORIGIN" }],
+      },
     ];
   },
 };
