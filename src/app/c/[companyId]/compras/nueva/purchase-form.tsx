@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -154,11 +155,19 @@ export function PurchaseForm({ companyId, documents, suppliers }: { companyId: s
     <form onSubmit={onSubmit}>
       <div className="grid gap-4">
         <Card className="rounded-lg">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base tracking-tight">Proveedor</CardTitle>
-            <CardDescription>
-              Si el RIF no existe, se crea el tercero con estos datos.
-            </CardDescription>
+          <CardHeader className="flex-row items-start justify-between gap-3 space-y-0 pb-3">
+            <div className="space-y-1.5">
+              <CardTitle className="text-base tracking-tight">Proveedor</CardTitle>
+              <CardDescription>
+                Si el RIF no existe, se crea el tercero con estos datos.
+              </CardDescription>
+            </div>
+            <CardAction>
+              <Button type="button" variant="outline" size="sm" onClick={() => { setQuery(""); setCatalogOpen(true); }} className="shrink-0">
+                <ManageSearch className="h-4 w-4" aria-hidden />
+                Buscar en registrados
+              </Button>
+            </CardAction>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
@@ -168,12 +177,6 @@ export function PurchaseForm({ companyId, documents, suppliers }: { companyId: s
             <div className="space-y-1.5">
               <label htmlFor="partyRazon" className={labelCls}>Razón social</label>
               <Input name="partyRazon" value={partyRazon} onChange={(e) => setPartyRazon(e.target.value)} required maxLength={200} autoComplete="off" />
-            </div>
-            <div className="sm:col-span-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => { setQuery(""); setCatalogOpen(true); }}>
-                <ManageSearch className="h-4 w-4" aria-hidden />
-                Buscar en registrados
-              </Button>
             </div>
           </CardContent>
         </Card>

@@ -417,6 +417,32 @@ export async function listIslr(ctx: Ctx) {
   return withTenant(ctx, (tx) => tx.select().from(islrWithholdings).where(eq(islrWithholdings.companyId, ctx.companyId)).limit(200));
 }
 
+/** Bandeja enriquecida: beneficiario + concepto por comprobante, en bloque (sin N+1). */
+export async function listIslrBandeja(ctx: Ctx) {
+  return withTenant(ctx, async (tx) => {
+    const rows = await tx.select().from(islrWithholdings).where(eq(islrWithholdings.companyId, ctx.companyId)).limit(200);
+    const partyIds = [...new Set(rows.map((r) => r.beneficiaryId))];
+    const conceptIds = [...new Set(rows.map((r) => r.conceptId).filter((c): c is string => !!c))];
+    const [pty, con] = await Promise.all([
+      partyIds.length > 0
+        ? tx.select().from(parties).where(inArray(parties.id, partyIds))
+        : Promise.resolve([]),
+      conceptIds.length > 0
+        ? tx.select().from(withholdingConcepts).where(inArray(withholdingConcepts.id, conceptIds))
+        : Promise.resolve([]),
+    ]);
+    const ptyMap = new Map(pty.map((p) => [p.id, p]));
+    const conMap = new Map(con.map((c) => [c.id, c]));
+    return rows.map((r) => ({
+      ...r,
+      beneficiarioRif: ptyMap.get(r.beneficiaryId)?.rifOriginal ?? "—",
+      beneficiarioRazon: ptyMap.get(r.beneficiaryId)?.razonSocial ?? "—",
+      conceptoCodigo: conMap.get(r.conceptId ?? "")?.codigo ?? "—",
+      conceptoNombre: conMap.get(r.conceptId ?? "")?.nombre ?? "—",
+    }));
+  });
+}
+
 export async function listConcepts(ctx: Ctx) {
   return withTenant(ctx, async (tx) => {
     const all = await tx.select().from(withholdingConcepts).where(eq(withholdingConcepts.status, "active")).limit(100);

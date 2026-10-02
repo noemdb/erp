@@ -295,9 +295,28 @@ export async function listPaymentEvents(ctx: Ctx) {
 export async function listOpenPurchases(ctx: Ctx) {
   return withTenant(ctx, (tx) =>
     tx
-      .select({ id: purchaseDocuments.id, docNumber: purchaseDocuments.docNumber, total: purchaseDocuments.total })
+      .select({ id: purchaseDocuments.id, docNumber: purchaseDocuments.docNumber, total: purchaseDocuments.total, status: purchaseDocuments.status, partyId: purchaseDocuments.partyId })
       .from(purchaseDocuments)
       .where(eq(purchaseDocuments.companyId, ctx.companyId))
       .limit(200),
   );
+}
+
+/** Detalle drill-down: evento + beneficiario + asignaciones con su compra. */
+export async function getSettlementEventDetail(ctx: Ctx, eventId: string) {
+  return withTenant(ctx, async (tx) => {
+    const [event] = await tx.select().from(settlementEvents).where(eq(settlementEvents.id, eventId)).limit(1);
+    if (!event || event.companyId !== ctx.companyId) return null;
+    const [party] = await tx.select().from(parties).where(eq(parties.id, event.partyId)).limit(1);
+    const allocations = await tx
+      .select()
+      .from(settlementAllocations)
+      .where(eq(settlementAllocations.eventId, eventId));
+    const out = [];
+    for (const a of allocations) {
+      const [doc] = await tx.select({ id: purchaseDocuments.id, docNumber: purchaseDocuments.docNumber, total: purchaseDocuments.total }).from(purchaseDocuments).where(eq(purchaseDocuments.id, a.purchaseDocumentId)).limit(1);
+      out.push({ ...a, docNumber: doc?.docNumber ?? "—", docTotal: doc?.total ?? "0", docId: doc?.id ?? null });
+    }
+    return { event, party: party ?? null, allocations: out };
+  });
 }
