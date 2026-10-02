@@ -13,10 +13,14 @@ export async function assertDbRole(): Promise<{ user: string }> {
     throw new Error("DB_LEAST_PRIVILEGE=false en producción: arranque denegado.");
   }
   if (!least) return { user: "(sin verificar: bandera inactiva)" };
-  const rows = (await db.execute(sql`
-    SELECT current_user AS user, rolsuper, rolbypassrls,
+  const raw = (await db.execute(sql`
+    SELECT current_user AS user, r.rolsuper, r.rolbypassrls,
       EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tableowner = current_user) AS owns_tables
-  `)) as unknown as { user: string; rolsuper: boolean; rolbypassrls: boolean; owns_tables: boolean }[];
+    FROM pg_roles r WHERE r.rolname = current_user
+  `)) as unknown as
+    | { user: string; rolsuper: boolean; rolbypassrls: boolean; owns_tables: boolean }[]
+    | { rows: { user: string; rolsuper: boolean; rolbypassrls: boolean; owns_tables: boolean }[] };
+  const rows = Array.isArray(raw) ? raw : raw.rows;
   const r = rows[0]!;
   if (r.user !== "app_runtime" || r.rolsuper || r.rolbypassrls || r.owns_tables) {
     throw new Error(`Rol runtime inválido: user=${r.user} super=${r.rolsuper} bypassrls=${r.rolbypassrls} owns=${r.owns_tables}.`);
