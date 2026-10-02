@@ -478,7 +478,7 @@ Flujo asistido: el admin genera enlace de un solo uso (token ≥256 bits, solo h
 
 ---
 
-## ADR-017 — Gráficos con ApexCharts
+## ADR-028 — Gráficos con ApexCharts
 **Fecha:** 2026-10-01
 **Estado:** Aceptada
 

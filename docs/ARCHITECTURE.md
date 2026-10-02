@@ -26,7 +26,7 @@ Cuatro propiedades que la arquitectura debe garantizar (en orden de prioridad an
 | Jobs en segundo plano | `pg-boss` (cola sobre PostgreSQL) | Sin Redis; suficiente para 100–200 docs/mes (ADR-008) |
 | Validación | Zod (cliente + **servidor**) | Esquemas compartidos; el servidor es la autoridad |
 | Aritmética monetaria | `decimal.js` | Nunca `number`/`float` para dinero (ADR-003) |
-| PDF | HTML/CSS → PDF server-side (Playwright/Chromium en el worker) ⏳ | Fidelidad a formatos del cliente; spike en F1/F5 (ADR-009) |
+| PDF | HTML/CSS → PDF server-side (Chromium headless en el worker) | Fidelidad a formatos del cliente; verificado en spike F1/F5 (ADR-026 cierra ADR-009) |
 | Excel | `exceljs` rellenando la plantilla original | Conserva formato del cliente (ADR-009) |
 | Almacenamiento de archivos | Sistema de archivos privado o S3-compatible ⏳ | CSV originales, soportes, PDFs/Excel emitidos; URLs firmadas |
 | Hosting / Deploy | Sin Docker: Postgres gestionado (Neon) + app/worker como procesos directos (VPS o plataforma Node) | Decisión 2026-09-30 (ADR-015). Sin dependencia realtime externa v1 |
@@ -262,4 +262,4 @@ Proxy (Caddy/Nginx, TLS) → app (Next.js) ┐
 | Motor de PDF (Chromium vs. alternativa) | Imagen del worker y fidelidad de formatos | ADR-009 (spike) |
 
 ---
-Ver también: `README.md`, `PROJECT.md`, `DOMAIN.md` (idioma ubicuo), `DATABASE.md` (schema), `API.md` (contrato), `SECURITY.md`, `DECISIONS.md` (ADR-001–021; 018–020 propuestas), `TODO.md`, `CHANGELOG.md`.
+Ver también: `README.md`, `PROJECT.md`, `DOMAIN.md` (idioma ubicuo), `DATABASE.md` (schema), `API.md` (contrato), `SECURITY.md`, `DECISIONS.md` (ADR-001–028), `TODO.md`, `CHANGELOG.md`.

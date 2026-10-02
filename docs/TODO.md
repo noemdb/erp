@@ -15,9 +15,10 @@
 | `API.md` | ✅ | Contrato actualizado; varias operaciones siguen pendientes |
 | `SECURITY.md` | ✅ | Regenerado RBAC rol×empresa |
 | `CONVENTIONS.md` | ✅ | Regenerado |
-| `DECISIONS.md` | ✅ | ADR-001–021 (013/014 bloqueados; 018–020 propuestos; 021 control técnico G2) |
+| `DECISIONS.md` | ✅ | ADR-001–028 (013/014 bloqueados; 018–020 propuestos; 021/022/023/024/025/026/027/028 aceptados) |
 | `PROJECT.md` | ✅ | Elevator pitch, alcance y métricas definidos |
 | Cuestionario PDF vs G1–G12 | ✅ | Contrastado, ver ROADMAP §3/§11 |
+| `anexos/` (matriz generada, RDF, diferimiento, roles, bitácora) | ✅ parcial | Plantillas e infra listas; falta matriz v1 + dorados firmados |
 
 ## Plan por fases
 
