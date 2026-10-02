@@ -142,3 +142,26 @@ export async function getSalesBook(ctx: Ctx, periodId?: string): Promise<SalesBo
     return out.sort((a, b) => (a.fechaFiscal < b.fechaFiscal ? -1 : 1));
   });
 }
+
+/** Documentos de venta para selector de afectada (NC/ND requieren afectado válido). */
+export async function listSaleDocs(ctx: Ctx) {
+  return withTenant(ctx, async (tx) => {
+    const docs = await tx
+      .select({
+        id: salesDocuments.id,
+        kind: salesDocuments.kind,
+        docNumber: salesDocuments.docNumber,
+        total: salesDocuments.total,
+        partyId: salesDocuments.partyId,
+      })
+      .from(salesDocuments)
+      .where(eq(salesDocuments.companyId, ctx.companyId))
+      .limit(200);
+    const out = [];
+    for (const d of docs) {
+      const [p] = await tx.select().from(parties).where(eq(parties.id, d.partyId)).limit(1);
+      out.push({ ...d, rif: p?.rifOriginal ?? "", razonSocial: p?.razonSocial ?? "" });
+    }
+    return out;
+  });
+}
