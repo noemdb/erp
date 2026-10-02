@@ -152,28 +152,26 @@ export default async function RetencionesIslrPage({ params }: { params: Promise<
         {/* Criterio G2 */}
         <section className="mt-8" aria-label="Criterio G2 por empresa">
           <Reveal>
-            <Card className="overflow-hidden rounded-lg">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base tracking-tight">
-                  <Settings className="h-4 w-4 text-periwinkle-500" aria-hidden />
-                  Criterio G2 por empresa
-                </CardTitle>
-                <CardDescription>
-                  {canManage
-                    ? "Solo el contador lo cambia, con motivo auditado. Configurarlo no equivale a aprobación fiscal firmada."
-                    : `Tu rol (${companyContext.role}) es de solo lectura aquí.`}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {canManage ? (
-                  <AbonoCriterionForm companyId={companyId} criterion={criterion} />
-                ) : (
+            {canManage ? (
+              <AbonoCriterionForm companyId={companyId} criterion={criterion} />
+            ) : (
+              <Card className="overflow-hidden rounded-lg">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base tracking-tight">
+                    <Settings className="h-4 w-4 text-periwinkle-500" aria-hidden />
+                    Criterio G2 por empresa
+                  </CardTitle>
+                  <CardDescription>
+                    {`Tu rol (${companyContext.role}) es de solo lectura aquí.`}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
                   <p className="text-sm text-periwinkle-700">
                     Actual: <Badge variant={crit.variant}>{crit.label}</Badge>
                   </p>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </Reveal>
         </section>
 
