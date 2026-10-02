@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getSessionUser } from "@/modules/identity/session";
 import { authorize } from "@/modules/tenancy/authorize";
-import { sendToReview, returnToOpen, closePeriod, reopenPeriod } from "./service";
+import { sendToReview, returnToOpen, closePeriod, reopenPeriod, createPeriod } from "./service";
 
 type Ctx = { companyId: string; userId: string };
 
@@ -48,5 +48,19 @@ export async function reopenPeriodAction(companyId: string, periodId: string, re
   if (!ctx) return { ok: false as const, error: { code: "FORBIDDEN", message: "Solo contador." } };
   const res = await reopenPeriod(ctx, periodId, reason);
   if (res.ok) revalidate(companyId, periodId);
+  return res;
+}
+
+export async function createPeriodAction(
+  companyId: string,
+  input: { kind: "monthly" | "biweekly"; year: number; month: number; half?: "Q1" | "Q2" },
+) {
+  const ctx = await contador(companyId);
+  if (!ctx) return { ok: false as const, error: { code: "FORBIDDEN", message: "Solo contador." } };
+  const res = await createPeriod(ctx, input);
+  if (res.ok) {
+    revalidatePath(`/c/${companyId}/periodos`);
+    revalidate(companyId, res.id);
+  }
   return res;
 }

@@ -1,5 +1,21 @@
 # CHANGELOG docs/
 
+- 2026-10-02: Bitácora con beautiful-ui: `/c/[companyId]/auditoria` con AppHeader+hero+KPIs, filtros entidad/acción/ID/rango, línea de tiempo por compra (origen lote/fila), tabla con Badge y CSV con mismos filtros + anti-inyección + columnas actor/tx. `listAuditEvents` acepta `action/from/to`; `audit.read` para admin/administrativo/contador (auditor ya lo tenía).
+
+- 2026-10-02: Plazos con beautiful-ui: tablero con KPIs, comprobantes enlazados al detalle, obligaciones y feriados con formularios validados + toasts, gating contador. `deadlines/labels` ES.
+
+- 2026-10-02: Configuración con beautiful-ui: perfil fiscal empresa (`updateFiscalProfile` admin + audit + guard period_kind, verificado), modo ventas G7 y resumen criterio G2 con enlace. Acción documentada en API.
+
+- 2026-10-02: Seeder `seed:company-rules` (matriz-reglas-v1): asegura conceptos ISLR, activa IVA 75 % art. 4 Providencia SNAT/2025/000054 vigente 01-08-2025 vía workflow borrador→aprobación→activación (idempotente, auditado), deja IVA 100 % art. 5 en borrador sin activar (condicional, requiere modelado) y no siembra tasas ISLR (bloqueado ADR-019). Ejecutado en Empresa Demo; ver en `/c/[companyId]/reglas`.
+
+- 2026-10-02: Reglas con beautiful-ui: lista con conceptos/%/vigencia/KPIs, borrador (tipo↔concepto/base, vista % en vivo, diálogo nuevo concepto ISLR) y detalle (ficha, flujo con toasts, bitácora). `rules/labels` ES compartidas.
+
+- 2026-10-02: Plantilla CSV descargable por tipo (`GET imports/template?kind=`, diálogo junto a Subir CSV) con columnas del validador + fila ejemplo.
+
+- 2026-10-02: Terceros con beautiful-ui: `/terceros/nuevo` (AppHeader+hero+Card, RIF con vista normalizada, perfil fiscal opcional, toast, gating `docs.create`) y `/terceros/[ID]` (ficha RIF dual, edición base, historial de vigencia, bitácora). Nuevos primitivos `ui/input` y `ui/avatar` estilo shadcn.
+
+- 2026-10-02: Registro manual de períodos fiscales en `/c/[companyId]/periodos` (solo contador): `createPeriod` mensual/quincenal idempotente + `createPeriodAction` + formulario + audit. Auto-creación al registrar se mantiene.
+
 - 2026-10-02: Resuelve 5 inconsistencias docs: ARCHITECTURE PDF cierra a ADR-026, DECISIONS renumera ApexCharts a ADR-028, DATABASE ISLR alinea con ADR-021, README/TODO actualizan índice ADR-001–028 + fila anexos, CONVENTIONS limpia fila vacía.
 
 - 2026-10-02: Catálogo de proveedores en `/compras/nueva` (Modal amplio con buscador; autocompleta RIF/razón; inactivos deshabilitados).

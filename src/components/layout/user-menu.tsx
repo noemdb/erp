@@ -116,6 +116,14 @@ export function UserMenu({
             )}
             <Link
               role="menuitem"
+              href="/docs"
+              onClick={() => setOpen(false)}
+              className="block rounded-md px-3 py-2 text-sm text-periwinkle-700 transition-colors hover:bg-periwinkle-100 hover:text-[#120c27]"
+            >
+              Documentación
+            </Link>
+            <Link
+              role="menuitem"
               href="/dashboard"
               onClick={() => setOpen(false)}
               className="block rounded-md px-3 py-2 text-sm text-periwinkle-700 transition-colors hover:bg-periwinkle-100 hover:text-[#120c27]"

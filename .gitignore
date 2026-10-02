@@ -98,3 +98,7 @@ Thumbs.db
 /migration-report
 /acceptance/test-results/vitest.json
 /storage
+
+
+#locales
+/context
