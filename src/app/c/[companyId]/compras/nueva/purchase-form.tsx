@@ -392,6 +392,67 @@ export function PurchaseForm({ companyId, documents, suppliers }: { companyId: s
           </CardContent>
         </Card>
       </div>
+
+      <Modal open={catalogOpen} onClose={() => setCatalogOpen(false)} label="Catálogo de proveedores" wide>
+        <h2 className="text-base font-bold tracking-tight">Proveedores registrados</h2>
+        <p className="mt-1 text-sm text-periwinkle-500">
+          Elige uno para autocompletar RIF y razón social. Si no existe, ciérralo y escríbelos: se crea al guardar.
+        </p>
+        <div className="mt-3">
+          <label htmlFor="supplier-query" className={labelCls}>Buscar por RIF o razón</label>
+          <Input
+            id="supplier-query"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="J-… o nombre…"
+            autoComplete="off"
+          />
+        </div>
+        <div className="mt-3 max-h-[50vh] overflow-x-auto overflow-y-auto">
+          <table className="w-full min-w-[36rem] text-sm">
+            <thead>
+              <tr className="border-y border-periwinkle-200 bg-periwinkle-50/70 text-left text-[11px] font-semibold uppercase tracking-wider text-periwinkle-500">
+                <th scope="col" className="px-4 py-3">RIF</th>
+                <th scope="col" className="px-4 py-3">Razón social</th>
+                <th scope="col" className="px-4 py-3">Estado</th>
+                <th scope="col" className="px-4 py-3"><span className="sr-only">Elegir</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {suppliers
+                .filter((s) => {
+                  const q = query.trim().toLowerCase();
+                  return q === "" || s.rif.toLowerCase().includes(q) || s.razonSocial.toLowerCase().includes(q);
+                })
+                .map((s) => (
+                  <tr key={s.rif} className="border-b border-periwinkle-100 last:border-0 hover:bg-periwinkle-50/60">
+                    <td className="whitespace-nowrap px-4 py-3 font-mono">{s.rif}</td>
+                    <td className="max-w-64 truncate px-4 py-3" title={s.razonSocial}>{s.razonSocial}</td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <Badge variant={s.status === "active" ? "success" : "muted"} className="rounded-md">
+                        {s.status === "active" ? "Activo" : s.status}
+                      </Badge>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-right">
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={s.status !== "active"}
+                        onClick={() => {
+                          setPartyRif(s.rif);
+                          setPartyRazon(s.razonSocial);
+                          setCatalogOpen(false);
+                        }}
+                      >
+                        Elegir
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </Modal>
     </form>
   );
 }
