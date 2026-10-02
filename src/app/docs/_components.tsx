@@ -8,7 +8,8 @@ import { redirect } from "next/navigation";
 import { getSessionUser, listMemberships } from "@/modules/identity/session";
 import { AppHeader, PageFooter } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
-import { DOC_SECTIONS, type DocSection } from "./content";
+import { type DocSection } from "./content";
+import { DocsSidebar } from "./_sidebar";
 
 function StatusBadge({ status }: { status: DocSection["status"] }) {
   if (status === "disponible")
@@ -21,45 +22,6 @@ function StatusBadge({ status }: { status: DocSection["status"] }) {
     <Badge variant="warning" className="gap-1">
       <Schedule className="h-3 w-3" aria-hidden /> Próximamente
     </Badge>
-  );
-}
-
-function Sidebar({ current }: { current?: string }) {
-  return (
-    <nav aria-label="Documentación" className="space-y-6">
-      {DOC_SECTIONS.map((s) => (
-        <div key={s.id}>
-          <p className="text-xs font-semibold uppercase tracking-wider text-periwinkle-400">
-            {s.id}. {s.title}
-          </p>
-          <p className="mt-0.5 text-xs text-periwinkle-500">{s.tagline}</p>
-          <ul className="mt-2 space-y-1">
-            {s.pages.map((p) => {
-              const active = current === p.href;
-              const href = p.available ? p.href : "/docs";
-              return (
-                <li key={p.href}>
-                  <Link
-                    href={href}
-                    aria-current={active ? "page" : undefined}
-                    className={
-                      active
-                        ? "block rounded-md bg-[#120c27] px-3 py-2 text-sm font-medium text-white"
-                        : "block rounded-md px-3 py-2 text-sm text-periwinkle-700 transition-colors hover:bg-periwinkle-100 hover:text-[#120c27]"
-                    }
-                  >
-                    {p.title}
-                    {!p.available && (
-                      <span className="ml-2 text-xs opacity-60">(pronto)</span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
-    </nav>
   );
 }
 
@@ -84,7 +46,7 @@ export function DocsShell({
         user={user}
         companyCount={companyCount}
       />
-      <main className="mx-auto max-w-6xl px-6 pb-16">
+      <main className="mx-auto w-full px-6 pb-16">
         <div className="flex items-center gap-2 pt-8 text-sm text-periwinkle-500">
           <MenuBook className="h-4 w-4" aria-hidden />
           <Link href="/docs" className="hover:text-[#120c27]">
@@ -92,17 +54,9 @@ export function DocsShell({
           </Link>
           {breadcrumb}
         </div>
-        <div className="mt-4 grid gap-10 lg:grid-cols-[260px_1fr]">
-          <aside className="lg:sticky lg:top-24 lg:self-start">
-            <Sidebar current={current} />
-            <Link
-              href="/dashboard"
-              className="mt-6 inline-flex items-center gap-1.5 text-sm text-periwinkle-500 hover:text-[#120c27]"
-            >
-              <ArrowBack className="h-4 w-4" aria-hidden /> Volver al dashboard
-            </Link>
-          </aside>
-          <div className="min-w-0">{children}</div>
+        <div className="mt-4 flex flex-col gap-10 lg:flex-row">
+          <DocsSidebar current={current} />
+          <div className="min-w-0 flex-1">{children}</div>
         </div>
       </main>
       <PageFooter context="Documentación de usuario" />

@@ -12,6 +12,7 @@ export function Modal({
   onClose,
   label,
   wide = false,
+  dialogClassName,
   children,
 }: {
   open: boolean;
@@ -19,6 +20,8 @@ export function Modal({
   label: string;
   /** Duplica el ancho (formularios amplios como empresas). */
   wide?: boolean;
+  /** Override total del contenedor del diálogo (p.ej. cubrir ~90% pantalla). */
+  dialogClassName?: string;
   children: React.ReactNode;
 }) {
   useEffect(() => {
@@ -50,9 +53,10 @@ export function Modal({
         aria-modal="true"
         aria-label={label}
         className={
-          wide
+          dialogClassName ??
+          (wide
             ? "animate-fade-up relative max-h-[90vh] w-full max-w-[64rem] overflow-y-auto rounded-md border border-periwinkle-200 bg-white shadow-2xl"
-            : "animate-fade-up relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-md border border-periwinkle-200 bg-white shadow-2xl"
+            : "animate-fade-up relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-md border border-periwinkle-200 bg-white shadow-2xl")
         }
       >
         <div
