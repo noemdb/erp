@@ -98,7 +98,6 @@ Idioma: código y comentarios en inglés técnico, UI/errores usuario en es-VE. 
 |---|---|---|
 | 2026-09-30 | Prisma vs Drizzle y PG 18 vs 16 en docs | Unificar a Drizzle + PG ≥16, ADR-012 |
 | 2026-09-30 | Auditoría paso 06: TTL hardcodeado, sin logout UI, sin limpieza sesiones, sin rate limit en import | TTL por env + botón Salir + purga en login + límites 20/10 por min |
-| — | — | — |
 
 ---
 Ver también: `README.md`, `DOMAIN.md` (vocabulario), `DATABASE.md`, `API.md`, `SECURITY.md`, `TODO.md`, `CHANGELOG.md`.

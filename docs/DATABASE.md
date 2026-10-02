@@ -665,7 +665,7 @@ ALTER TABLE iva_withholding_lines
 
 Análogos, con:
 - `concept_id` en `islr_withholdings` (referencia a `withholding_concepts`).
-- `payment_id` en `islr_withholdings` (origen legacy; propiedad de dominio `settlementEventId`, solo eventos `payment` hasta validar G2).
+- `payment_id` en `islr_withholdings` (origen legacy; propiedad de dominio `settlementEventId`; admite `payment` siempre y `account_credit` solo bajo criterio explícito `account_credit_or_payment` según ADR-021, con asignación verificable).
 - `base_sujeta`, `porcentaje`, `sustraendo`, `retained_amount` en líneas.
 - Numeración `islr_withholding` con formato pendiente G9 (bloqueante para F4).
 
