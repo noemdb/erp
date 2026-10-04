@@ -20,7 +20,17 @@ export type FlowProcess =
   | "pagos"
   | "iva"
   | "islr"
-  | "recibidas";
+  | "recibidas"
+  | "terceros"
+  | "importaciones"
+  | "reglas"
+  | "configuracion"
+  | "plazos"
+  | "periodos"
+  | "libro-compras"
+  | "libro-ventas"
+  | "resumen-iva"
+  | "bitacora";
 
 const FLOWS: Record<FlowProcess, Flow> = {
   compras: {
@@ -87,6 +97,116 @@ const FLOWS: Record<FlowProcess, Flow> = {
       <>
         Anota lo que te retuvieron tus clientes y vincúlalo a tus ventas:
         aparece a tu favor en el resumen.
+      </>
+    ),
+  },
+  terceros: {
+    id: "terceros",
+    process: "Terceros",
+    subtitle: "Tus clientes y proveedores en orden",
+    footer: (
+      <>
+        Un mismo tercero te sirve para comprar y vender. Si está inactivo,
+        no acepta documentos nuevos pero conserva su historia.
+      </>
+    ),
+  },
+  importaciones: {
+    id: "importaciones",
+    process: "Importaciones",
+    subtitle: "Sube tu archivo sin miedo",
+    footer: (
+      <>
+        Revisa las filas rechazadas, corrígelas y confirma solo las válidas.
+        Subir dos veces el mismo archivo no duplica nada.
+      </>
+    ),
+  },
+  reglas: {
+    id: "reglas",
+    process: "Reglas",
+    subtitle: "Tus reglas claras (solo contador)",
+    footer: (
+      <>
+        Activar una regla nueva cierra la anterior sin borrar la historia.
+        Cada cálculo anota con qué regla se hizo.
+      </>
+    ),
+  },
+  configuracion: {
+    id: "configuracion",
+    process: "Configuración",
+    subtitle: "Tu empresa a punto",
+    footer: (
+      <>
+        El tipo de período no se cambia con meses cerrados. Todo cambio de
+        perfil queda anotado con antes y después.
+      </>
+    ),
+  },
+  plazos: {
+    id: "plazos",
+    process: "Plazos",
+    subtitle: "Tus fechas sin sustos",
+    footer: (
+      <>
+        Atiende los avisos a tiempo y anota cada entrega con su fecha:
+        así cierras el ciclo sin sanciones.
+      </>
+    ),
+  },
+  periodos: {
+    id: "periodos",
+    process: "Períodos",
+    subtitle: "Tu mes bajo control",
+    footer: (
+      <>
+        Cerrado no se toca: solo se reabre con motivo y responsable.
+        Todo queda anotado en la bitácora.
+      </>
+    ),
+  },
+  "libro-compras": {
+    id: "libro-compras",
+    process: "Libro de Compras",
+    subtitle: "Tu Libro de Compras solo",
+    footer: (
+      <>
+        El libro se arma solo con tus compras: nunca se escribe a mano.
+        Cada total te lleva a sus documentos.
+      </>
+    ),
+  },
+  "libro-ventas": {
+    id: "libro-ventas",
+    process: "Libro de Ventas",
+    subtitle: "Tu Libro de Ventas solo",
+    footer: (
+      <>
+        Factura o reporte Z según tu local, sin mezclar en el mismo mes.
+        Descárgalo congelado como respaldo.
+      </>
+    ),
+  },
+  "resumen-iva": {
+    id: "resumen-iva",
+    process: "Resumen IVA",
+    subtitle: "Tu resumen cuadra solo",
+    footer: (
+      <>
+        Es tu insumo para declarar, no la declaración. Se congela antes de
+        cerrar el mes.
+      </>
+    ),
+  },
+  bitacora: {
+    id: "bitacora",
+    process: "Bitácora",
+    subtitle: "Todo queda anotado",
+    footer: (
+      <>
+        Del total al documento en pocos clics. Nadie puede borrar ni
+        editar lo anotado.
       </>
     ),
   },

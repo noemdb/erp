@@ -12,6 +12,16 @@ const FLOWS_BY_HREF: Record<string, FlowProcess> = {
   "/docs/comprobantes/iva": "iva",
   "/docs/comprobantes/islr": "islr",
   "/docs/comprobantes/recibidas": "recibidas",
+  "/docs/datos-base/terceros": "terceros",
+  "/docs/datos-base/importaciones": "importaciones",
+  "/docs/datos-base/reglas": "reglas",
+  "/docs/datos-base/configuracion": "configuracion",
+  "/docs/datos-base/plazos": "plazos",
+  "/docs/control/periodos": "periodos",
+  "/docs/control/libro-compras": "libro-compras",
+  "/docs/control/libro-ventas": "libro-ventas",
+  "/docs/control/resumen-iva": "resumen-iva",
+  "/docs/control/bitacora": "bitacora",
 };
 
 export default async function DocsPage() {
