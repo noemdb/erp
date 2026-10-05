@@ -26,6 +26,7 @@ import {
   ROW_STATUS_VARIANT,
   SOURCE_ES,
   es,
+  motivoColumna,
 } from "@/modules/imports/labels";
 import { ValidateButton } from "./validate-button";
 import { ConfirmButton } from "./confirm-button";
@@ -59,6 +60,8 @@ export default async function LotePage({
   const { batch, rows } = data;
   const canImport = (await authorize(companyId, user.id, "imports.run")).ok;
   const sorted = [...rows].sort((a, b) => a.rowNumber - b.rowNumber);
+  const ignoredColumns =
+    (batch.mappingProfile as { ignoredColumns?: string[] } | null)?.ignoredColumns ?? [];
 
   const kpis = [
     { label: "Total", value: String(batch.totalRows) },
@@ -172,6 +175,22 @@ export default async function LotePage({
           </Reveal>
         </section>
 
+        {/* Columnas informativas no consumidas */}
+        {ignoredColumns.length > 0 && (
+          <section className="mt-8" aria-label="Columnas no consumidas">
+            <p className="flex items-start gap-2 rounded-md bg-periwinkle-50 px-3 py-2.5 text-sm text-periwinkle-500">
+              <InfoOutlined className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+              <span>
+                Columnas informativas no consumidas:{" "}
+                {ignoredColumns
+                  .map((h) => `${h} (${motivoColumna(h)})`)
+                  .join("; ")}
+                .
+              </span>
+            </p>
+          </section>
+        )}
+
         {/* Filas */}
         <section className="mt-8" aria-label="Filas del lote">
           <Reveal>
@@ -197,8 +216,8 @@ export default async function LotePage({
                       <thead>
                         <tr className="border-y border-periwinkle-200 bg-periwinkle-50/70 text-left text-[11px] font-semibold uppercase tracking-wider text-periwinkle-500">
                           <th scope="col" className="px-4 py-3 text-right">Fila</th>
-                          <th scope="col" className="px-4 py-3">Estado</th>
-                          <th scope="col" className="px-4 py-3">Errores</th>
+                           <th scope="col" className="px-4 py-3">Estado</th>
+                           <th scope="col" className="px-4 py-3">Errores / avisos</th>
                         </tr>
                       </thead>
                       <tbody>

@@ -56,3 +56,16 @@ export function es(map: Record<string, string>, key: string | null | undefined):
   if (!key) return "—";
   return map[key] ?? key;
 }
+
+/** Motivo por el que una columna legacy se registra como ignorada (validate.ts). */
+export const IGNORED_COLUMN_MOTIVO: Record<string, string> = {
+  alicuota_iva: "alícuota informativa: se deriva iva/base al confirmar",
+  aliquota_iva: "alícuota informativa: se deriva iva/base al confirmar",
+  alicuota: "alícuota informativa: se deriva iva/base al confirmar",
+  aliquota: "alícuota informativa: se deriva iva/base al confirmar",
+  fecha_recepcion: "fecha informativa: la fecha fiscal sale de fecha_documento",
+};
+
+export function motivoColumna(header: string): string {
+  return IGNORED_COLUMN_MOTIVO[header] ?? "columna informativa no consumida por la importación";
+}

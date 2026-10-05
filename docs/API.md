@@ -104,7 +104,9 @@ Común: `fecha_fiscal` determina `fiscal_period_id`, nunca se sustituye por fech
 
 ### `applyMappingProfile(batchId, mapping)` / `validateBatch(batchId)`
 - Parser: separador/encoding/BOM, coma/punto decimal, fechas múltiples, RIF con/sin guiones, nulos (`0`, vacío, `N/A`, `*`).
+- Alias legacy: `monto_iva→iva`, `total_factura→total`, `nombre_proveedor→razon` (además de los existentes `numero_factura`, `base_imponible`, etc.).
 - Clasifica por fila `pending|valid|warning|rejected|imported` en `import_rows (raw, normalized, errors)`. Detecta duplicados intra-archivo y contra BD, RIF inválido, total mismatch, tercero inexistente, salto Z.
+- Avisos explícitos (nada fiscal se ignora en silencio): `tipo_doc` distinto de factura se **rechaza** (NC/ND requieren documento afectado, van a registro manual); `abono_en_cuenta≠0` deja la fila en **warning** con aviso (el abono exige evento de liquidación manual G2); `alicuota_iva/fecha_recepcion` quedan en `mapping_profile.ignoredColumns` y se muestran en el detalle del lote (la alícuota se deriva `iva/base` al confirmar).
 - Retención importada vs recalculada: marca diferencia, nunca sobrescribe.
 
 ### `confirmImport(batchId, { onlyValid: true, clientRequestId })`

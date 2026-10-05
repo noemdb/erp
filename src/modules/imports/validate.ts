@@ -11,14 +11,27 @@ export type Ctx = { companyId: string; userId: string };
 const ALIAS: Record<string, string[]> = {
   fecha: ["fecha", "fecha_factura", "fecha_documento", "date", "emision"],
   rif: ["rif", "rif_proveedor", "rif_cliente", "documento"],
-  razon: ["razon_social", "razon", "nombre", "proveedor", "cliente"],
+  razon: ["razon_social", "razon", "nombre", "nombre_proveedor", "proveedor", "cliente"],
   factura: ["factura", "numero_factura", "n_factura", "documento_n"],
   control: ["control", "numero_control", "n_control"],
   base: ["base", "base_imponible", "subtotal", "gravable"],
-  iva: ["iva", "iva_causado", "impuesto"],
-  total: ["total", "monto_total", "monto"],
+  iva: ["iva", "iva_causado", "monto_iva", "impuesto"],
+  total: ["total", "total_factura", "monto_total", "monto"],
 };
 const REQUIRED = ["fecha", "rif", "factura", "control", "base", "iva", "total"] as const;
+
+/**
+ * Columnas legacy con significado fiscal que la importación NO consume.
+ * No se ignoran en silencio: `tipo_doc`/`abono` generan hallazgo por fila y
+ * `alicuota`/`fecha_recepcion` quedan registradas en
+ * `mapping_profile.ignoredColumns` para mostrarse en el detalle del lote.
+ */
+const EXTRA_ALIAS: Record<"tipoDoc" | "abono" | "alicuota" | "recepcion", string[]> = {
+  tipoDoc: ["tipo_doc", "tipo", "kind"],
+  abono: ["abono_en_cuenta", "abono"],
+  alicuota: ["alicuota_iva", "aliquota_iva", "alicuota", "aliquota"],
+  recepcion: ["fecha_recepcion"],
+};
 
 function colIndex(headers: string[], field: string): number {
   return headers.findIndex((h) => ALIAS[field]!.includes(h));
@@ -65,7 +78,7 @@ export async function validateBatch(ctx: Ctx, batchId: string) {
           status: r.status,
         });
       }
-      await tx.update(importBatches).set({ totalRows: zres.rows.length, validRows: valid, warningRows: warning, rejectedRows: rejected, status: "validated", mappingProfile: { headers: zparsed.headers, separator: "," } }).where(eq(importBatches.id, batchId));
+      await tx.update(importBatches).set({ totalRows: zres.rows.length, validRows: valid, warningRows: warning, rejectedRows: rejected, status: "validated", mappingProfile: { headers: zparsed.headers, separator: ",", ignoredColumns: [] } }).where(eq(importBatches.id, batchId));
       return { ok: true as const, total: zres.rows.length, valid, warning, rejected };
     }
 
@@ -78,6 +91,17 @@ export async function validateBatch(ctx: Ctx, batchId: string) {
     const missing = REQUIRED.filter((f) => colIndex(parsed.headers, f) < 0);
     if (missing.length > 0)
       return { ok: false as const, error: { code: "VALIDATION_ERROR", message: `Columnas faltantes: ${missing.join(", ")}.` } };
+
+    const extraIdx = (names: string[]) => parsed.headers.findIndex((h) => names.includes(h));
+    const tipoDocIdx = extraIdx(EXTRA_ALIAS.tipoDoc);
+    const abonoIdx = extraIdx(EXTRA_ALIAS.abono);
+    // Informativas: se registran en mapping_profile.ignoredColumns, no por fila.
+    const ignoredColumns = (["alicuota", "recepcion"] as const)
+      .map((k) => {
+        const i = extraIdx(EXTRA_ALIAS[k]);
+        return i >= 0 ? parsed.headers[i]! : null;
+      })
+      .filter((h): h is string => h !== null);
 
     await tx.delete(importRows).where(and(eq(importRows.batchId, batchId), ne(importRows.status, "imported")));
     const imported = new Set(
@@ -93,6 +117,7 @@ export async function validateBatch(ctx: Ctx, batchId: string) {
       if (imported.has(n)) continue; // ya importada: se conserva, no se revalida
       const get = (f: string) => (cells[colIndex(parsed.headers, f)] ?? "").trim();
       const errors: string[] = [];
+      const avisos: string[] = [];
       const fecha = normalizeDate(get("fecha"));
       if (!fecha) errors.push("fecha inválida");
       const rifRaw = get("rif");
@@ -118,6 +143,26 @@ export async function validateBatch(ctx: Ctx, batchId: string) {
         if (seen.has(key)) errors.push("duplicada en archivo");
         else seen.add(key);
 
+        // tipo_doc distinto de factura no puede importarse: NC/ND exigen
+        // documento afectado (MISSING_AFFECTED_DOCUMENT) y se registrarían
+        // como factura común si se dejaran pasar.
+        if (tipoDocIdx >= 0) {
+          const rawTipo = (cells[tipoDocIdx] ?? "").trim();
+          if (rawTipo && !["F", "FACTURA", "INVOICE"].includes(rawTipo.toUpperCase()))
+            errors.push(`tipo_doc '${rawTipo}' no soportado en importación (NC/ND requieren documento afectado; regístrela manual)`);
+        }
+        // Abono en cuenta ≠ 0: el documento se importa, pero el abono exige
+        // evento de liquidación manual (G2, createSettlementEvent + allocate).
+        if (abonoIdx >= 0) {
+          const rawAbono = (cells[abonoIdx] ?? "").trim();
+          if (rawAbono !== "") {
+            const abonoVal = normalizeDecimal(rawAbono);
+            if (abonoVal === null) errors.push("abono_en_cuenta inválido");
+            else if (!new Decimal(abonoVal).eq(0))
+              avisos.push(`abono_en_cuenta ${abonoVal}: requiere evento de liquidación manual (G2); el documento se importa sin el abono`);
+          }
+        }
+
         const [party] = await tx.select({ id: parties.id }).from(parties).where(and(eq(parties.companyId, ctx.companyId), eq(parties.rif, rif))).limit(1);
         if (!party) {
           terceroNuevo = true;
@@ -131,7 +176,7 @@ export async function validateBatch(ctx: Ctx, batchId: string) {
       if (errors.length > 0) {
         status = "rejected";
         rejected++;
-      } else if (terceroNuevo) {
+      } else if (terceroNuevo || avisos.length > 0) {
         status = "warning";
         warning++;
       } else valid++;
@@ -145,12 +190,14 @@ export async function validateBatch(ctx: Ctx, batchId: string) {
         companyId: ctx.companyId, batchId, rowNumber: n,
         raw: cells as unknown as Record<string, unknown>,
         normalized: normalized as unknown as Record<string, unknown>,
-        errors: errors.length ? errors : null,
+        errors: errors.length > 0 || avisos.length > 0
+          ? [...errors, ...avisos.map((a) => `aviso: ${a}`)]
+          : null,
         status,
       });
     }
 
-    await tx.update(importBatches).set({ totalRows: n, validRows: valid, warningRows: warning, rejectedRows: rejected, status: "validated", mappingProfile: { headers: parsed.headers, separator: parsed.separator } }).where(eq(importBatches.id, batchId));
+    await tx.update(importBatches).set({ totalRows: n, validRows: valid, warningRows: warning, rejectedRows: rejected, status: "validated", mappingProfile: { headers: parsed.headers, separator: parsed.separator, ignoredColumns } }).where(eq(importBatches.id, batchId));
     return { ok: true as const, total: n, valid, warning, rejected };
   });
 }

@@ -60,6 +60,7 @@
 | Staging + subida idempotente | ✅ | `source_files` íntegro + `sha256` dedup + tipo por contenido + UI subir/lotes/detalle + test. typecheck+lint+17 tests+build verdes |
 | Parser + validación + preview (F3-2) | ✅ | Separador/BOM, coma-punto, fechas DD/MM+ISO, nulos sin "0", alias columnas, valid/warning/rejected + contadores, UI preview + revalidar. 19 tests verdes. Perfiles de mapeo guardables quedan pendientes si el legacy lo exige |
 | Confirmación → documentos + Z + async (F3-3) | ✅ | Solo válidas+advertencias → docs (alícuota derivada documentada), trazabilidad archivo+fila+lote, revalidar conserva imported (idempotente), Z con máquina auto + salto=advertencia, rechazadas.csv, test confirma+reconfirma+Z. Cola `pg-boss` diferida (ADR-031); reintento por `render:retry` del host |
+| Alias legacy + avisos explícitos (F3-4) | ✅ | `monto_iva/total_factura/nombre_proveedor` resuelven a canónicas; `tipo_doc`≠F se rechaza (NC/ND a manual), `abono≠0` avisa (warning, evento G2 manual), `alicuota_iva/fecha_recepcion` en `mapping_profile.ignoredColumns` + nota UI. Test casoUso003 + suite imports 7/7 verde, typecheck+lint verdes |
 
 ### F4 — Retenciones IVA/ISLR (3 sem)
 | Bloque | Estado | Aceptación |

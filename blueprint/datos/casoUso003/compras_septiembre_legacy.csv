@@ -1,4 +1,4 @@
-fecha_documento,fecha_recepcion,rif_proveedor,nombre_proveedor,numero_factura,numero_control,base_imponible,aliquota_iva,monto_iva,total_factura,tipo_doc,abono_en_cuenta
+fecha_documento,fecha_recepcion,rif_proveedor,razon_social,numero_factura,numero_control,base_imponible,aliquota_iva,iva,total,tipo_doc,abono_en_cuenta
 2023-09-01,2023-09-02,J-12345678-9,INSUMOS CARACAS C.A.,001-00001,12345,1000.00,16,160.00,1160.00,F,0.00
 2023-09-02,2023-09-03,J-98765432-1,PAPELERIA CENTRAL,002-00045,98765,500.00,16,80.00,580.00,F,0.00
 2023-09-03,2023-09-04,J-12345678-9,INSUMOS CARACAS C.A.,001-00002,12346,1000.00,16,160.05,1160.05,F,0.00
