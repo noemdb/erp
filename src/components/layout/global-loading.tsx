@@ -43,7 +43,7 @@ function LoaderInner() {
     <div
       role="status"
       aria-live="polite"
-      className="loader-delayed fixed bottom-4 right-4 z-[100] flex items-center gap-2 rounded-md border border-periwinkle-200 bg-white px-3.5 py-2.5 text-sm text-periwinkle-700 shadow-xl shadow-periwinkle-200/60"
+      className="loader-delayed fixed bottom-24 right-6 z-[100] flex items-center gap-2 rounded-md border border-periwinkle-200 bg-white px-3.5 py-2.5 text-sm text-periwinkle-700 shadow-xl shadow-periwinkle-200/60"
     >
       <Spinner label="Cargando página" />
       Cargando…

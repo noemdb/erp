@@ -1,0 +1,4 @@
+nro_factura,fecha_documento,rif_proveedor,razon_social,tipo_doc,base_imponible,base_gravable,alicuota_iva,iva,retencion_iva_pct,retencion_islr_pct,concepto_islr,total
+001-0000123,2026-10-02,J-30876543-2,Quimica del Centro CA,FC,10000.00,10000.00,0.16,1600.00,0.75,0.00,,11600.00
+002-0000456,2026-10-05,J-30456789-1,Envases Plasticos SA,FC,5000.00,5000.00,0.16,800.00,0.75,0.00,,5800.00
+003-0000789,2026-10-08,J-30987654-3,Transporte Rapido CA,FC,2000.00,2000.00,0.16,320.00,0.75,0.05,SERVICIOS,2320.00

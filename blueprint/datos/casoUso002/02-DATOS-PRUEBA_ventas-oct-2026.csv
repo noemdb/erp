@@ -1,0 +1,4 @@
+nro_factura,fecha_documento,rif_cliente,razon_social,tipo_doc,base_imponible,alicuota_iva,iva,total,condicion_pago
+001-0001001,2026-10-03,J-31012345-6,Supermercados Unidos CA,FC,20000.00,0.16,3200.00,23200.00,CREDITO_30
+001-0001002,2026-10-07,J-31234567-8,Farmacias del Pueblo CA,FC,15000.00,0.16,2400.00,17400.00,CREDITO_30
+001-0001003,2026-10-10,J-31456789-0,Bodegon Central CA,FC,8000.00,0.16,1280.00,9280.00,CONTADO

@@ -1,0 +1,4 @@
+nro_comprobante,fecha_retencion,rif_agente,razon_social_agente,nro_factura_afectada,tipo_retencion,base,alicuota,monto_retenido,periodo_fiscal
+2026100001,2026-10-05,J-31012345-6,Supermercados Unidos CA,001-0001001,IVA,20000.00,0.16,2400.00,2026-10
+2026100002,2026-10-09,J-31234567-8,Farmacias del Pueblo CA,001-0001002,IVA,15000.00,0.16,1800.00,2026-10
+2026100003,2026-10-12,J-31012345-6,Supermercados Unidos CA,001-0001001,ISLR,20000.00,0.05,1000.00,2026-10

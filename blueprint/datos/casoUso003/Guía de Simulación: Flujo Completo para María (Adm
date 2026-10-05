@@ -1,0 +1,139 @@
+# 📘 Guía de Simulación: Flujo Completo para María (Administrativo)
+**Sistema:** ERP-TributarioLite | **Revisión:** 4ta (CUARTA_REV) | **Rol:** Administrativo
+
+Esta guía está diseñada para ejecutar la simulación completa del sistema desde la perspectiva exclusiva de **María (Administrativo)**. Aunque el sistema tiene 4 escenarios macro (Intake, Motor, Comprobantes, Cierre), el rol de María es el **dueño de la data de entrada**. Su flujo termina cuando la data está limpia, confirmada y handed-off al Contador (Carlos).
+
+---
+
+## 👤 Perfil de María (Administrativo)
+*   **Permisos:** `import:create`, `import:validate`, `import:edit_staging`, `import:confirm`.
+*   **Restricciones:** No puede emitir comprobantes, no puede modificar reglas del motor de impuestos, no puede cerrar períodos fiscales.
+*   **Objetivo en la simulación:** Demostrar que el sistema permite cargar datos legacy, detectar errores matemáticos/fiscales de forma automática, permitir correcciones con trazabilidad y bloquear la data para el contador.
+
+---
+
+##  Escenario 1: Intake y Staging (Carga de Datos Legacy)
+
+### 1. Contexto de Negocio
+Es la primera semana de octubre. María debe cargar las compras de septiembre del sistema legacy de "Empresa Demo, C.A." usando el archivo `compras_septiembre_legacy.csv` (10 filas).
+
+### 2. Acción en UI (Lo que hace María)
+1.  Ingresa al módulo **Importaciones** > **Lote Compras**.
+2.  Hace clic en **"Nuevo Lote"** y selecciona el archivo CSV.
+3.  El sistema sube el archivo y muestra el estado **"Procesando..."**.
+4.  María hace clic en el botón **"Validar filas"**.
+
+### 3. Ejecución Técnica (Backend)
+*   **Upload & Hash:** La *Server Action* recibe el archivo, calcula el `sha256` (ej. `a1b2c3d4...`) y verifica en la tabla `source_files`. Al no existir, crea el registro (`bytes: 1247`, `sha256: ...`).
+*   **Batch Creation:** Crea el `import_batch` con `kind = 'compras'`, `status = 'pending'`, `total_rows = 10`.
+*   **Parsing & Staging:** Parsea el CSV usando el schema Zod del servidor. Crea 10 registros en `import_rows`.
+*   **Motor de Pre-cálculo:** Dispara el motor de impuestos (puro, sin DB) para recalcular el IVA de cada fila (`base_imponible * alícuota`).
+*   **Detección de Divergencias:** Compara el `monto_iva` del CSV vs el calculado.
+    *   *Fila 3:* CSV `160.05` vs Motor `160.00` (Diferencia `0.05` > tolerancia `0.01`).
+    *   *Fila 4:* CSV `320.10` vs Motor `320.00` (Diferencia `0.10` > tolerancia `0.01`).
+*   **Actualización:** Cambia el `import_batch.status` a `ready_for_review`.
+
+### 4. Resultado Esperado en UI
+La pantalla se refresca y María ve el Dashboard del Lote:
+*   **TOTAL:** 10
+*   **VÁLIDAS:** 8 (Icono verde ✓)
+*   **ADVERTENCIAS:** 2 (Icono amarillo ⚠ - Filas 3 y 4)
+*   **RECHAZADAS:** 0
+*   *Nota:* La fila 5 muestra un ícono azul de "Abono en cuenta" (info only para María).
+
+---
+
+##  Escenario 2: Revisión y Resolución de Divergencias (Pre-Motor)
+
+### 1. Contexto de Negocio
+El sistema detectó que el CSV original tiene errores de redondeo o tipeo en el IVA. María debe resolver esto antes de que la data toque la contabilidad real.
+
+### 2. Acción en UI (Lo que hace María)
+1.  María filtra la tabla de "Filas del lote" por estado **"Advertencias"**.
+2.  Hace clic en la **Fila 3** para ver el detalle.
+3.  Se abre un *Modal de Divergencia*:
+    *   *Campo:* `monto_iva`
+    *   *Valor CSV:* `160.05`
+    *   *Valor Calculado:* `160.00`
+4.  María decide que el valor correcto es el calculado por el motor. Hace clic en **"Aceptar valor calculado"** (o edita manualmente a `160.00`).
+5.  Repite el proceso para la **Fila 4** (ajusta de `320.10` a `320.00`).
+
+### 3. Ejecución Técnica (Backend)
+*   **Edición en Staging:** María ejecuta la Server Action `updateImportRow`.
+*   **Validación de Permisos:** El middleware `authorize()` verifica que María tenga rol `administrativo` en `comp_001`.
+*   **Auditoría Inmediata:** El sistema actualiza `import_rows`:
+    *   `status` cambia a `adjusted_by_user`.
+    *   `monto_iva` se actualiza a `160.00`.
+    *   Se crea un registro en `audit_logs`: `{ action: 'row_adjusted', user: 'maria', field: 'monto_iva', old: '160.05', new: '160.00' }`.
+*   **Recálculo de Totales:** El batch actualiza sus contadores internos.
+
+### 4. Resultado Esperado en UI
+*   Las filas 3 y 4 cambian su ícono de amarillo (⚠) a azul (🔧 "Ajustada").
+*   El Dashboard del lote ahora muestra: **VÁLIDAS: 10 | ADVERTENCIAS: 0**.
+*   El botón **"Confirmar Lote"** (que estaba deshabilitado o en gris) se activa y cambia a color primario.
+
+---
+
+## 🎬 Escenario 3: Confirmación del Lote (Handoff al Contador)
+
+### 1. Contexto de Negocio
+La data está limpia. María debe "congelar" este lote de importación y pasarlo a la tabla de documentos fiscales para que Carlos (Contador) pueda aplicar retenciones y emitir comprobantes.
+
+### 2. Acción en UI (Lo que hace María)
+1.  María revisa el resumen final.
+2.  Hace clic en el botón **"Confirmar Lote y Enviar a Contador"**.
+3.  El sistema muestra un *Modal de Confirmación*: *"Al confirmar, este lote será inmutable y pasará a revisión contable. ¿Continuar?"*.
+4.  María hace clic en **"Sí, confirmar"**.
+
+### 3. Ejecución Técnica (Backend)
+*   **Transacción Atómica (TX):** Se inicia una transacción en Postgres.
+    1.  Actualiza `import_batches` set `status = 'confirmed'`, `confirmed_at = now()`.
+    2.  Calcula el `closure_hash` del lote (SHA256 de todas las filas confirmadas) para garantizar inmutabilidad.
+    3.  Inserta las 10 filas en la tabla `fiscal_docs` (compras) con `origin = 'import'`, `batch_id = <id>`, y `status = 'pending_review'` (para que Carlos las vea en su cola).
+    4.  Inserta el log final en `audit_logs`: `{ action: 'batch_confirmed', user: 'maria', closure_hash: 'xyz...' }`.
+*   **Commit:** Se confirma la TX.
+
+### 4. Resultado Esperado en UI
+*   El estado del lote cambia a **"Confirmado"** (Badge verde).
+*   Todos los botones de edición (**"Editar fila"**, **"Validar filas"**) desaparecen o se deshabilitan (Read-only mode).
+*   Aparece un *Toast* (notificación): *"Lote confirmado exitosamente. Enviado a la bandeja de revisión del Contador."*
+*   María es redirigida a la lista de lotes, donde este lote ya no aparece en "Pendientes".
+
+---
+
+##  Escenario 4: Trazabilidad y Auditoría (Solo Lectura)
+
+### 1. Contexto de Negocio
+El Lic. Vargas (Auditor) o la propia María necesitan verificar que el proceso de carga fue limpio y que las correcciones de la Fila 3 y 4 quedaron registradas.
+
+### 2. Acción en UI (Lo que hace María)
+1.  María entra al detalle del lote ya confirmado.
+2.  Hace clic en la pestaña **"Historial de Auditoría"** (o "Traza").
+
+### 3. Ejecución Técnica (Backend)
+*   Ejecuta un `SELECT * FROM audit_logs WHERE batch_id = ? ORDER BY created_at ASC`.
+*   La tabla `audit_logs` es append-only (no se puede borrar ni editar por diseño de DB).
+
+### 4. Resultado Esperado en UI
+María ve una tabla cronológica e inmutable con los siguientes registros:
+
+| Timestamp (UTC-4) | Usuario | Acción | Detalle |
+| :--- | :--- | :--- | :--- |
+| 2026-10-05 09:00:01 | maria | `batch_created` | Archivo subido (sha256: a1b2...) |
+| 2026-10-05 09:00:05 | system | `divergence_detected` | Filas 3, 4 exceden tolerancia 0.01 |
+| 2026-10-05 09:05:12 | maria | `row_adjusted` | Fila 3: `monto_iva` 160.05 → 160.00 |
+| 2026-10-05 09:06:45 | maria | `row_adjusted` | Fila 4: `monto_iva` 320.10 → 320.00 |
+| 2026-10-05 09:10:00 | maria | `batch_confirmed` | Lote cerrado. Hash: 8f4e... |
+
+---
+
+## ✅ Checklist de Éxito para María (Fin de su Simulación)
+
+Si al finalizar esta guía, María puede afirmar lo siguiente, la simulación de su rol fue exitosa y el sistema está listo para que Carlos (Contador) tome el relevo en los escenarios de Motor, Comprobantes y Cierre:
+
+- [ ] Pude subir un archivo CSV legacy sin errores de formato.
+- [ ] El sistema detectó automáticamente 2 errores matemáticos (divergencias) que yo no vi a simple vista.
+- [ ] Pude corregir esos errores directamente en la UI sin tener que rehacer el CSV desde cero.
+- [ ] El sistema dejó un rastro (log) de que yo cambié los valores originales.
+- [ ] Al confirmar el lote, el sistema me bloqueó la edición (inmutabilidad).
+- [ ] Entiendo que mi trabajo termina aquí, y que Carlos (Contador) ya tiene la data limpia en su bandeja para calcular retenciones y emitir comprobantes.
