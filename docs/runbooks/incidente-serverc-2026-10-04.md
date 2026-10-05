@@ -107,8 +107,8 @@ no se puede recoger).
 |---|---|---|---|---|
 | pendiente | Rotación servidor (§1) | huella vieja: … | vieja rechazada / registros revisados | |
 | pendiente | Rotación secretos (§3) | — | sesiones invalidadas, health+login OK | |
-| pendiente | Purge historial + force-push (§4) | `7c70dbe` purgado | `git log -- serverc` vacío en origin | |
-| pendiente | `.gitignore` + escáner (§5) | — | CI falla ante secreto nuevo | |
+| 2026-10-05 | Purge historial + force-push (§4) | `7c70dbe` purgado | `git log --all -- serverc` vacío + `git grep BEGIN OPENSSH PRIVATE KEY` vacío en historial | |
+| 2026-10-05 | `.gitignore` + escáner reactivado (§5, fin ADR-032) | `scan-secrets.mjs` bloquea `serverc*` + hook pre-commit instalado | `npm run secrets:scan` limpio, 0 secretos trackeados | |
 | pendiente | Borrado workspace `serverc*` | — | `git ls-files \| grep serverc` vacío | |
 | 2026-10-04 | Commit `--no-verify` con orden explícita del dueño (`d2fbe0b fixes`; staged verificado sin tocar `serverc`) | — | Excepción documentada; purge SEC-04 programado mañana | |
 | 2026-10-04 | Remoción bloqueo `serverc` del escáner (ADR-032, orden del dueño) | — | Commits desbloqueados; escáner/CI ciegos ante `serverc` hasta purge | |
