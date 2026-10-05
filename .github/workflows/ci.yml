@@ -7,9 +7,21 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
+      # REP-02/ADR-026: Chrome fijado al major de fixtures/pdf-baseline/chrome.version.
+      # Sin pin, el Chrome preinstalado del runner cambia solo y el baseline L4 deja de valer.
+      - uses: browser-actions/setup-chrome@v1
+        id: chrome
+        with: { chrome-version: '154' }
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run goldens:check
       - run: npm run secrets:scan
       - run: npm test
+        env: { CHROME_PATH: '${{ steps.chrome.outputs.chrome-path }}' }
+      # ACC-05: arnés E2E (requiere los mismos secretos de BD que `npm test` + E2E_PASSWORD).
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e:seed
+        env: { E2E_PASSWORD: '${{ secrets.E2E_PASSWORD }}' } # secrets:allow (referencia a secret de GitHub, no valor)
+      - run: npm run e2e
+        env: { E2E_PASSWORD: '${{ secrets.E2E_PASSWORD }}' } # secrets:allow (referencia a secret de GitHub, no valor)

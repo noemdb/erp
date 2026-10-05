@@ -25,8 +25,15 @@ next-env.d.ts
 *.db-journal
 prisma/*.db
 
-# ── env / secrets ─────────────────────────────────────────────
-# Ignora todos los .env reales, pero versiona el ejemplo
+# ── secrets: claves, identidades y material privado ───────────────────
+# (SEC-02/ADR-029: nada de esto se commitea jamás; el escáner CI+pre-commit lo exige)
+serverc*
+*.pem
+*.key
+id_*
+id_*.pub
+*.p12
+*.pfx
 .env
 .env.local
 .env.development
@@ -36,6 +43,11 @@ prisma/*.db
 .env.test
 .env.test.local
 !.env.example
+# volcados y datos reales (nunca al repo)
+*.sql.gz
+*.dump
+/dumps
+/datos-reales
 
 # ── vercel ────────────────────────────────────────────────────
 .vercel
@@ -74,7 +86,6 @@ pnpm-debug.log*
 .Trashes
 ehthumbs.db
 Thumbs.db
-*.pem
 
 # ── editor / ide ──────────────────────────────────────────────
 .vscode/*
@@ -94,6 +105,11 @@ Thumbs.db
 # Archivos de diagnóstico de Next que no deben versionarse
 .next/diagnostics/
 
+# ── playwright e2e (sesiones y reportes locales, nunca al repo) ──────
+e2e/.auth/
+test-results/
+playwright-report/
+playwright/.cache
 # ── evidencia local no versionable ─────────────────────────────
 /migration-report
 /acceptance/test-results/vitest.json

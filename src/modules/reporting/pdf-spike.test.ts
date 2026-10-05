@@ -18,10 +18,18 @@ async function extractText(pdf: Buffer): Promise<string> {
 }
 
 describe("spike PDF Chromium (2.0.3 §3)", () => {
-  it("navegador saludable y versión fijada", async () => {
+  it("navegador saludable y versión fijada (REP-02/ADR-026)", async () => {
     const h = await browserHealth();
     expect(h.ok).toBe(true);
     expect(h.version).toMatch(/Chrome\/\d+/);
+    // Pin por major: un cambio de major invalida el baseline L4 y exige
+    // re-aprobación (CI instala el major fijado en .github/workflows/ci.yml).
+    const pinned = readFileSync(join(BASE, "chrome.version"), "utf8").trim().split(".")[0];
+    const actual = /Chrome\/(\d+)/.exec(h.version ?? "")?.[1];
+    expect(
+      actual,
+      `Chrome major ${actual} ≠ fijado ${pinned}: actualiza fixtures/pdf-baseline/chrome.version y re-aprueba el baseline L4`,
+    ).toBe(pinned);
   }, 60000);
 
   it("L3: texto del PDF == texto del HTML (tildes, ñ, Bs.)", async () => {

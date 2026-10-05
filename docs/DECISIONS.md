@@ -421,6 +421,33 @@ Staging/prod activan con dos variables. RLS pasa a hacerse cumplir de verdad con
 
 ---
 
+## ADR-024 — Almacenamiento: UploadThing privado (fs en dev)
+**Fecha:** 2026-10-01
+**Estado:** Aceptada (decisión del cliente: proyecto privado en UploadThing, API key en `.env`)
+
+### Contexto
+Los binarios en PostgreSQL inflan backups/PITR. 2.0.2 pedía S3-compatible o fs.
+
+### Decisión
+Driver de almacenamiento con dos implementaciones: `uploadthing` (prod, proyecto privado, clave por contenido sha256, descarga por URL firmada de corta vida) y `fs` (dev, bajo `STORAGE_PATH`). La DB guarda solo metadatos (`attachments`). Migración de `source_files` en fase aparte con verificación sha256.
+
+### Consecuencias
+Depende de `UPLOADTHING_TOKEN` en prod; sin él, la subida falla explícito (fail-closed).
+
+---
+
+## ADR-025 — Recuperación solo asistida por admin
+**Fecha:** 2026-10-01
+**Estado:** Aceptada (decisión del cliente; sin SMTP)
+
+### Contexto
+Sin canal de entrega definido, el autoservicio por correo no es viable.
+
+### Decisión
+Flujo asistido: el admin genera enlace de un solo uso (token ≥256 bits, solo hash guardado, TTL corto), lo entrega por canal externo y el usuario fuerza cambio al entrar; al usarse se invalidan sesiones y tokens pendientes, con auditoría completa. Contador/Admin requieren segundo control. Break-glass por CLI documentado en runbook.
+
+---
+
 ## ADR-026 — PDF con Chromium headless (cierre ADR-009)
 **Fecha:** 2026-10-01
 **Estado:** Aceptada (spike verificado en este host)
@@ -451,33 +478,6 @@ Cambia el contrato ("fallo ⇒ rollback" vale para datos; fallo de render ⇒ re
 
 ---
 
-## ADR-024 — Almacenamiento: UploadThing privado (fs en dev)
-**Fecha:** 2026-10-01
-**Estado:** Aceptada (decisión del cliente: proyecto privado en UploadThing, API key en `.env`)
-
-### Contexto
-Los binarios en PostgreSQL inflan backups/PITR. 2.0.2 pedía S3-compatible o fs.
-
-### Decisión
-Driver de almacenamiento con dos implementaciones: `uploadthing` (prod, proyecto privado, clave por contenido sha256, descarga por URL firmada de corta vida) y `fs` (dev, bajo `STORAGE_PATH`). La DB guarda solo metadatos (`attachments`). Migración de `source_files` en fase aparte con verificación sha256.
-
-### Consecuencias
-Depende de `UPLOADTHING_TOKEN` en prod; sin él, la subida falla explícito (fail-closed).
-
----
-
-## ADR-025 — Recuperación solo asistida por admin
-**Fecha:** 2026-10-01
-**Estado:** Aceptada (decisión del cliente; sin SMTP)
-
-### Contexto
-Sin canal de entrega definido, el autoservicio por correo no es viable.
-
-### Decisión
-Flujo asistido: el admin genera enlace de un solo uso (token ≥256 bits, solo hash guardado, TTL corto), lo entrega por canal externo y el usuario fuerza cambio al entrar; al usarse se invalidan sesiones y tokens pendientes, con auditoría completa. Contador/Admin requieren segundo control. Break-glass por CLI documentado en runbook.
-
----
-
 ## ADR-028 — Gráficos con ApexCharts
 **Fecha:** 2026-10-01
 **Estado:** Aceptada
@@ -490,3 +490,122 @@ Usar `apexcharts + react-apexcharts` solo para gráficos, con wrapper cliente + 
 
 ### Consecuencias
 Dependencia solo de render cliente; el resto del front no cambia.
+
+---
+
+## ADR-029 — Incidente clave SSH `serverc` en historial + remoto: rotar, purgar, blindar
+**Fecha:** 2026-10-04
+**Estado:** Aceptada (incidente; ejecuta `docs/runbooks/incidente-serverc-2026-10-04.md`)
+
+### Contexto
+El ROADMAP-MAESTRO v1.0 (§1.2 H-1/H-2) diagnosticó `serverc`/`serverc.pub`
+como "presente en raíz, sin `.gitignore`, sin trackeo, sin commitear".
+Verificación del 2026-10-04: ambos archivos están trackeados
+(`git ls-files`), commiteados en `7c70dbe (2026-10-02)` y presentes en
+`origin/main` (`git@github.com:noemdb/erp.git`); `.gitignore` no los cubre
+(`git check-ignore` solo cubre `.env`). La clave se asume comprometida:
+convivió con workspace con agentes/copias/posible sincronización.
+
+### Alternativas consideradas
+| Opción | Pros | Contras |
+|---|---|---|
+| Solo borrar archivos del workspace | Rápido | No revoca acceso; la clave sigue en historial, remoto y clones — falso cierre |
+| Rotar en servidor sin purgar | Revoca acceso futuro | El material sigue recuperable del historial/remoto |
+| **Rotar + purgar historial + force-push coordinado + escáner (elegida)** | Cierra acceso y recoge el material distribuido controlable | Reescribe `main`, exige coordinar clones; no recoge copias fuera de control (por eso la rotación es lo primario) |
+
+### Decisión
+1. Rotar la clave en el servidor antes de purgar (par nuevo fuera del repo,
+   probar en segunda sesión, revocar huella vieja, revisar `auth.log`,
+   usuarios, cron, `authorized_keys`; indicio de uso ajeno ⇒ reconstruir
+   servidor y rotar todo lo que contenga).
+2. Rotar el resto de secretos como parte del incidente (SEC-03): DB
+   owner/`app_runtime`, `AUTH_SECRET`, `FILE_SIGNING_SECRET`, token de
+   almacenamiento, contraseñas de seed (base: `rotacion-secretos.md`).
+3. Purgar `serverc`/`serverc.pub` de todo el historial (`git filter-repo`
+   `--path serverc --path serverc.pub`) + force-push coordinado de ramas y
+   tags; verificar `git log --all -- serverc` vacío en origin y en clones
+   re-clonados.
+4. Blindaje: `.gitignore` (`serverc*`, `*.pem`, `*.key`, `id_*`, `.env*`
+   salvo ejemplo, volcados/datos reales) + escáner de secretos en pre-commit
+   y CI que falla ante secreto nuevo + escaneo de workspace e historial.
+   Rebanadas GIT-01 solo con orden explícita del dueño y escáner limpio.
+5. Registrar solo huellas/fechas/resultados, jamás el material privado.
+
+### Consecuencias
+Reescritura de `main`: todo clon re-clona tras el force-push. Si el repo
+es/era público o hay forks/mirrors fuera de control, la rotación (§1–§2)
+es la única mitigación real. Sin purge verificado + escáner activo no se
+cierra H0 ni entra dato real al sistema. Referencia operativa:
+`docs/runbooks/incidente-serverc-2026-10-04.md`.
+
+---
+
+## ADR-030 — Ratificación de ADR-001…012 y decisión de auth propio
+**Fecha:** 2026-10-04
+**Estado:** Aceptada (DOC-05; consolida sin editar el pasado)
+
+### Contexto
+Los ADR-001…012 seguían en "Propuesta" aunque su contenido está implementado
+y verificado (F1–F6, tests verdes, Neon dev). Además ADR-010 decía "Auth.js
+o Better Auth — elegir en F1" y la elección formal nunca se registró, cuando
+la realidad implementada es auth propio. Un "Propuesta" permanente normaliza
+la indefinición igual que un rojo tolerado normaliza los rojos (H-9).
+
+### Decisión
+1. Se ratifican como decisiones vigentes (implementadas, no propuestas):
+   ADR-001 (monolito), 002 (multitenancy+RLS), 004 (reglas como datos),
+   006 (inmutabilidad), 007 (staging), 010 (sesiones DB + rol×empresa, ver
+   punto 3), 011 (auditoría append-only), 012 (Drizzle).
+2. Parciales, con su parte fiscal pendiente: ADR-003 (dinero exacto sí;
+   tolerancia/CHECK provisional → ADR-014/G8) y ADR-005 (numeración sin
+   huecos sí; formato/reinicio ISLR → G9/ADR-018).
+3. Auth: se adopta **auth propio con sesiones en BD** (tabla `sessions`,
+   token sha256 + expiración, Argon2id, recuperación solo asistida ADR-025,
+   rate limit). Se cierra la ambigüedad "Auth.js o Better Auth": verificado
+   que no hay dependencia `next-auth`/`better-auth` en `src/`; la
+   implementación de referencia es `src/modules/identity/`.
+4. Siguen abiertos por dependencia fiscal y no se ratifican: ADR-013 (G4),
+   014 (G8), 018 (G9 series), 019 (catálogo ISLR), 020 (cuatro ojos).
+
+### Consecuencias
+Ningún cambio de código: es registro. `SECURITY.md` ("Auth.js o Better Auth
+(elegir F1)") debe leerse como auth propio a partir de este ADR. Futuros
+cambios van en ADR nuevo, no editando este.
+
+---
+
+## ADR-031 — Cola: se difiere `pg-boss`, ejecutor mínimo `render:retry`
+**Fecha:** 2026-10-04
+**Estado:** Aceptada (FUN-06; ADR-008 pasa a Diferida)
+
+### Contexto
+ADR-008 propuso `pg-boss` para imports grandes y render de reportes, pero la
+librería nunca se instaló: no hay worker ni cola real y el render pendiente
+solo se reintentaba por acción manual (botón). Con 100–200 docs/mes, instalar
+una cola es overkill operativo hoy; dejar el reintento solo manual es frágil
+mañana.
+
+### Alternativas consideradas
+| Opción | Pros | Contras |
+|---|---|---|
+| Instalar `pg-boss` ahora | Cola real, progreso, reintentos | Infra sin volumen que la justifique; esquema + worker + observabilidad |
+| **Ejecutor mínimo por planificador del host (elegida)** | Sin dependencias nuevas; idempotente; alerta de vencidos | Sin progreso en vivo; el host debe tener cron/systemd |
+| Solo botón manual | Nada que construir | Un render caído queda `pending` en silencio |
+
+### Decisión
+1. Diferir `pg-boss` (ADR-008 → **Diferida**, no eliminada).
+2. Comando `npm run render:retry` (`scripts/render-retry.ts`, con
+   `COMPANY_ID` o `--all` + `RETRY_USER_EMAIL` con permiso de emisión):
+   reintenta `listPendingRenders` vía `renderIvaPdf` (idempotente), sale 1 si
+   hay fallos y 2 con `ALERTA` si un `pending` supera `RENDER_STALE_MINUTES`
+   (defecto 30). El planificador del host lo ejecuta cada pocos minutos.
+3. `PGBOSS_SCHEMA` queda como variable **reservada** (ver `.env.example`);
+   no se crea esquema ni worker hasta que un gatillo lo exija.
+4. **Gatillos para instalar `pg-boss`:** importación > ~5.000 filas,
+   solicitud > ~10 s, o > 5 renders pendientes simultáneos de forma
+   recurrente. Al dispararse, ADR nuevo (no se edita este).
+
+### Consecuencias
+Sin cola real hasta v2 o gatillo. `ARCHITECTURE.md`/`API.md`/`SECURITY.md`
+que mencionan "worker pg-boss" se leen como diseño futuro, no capacidad
+actual.

@@ -8,9 +8,10 @@ import { cn } from "@/lib/utils";
 
 /**
  * Acción principal "Registrar compra" + resto de accesos en dropdown.
+ * Sin permiso de escritura (auditor/admin de solo lectura): solo "Ver resumen".
  * Escape/clic-fuera para cerrar, roles menu/menuitem.
  */
-export function QuickActions({ companyId }: { companyId: string }) {
+export function QuickActions({ companyId, canWrite = true }: { companyId: string; canWrite?: boolean }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -37,6 +38,18 @@ export function QuickActions({ companyId }: { companyId: string }) {
   }, [open ]);
 
   const base = `/c/${companyId}`;
+
+  if (!canWrite) {
+    return (
+      <Link
+        href={`${base}/reportes/resumen-iva`}
+        className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-periwinkle-200 bg-white px-4 py-2.5 text-sm font-medium text-periwinkle-700 shadow-sm transition-colors hover:bg-periwinkle-100 hover:text-[#120c27]"
+      >
+        Ver resumen IVA
+        <ArrowForward className="h-4 w-4" aria-hidden />
+      </Link>
+    );
+  }
   const items: [string, string][] = [
     ["Panel de empresa", base],
     ["Resumen IVA", `${base}/reportes/resumen-iva`],

@@ -1,12 +1,18 @@
 {
-  "fecha": "2026-10-01T19:29:05.339Z",
-  "archivos": 32,
-  "archivosOk": 32,
-  "testsPasados": 48,
-  "testsFallidos": 0,
+  "fecha": "2026-10-04T23:55:19.508Z",
+  "archivos": 47,
+  "archivosOk": 46,
+  "testsPasados": 77,
+  "testsFallidos": 1,
   "golden": [
     {
       "archivo": "src/modules/rules/workflow.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/tax-engine/calibrate.test.ts",
       "ok": true,
       "passed": 1,
       "failed": 0
@@ -40,7 +46,49 @@
   ],
   "detalle": [
     {
+      "archivo": "scripts/validate-goldens.test.ts",
+      "ok": true,
+      "passed": 5,
+      "failed": 0
+    },
+    {
+      "archivo": "src/db/catalog-invariant.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/db/guard.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/db/least-privilege.test.ts",
+      "ok": false,
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "archivo": "src/lib/anonymize.test.ts",
+      "ok": true,
+      "passed": 3,
+      "failed": 0
+    },
+    {
       "archivo": "src/lib/logger.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/lib/normalize-candidates.test.ts",
+      "ok": true,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/attachments/service.test.ts",
       "ok": true,
       "passed": 1,
       "failed": 0
@@ -76,6 +124,12 @@
       "failed": 0
     },
     {
+      "archivo": "src/modules/identity/recovery.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
       "archivo": "src/modules/imports/confirm.test.ts",
       "ok": true,
       "passed": 2,
@@ -91,6 +145,12 @@
       "archivo": "src/modules/imports/validate.test.ts",
       "ok": true,
       "passed": 2,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/imports/z-corpus.test.ts",
+      "ok": true,
+      "passed": 1,
       "failed": 0
     },
     {
@@ -118,6 +178,12 @@
       "failed": 0
     },
     {
+      "archivo": "src/modules/received/corpus.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
       "archivo": "src/modules/received/service.test.ts",
       "ok": true,
       "passed": 1,
@@ -138,11 +204,23 @@
     {
       "archivo": "src/modules/reporting/evidence.test.ts",
       "ok": true,
-      "passed": 2,
+      "passed": 6,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/reporting/pdf-spike.test.ts",
+      "ok": true,
+      "passed": 4,
       "failed": 0
     },
     {
       "archivo": "src/modules/reporting/summary.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/rules/catalog-guard.test.ts",
       "ok": true,
       "passed": 1,
       "failed": 0
@@ -167,6 +245,12 @@
     },
     {
       "archivo": "src/modules/shared/decimal.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/tax-engine/calibrate.test.ts",
       "ok": true,
       "passed": 1,
       "failed": 0
@@ -202,6 +286,12 @@
       "failed": 0
     },
     {
+      "archivo": "src/modules/withholdings/emission-ledger.test.ts",
+      "ok": true,
+      "passed": 2,
+      "failed": 0
+    },
+    {
       "archivo": "src/modules/withholdings/issue-islr.test.ts",
       "ok": true,
       "passed": 1,
@@ -211,6 +301,12 @@
       "archivo": "src/modules/withholdings/issue-iva.test.ts",
       "ok": true,
       "passed": 2,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/withholdings/render-job.test.ts",
+      "ok": true,
+      "passed": 1,
       "failed": 0
     },
     {

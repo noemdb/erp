@@ -3,6 +3,7 @@ import { eq, and } from "drizzle-orm";
 import { withTenant } from "@/modules/tenancy/with-tenant";
 import { record } from "@/modules/audit/record";
 import { withholdingRules, withholdingConcepts } from "@/db/schema";
+import { checkActivationGate, loadSignedScenarios } from "./activation-gate";
 
 export type Ctx = { companyId: string; userId: string };
 
@@ -62,6 +63,21 @@ async function transition(ctx: Ctx, id: string, from: string[], to: string, acti
     // Guardia de producción (2.0.2 ítem 1): lo sintético no se activa en producción.
     if (to === "active" && r.synthetic && process.env.NODE_ENV === "production")
       return { ok: false as const, error: { code: "FORBIDDEN", message: "Regla sintética: no activable en producción." } };
+    // ACC-03: lo no sintético solo activa si reproduce sus dorados firmados.
+    if (to === "active" && !r.synthetic) {
+      let scenarios;
+      try {
+        scenarios = loadSignedScenarios();
+      } catch (e) {
+        const code = (e as Error).message.startsWith("GATE_LOAD_ERROR") ? "GATE_LOAD_ERROR" : "GATE_FAILED";
+        return { ok: false as const, error: { code, message: (e as Error).message } };
+      }
+      const g = checkActivationGate(
+        { ruleKind: r.ruleKind as "iva" | "islr", porcentaje: r.porcentaje, sustraendo: r.sustraendo ?? "0", synthetic: false },
+        scenarios,
+      );
+      if (!g.ok) return { ok: false as const, error: { code: g.code, message: g.message } };
+    }
 
     if (to === "active") {
       // Cierra versiones activas solapadas: trunca vigencia + marca superseded.

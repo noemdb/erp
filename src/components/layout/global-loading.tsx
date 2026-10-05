@@ -6,7 +6,7 @@ import { Spinner } from "@/components/ui/progress";
 
 /**
  * Indicador global de carga para todas las páginas.
- * Abajo a la izquierda, con la palabra "Cargando…".
+ * Abajo a la derecha, con la palabra "Cargando…".
  * Se muestra al navegar entre rutas y se oculta al completarse
  * (la ruta actual iguala al destino). El retardo anti-parpadeo es CSS
  * (`.loader-delayed`), sin temporizadores de estado.
@@ -43,7 +43,7 @@ function LoaderInner() {
     <div
       role="status"
       aria-live="polite"
-      className="loader-delayed fixed bottom-4 left-4 z-[100] flex items-center gap-2 rounded-md border border-periwinkle-200 bg-white px-3.5 py-2.5 text-sm text-periwinkle-700 shadow-xl shadow-periwinkle-200/60"
+      className="loader-delayed fixed bottom-4 right-4 z-[100] flex items-center gap-2 rounded-md border border-periwinkle-200 bg-white px-3.5 py-2.5 text-sm text-periwinkle-700 shadow-xl shadow-periwinkle-200/60"
     >
       <Spinner label="Cargando página" />
       Cargando…

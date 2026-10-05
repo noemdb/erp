@@ -109,7 +109,7 @@ Común: `fecha_fiscal` determina `fiscal_period_id`, nunca se sustituye por fech
 
 ### `confirmImport(batchId, { onlyValid: true, clientRequestId })`
 - TX atómica: filas `valid (+warning si autorizado)` → documentos definitivos con `source_file_id + row_number + import_batch_id`. Actualiza contadores lote `total/valid/warning/rejected`. Estado `completed|partially_imported`.
-- Archivos grandes: encola job `pg-boss` con progreso. Re-subida mismo `sha256` no duplica.
+- Archivos grandes: reintento por planificador del host (`render:retry`, ADR-031); cola `pg-boss` diferida. Re-subida mismo `sha256` no duplica.
 - `GET /api/companies/[companyId]/imports/[batchId]/rejected.csv` descarga rechazadas para corrección.
 
 ### `GET /api/companies/[companyId]/imports/template?kind=` (Route Handler, descarga)

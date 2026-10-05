@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { renderPurchaseBookHtml, renderIvaCertificateHtml, TEMPLATE_VERSIONS } from "./render";
+import { renderPurchaseBookHtml, renderIvaCertificateHtml, renderSalesBookHtml, renderIslrCertificateHtml, TEMPLATE_VERSIONS } from "./render";
 import { compareWorkbooks, buildSampleWorkbook, normValue, canonicalRows, applyApprovals, sanitizeCell, formatReport, parseDecisions, buildBitacora, formatBitacora, bitacoraCsv, inspectGolden } from "./excel-compare";
 
 describe("evidencias 1.0.3 (infra; gate con golden real)", () => {
@@ -18,6 +18,29 @@ describe("evidencias 1.0.3 (infra; gate con golden real)", () => {
     expect(c.sha256).not.toBe(a.sha256);
     const cert = renderIvaCertificateHtml({ certificateNumber: "20260900000001", fechaEmision: "2026-09-20", agente: "A", beneficiario: "B", lines: [{ invoiceNumber: "F-1", controlNumber: "C-1", taxableBase: "100.00", vatAmount: "16.00", retainedAmount: "12.00" }], total: "12.00" });
     expect(cert.html).toContain("20260900000001");
+  });
+
+  it("REP-01: libro ventas (factura+Z) e ISLR deterministas, escapados y versionados", () => {
+    const meta = { empresa: "Demo", periodo: "2026-09" };
+    const rows = [
+      { fechaFiscal: "2026-09-05", kind: "invoice", rif: "J-1", razonSocial: "P", docNumber: "F-1", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00" },
+      { fechaFiscal: "2026-09-30", kind: "z_summary", rif: "M-1", razonSocial: "Z-3", docNumber: "Z-3 [1-50]", baseImponible: "500.00", ivaCausado: "80.00", total: "580.00" },
+    ];
+    const a = renderSalesBookHtml(meta, rows);
+    expect(a.html).toContain(TEMPLATE_VERSIONS.salesBook);
+    expect(a.html).toContain("Z-3 [1-50]");
+    expect(renderSalesBookHtml(meta, rows).sha256).toBe(a.sha256);
+    expect(renderSalesBookHtml(meta, []).sha256).not.toBe(a.sha256);
+    const evil = renderSalesBookHtml(meta, [{ ...rows[0]!, razonSocial: "<script>alert(1)</script>" }]);
+    expect(evil.html).not.toContain("<script>");
+    const islr = renderIslrCertificateHtml({
+      certificateNumber: "ISLR-202609-000001", fechaEmision: "2026-09-20", fechaRetencion: "2026-09-10",
+      beneficiario: "Prov (J-1)", concepto: "HON — Honorarios", baseSujeta: "1000.00",
+      porcentaje: "0.02", sustraendo: "0.00", retainedAmount: "20.00",
+    });
+    expect(islr.html).toContain(TEMPLATE_VERSIONS.islrCertificate);
+    expect(islr.html).toContain("2.00%");
+    expect(renderIslrCertificateHtml({ certificateNumber: "X", fechaEmision: "2026-09-20", fechaRetencion: "2026-09-10", beneficiario: "B", concepto: "C", baseSujeta: "1.00", porcentaje: "0.02", sustraendo: "0.00", retainedAmount: "0.02" }).sha256).not.toBe(islr.sha256);
   });
 
   it("comparador: idénticos 0 diffs; valor→VALOR; formato→FORMATO; hoja→ESTRUCTURA", async () => {

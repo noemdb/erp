@@ -2,13 +2,34 @@ import { describe, expect, it } from "vitest";
 import postgres from "postgres";
 
 /**
- * 5.2: prueba negativa contra el rol app_runtime (requiere APP_DATABASE_URL,
- * creada por scripts/create-app-role.mjs; se omite si no está definida).
+ * TST-01: prueba negativa contra el rol app_runtime.
+ * - Sin APP_DATABASE_URL exportada se omite (veredicto `skipped`, no verde):
+ *   crear el rol con `scripts/create-app-role.mjs` (usa DATABASE_MIGRATION_URL)
+ *   y exportar APP_DATABASE_URL para ejecutarla. Dev sigue con owner hasta
+ *   migrar los seeds de pruebas a contexto explícito (OPS-02).
+ * - Con URL pero sin conexión, falla con mensaje accionable (antes: error
+ *   críptico de password que se toleraba como "rojo conocido").
  */
 const url = process.env.APP_DATABASE_URL;
+
+async function connectOrThrow() {
+  try {
+    const app = postgres(url!, { prepare: false, max: 1, connect_timeout: 10 });
+    await app.unsafe("SELECT 1");
+    return app;
+  } catch (e) {
+    throw new Error(
+      "TST-01: APP_DATABASE_URL no conecta. Crea/actualiza el rol app_runtime con " +
+        "scripts/create-app-role.mjs (con DATABASE_MIGRATION_URL como owner) y exporta la " +
+        "URL vigente. Causa original: " +
+        (e instanceof Error ? e.message : String(e)),
+    );
+  }
+}
+
 describe.skipIf(!url)("rol de mínimo privilegio", () => {
   it("niega administración y hace cumplir RLS", async () => {
-    const app = postgres(url!, { prepare: false, max: 1 });
+    const app = await connectOrThrow();
     try {
       await expect(app.unsafe("CREATE ROLE x_nope")).rejects.toThrow();
       await expect(app.unsafe("DROP TABLE parties")).rejects.toThrow();

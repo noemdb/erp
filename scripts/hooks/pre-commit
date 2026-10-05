@@ -1,0 +1,11 @@
+#!/bin/sh
+# SEC-02/ADR-029: bloquea commits que introduzcan secretos.
+# Instalación (una vez por clon): ln -sf ../../scripts/hooks/pre-commit .git/hooks/pre-commit
+# CI ejecuta lo mismo vía `npm run secrets:scan` (.github/workflows/ci.yml).
+npm run -s secrets:scan
+status=$?
+if [ $status -ne 0 ]; then
+  echo "pre-commit bloqueado: limpia los hallazgos del escáner (ver docs/runbooks/incidente-serverc-2026-10-04.md)."
+  exit 1
+fi
+exit 0

@@ -9,6 +9,11 @@
  * Uso:
  *   COMPANY_ID=<uuid> SEED_USER_EMAIL=<contador|admin> npm run seed:company-rules
  *   # o: npx tsx src/db/seed-company-rules.ts <companyId> <userEmail>
+ *   # Con matriz firmada (única vía a valores no sintéticos):
+ *   #   npx tsx src/db/seed-company-rules.ts <companyId> <userEmail> --matrix-hash=<sha256 de docs/anexos/matriz-reglas-v1.md>
+ *
+ * Guardia GIT-02: sin --matrix-hash válido todo queda synthetic + borrador
+ * (el contador activa en UI); en producción sin hash se rechaza.
  *
  * Qué siembra (y por qué):
  * - IVA 75 % ordinario (Providencia SNAT/2025/000054, art. 4, vigente
@@ -22,6 +27,10 @@
  *   existan los conceptos del catálogo para que el contador cree borradores.
  */
 import { eq } from "drizzle-orm";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { db } from "./client";
 import { users, companies } from "./schema";
 import { authorize } from "@/modules/tenancy/authorize";
@@ -84,9 +93,37 @@ async function main() {
   const companyId = (process.argv[2] ?? process.env.COMPANY_ID ?? "").trim();
   const email = (process.argv[3] ?? process.env.SEED_USER_EMAIL ?? "").trim().toLowerCase();
   if (!companyId || !email) {
-    console.error("uso: COMPANY_ID=<uuid> SEED_USER_EMAIL=<email> npm run seed:company-rules");
+    console.error("uso: COMPANY_ID=<uuid> SEED_USER_EMAIL=<email> npm run seed:company-rules [-- --matrix-hash=<sha256 de docs/anexos/matriz-reglas-v1.md firmada>]");
     process.exit(1);
   }
+
+  // GIT-02 (guardia fiscal): por defecto todo lo sembrado es SINTÉTICO y queda
+  // en borrador — nunca valores fiscales "reales". Solo con --matrix-hash igual
+  // al sha256 de la matriz firmada se autoriza el flujo completo (el contador
+  // activa por el workflow). En producción sin hash válido se rechaza.
+  const hashArg = process.argv.find((a) => a.startsWith("--matrix-hash="))?.split("=")[1]?.trim().toLowerCase()
+    ?? (process.env.MATRIX_HASH ?? "").trim().toLowerCase();
+  const matrizPath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "docs", "anexos", "matriz-reglas-v1.md");
+  let matrizHash = "";
+  try {
+    matrizHash = createHash("sha256").update(readFileSync(matrizPath, "utf8")).digest("hex");
+  } catch {
+    console.error(`no se pudo leer la matriz de referencia: ${matrizPath}`);
+    process.exit(1);
+  }
+  const authorized = !!hashArg && hashArg === matrizHash;
+  if (hashArg && !authorized) {
+    console.error("MATRIX_HASH no coincide con el sha256 de docs/anexos/matriz-reglas-v1.md; rechaza carga de valores reales.");
+    process.exit(1);
+  }
+  if (process.env.NODE_ENV === "production" && !authorized) {
+    console.error("producción: seed:company-rules exige --matrix-hash=<sha256 de la matriz firmada>; sin matriz firmada no se siembra.");
+    process.exit(1);
+  }
+  const synthetic = !authorized;
+  console.log(authorized
+    ? `matriz autorizada (sha256 ${matrizHash.slice(0, 12)}…): flujo completo por workflow.`
+    : "modo SINTÉTICO (sin --matrix-hash válido): borradores marcados synthetic, sin enviar/revisar/activar; el contador los revisa y activa en UI.");
 
   const [company] = await db.select().from(companies).where(eq(companies.id, companyId)).limit(1);
   if (!company) {
@@ -139,16 +176,30 @@ async function main() {
           process.exit(1);
         }
       };
-      const draft = await createDraft(ctx, IVA_75);
+      const draft = await createDraft(ctx, { ...IVA_75, synthetic });
       if (!draft.ok) {
         console.error(`borrador IVA 75 % rechazado: ${draft.error.code} ${draft.error.message}`);
         process.exit(1);
       }
-      console.log(`borrador IVA 75 % creado (${draft.id})`);
-      await step("enviar a revisión", () => submitRule(ctx, draft.id));
-      await step("aprobar", () => approveRule(ctx, draft.id));
-      await step("activar", () => activateRule(ctx, draft.id));
-      console.log(`IVA 75 % ACTIVA (${draft.id}) vigente desde ${VIGENCIA_IVA_2025}`);
+      console.log(`borrador IVA 75 % creado (${draft.id})${synthetic ? " [synthetic]" : ""}`);
+      if (synthetic) {
+        console.log("sintético: se deja en borrador; el contador lo revisa y activa en UI tras la matriz firmada.");
+      } else {
+        await step("enviar a revisión", () => submitRule(ctx, draft.id));
+        await step("aprobar", () => approveRule(ctx, draft.id));
+        // ACC-03: aun autorizada, la activación exige dorados firmados que la
+        // respalden; sin ellos queda aprobada pendiente (el contador activa en UI
+        // tras F0-08). No es fallo del seed.
+        const act = await activateRule(ctx, draft.id);
+        if (!act.ok && act.error.code.startsWith("GATE_")) {
+          console.log(`IVA 75 % APROBADA pendiente de activación (${draft.id}): ${act.error.code} — ${act.error.message}`);
+        } else if (!act.ok) {
+          console.error(`activar falló: ${act.error.code} ${act.error.message}`);
+          process.exit(1);
+        } else {
+          console.log(`IVA 75 % ACTIVA (${draft.id}) vigente desde ${VIGENCIA_IVA_2025}`);
+        }
+      }
     }
   }
 
@@ -157,12 +208,12 @@ async function main() {
   if (iva100) {
     console.log(`IVA 100 % ya registrada en estado ${iva100.status} (${iva100.id}), se omite.`);
   } else {
-    const draft = await createDraft(ctx, IVA_100_BORRADOR);
+    const draft = await createDraft(ctx, { ...IVA_100_BORRADOR, synthetic });
     if (!draft.ok) {
       console.error(`borrador IVA 100 % rechazado: ${draft.error.code} ${draft.error.message}`);
       process.exit(1);
     }
-    console.log(`borrador IVA 100 % creado (${draft.id}): pendiente de modelado art. 5, NO activar aún.`);
+    console.log(`borrador IVA 100 % creado (${draft.id})${synthetic ? " [synthetic]" : ""}: pendiente de modelado art. 5, NO activar aún.`);
   }
 
   // 4. Recordatorio ISLR bloqueado.

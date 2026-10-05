@@ -1,8 +1,14 @@
 {
-  "fecha": "2026-10-01T19:29:05.339Z",
+  "fecha": "2026-10-04T23:55:19.508Z",
   "archivos": [
     {
       "archivo": "src/modules/rules/workflow.test.ts",
+      "ok": true,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "archivo": "src/modules/tax-engine/calibrate.test.ts",
       "ok": true,
       "passed": 1,
       "failed": 0

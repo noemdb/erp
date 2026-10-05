@@ -7,14 +7,16 @@
   "properties": {
     "id": { "type": "string", "pattern": "^[A-Z]+-[0-9]+$" },
     "descripcion": { "type": "string", "minLength": 10 },
-    "origen": { "type": "string", "enum": ["real", "sintetico"] },
+    "origen": { "type": "string", "enum": ["real", "sintetico", "real_anonimizado"] },
+    "estado": { "type": "string", "enum": ["CANDIDATO", "VALIDADO_CONTADOR"] },
     "firma": {
       "type": "object",
       "required": ["firmado_por", "fecha", "fuente_legal"],
       "properties": {
         "firmado_por": { "type": "string", "minLength": 3 },
         "fecha": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
-        "fuente_legal": { "type": "string", "minLength": 5 }
+        "fuente_legal": { "type": "string", "minLength": 5 },
+        "sha256_contenido": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
       }
     },
     "doc": {

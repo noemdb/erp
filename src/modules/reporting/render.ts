@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import type { PurchaseBookRow } from "@/modules/fiscal-docs/service";
+import type { SalesBookRow } from "@/modules/sales/service";
 import type { IvaSummary } from "./summary";
 
 /**
@@ -8,7 +9,9 @@ import type { IvaSummary } from "./summary";
  */
 export const TEMPLATE_VERSIONS = {
   purchaseBook: "purchase-book/v1",
+  salesBook: "sales-book/v1",
   ivaCertificate: "iva-certificate/v1",
+  islrCertificate: "islr-certificate/v1",
 } as const;
 
 function esc(s: string): string {
@@ -20,6 +23,15 @@ export function renderPurchaseBookHtml(meta: { empresa: string; periodo: string 
     `<tr><td>${esc(r.fechaFiscal)}</td><td>${esc(r.rif)}</td><td>${esc(r.razonSocial)}</td><td>${esc(r.docNumber)}</td><td>${esc(r.controlNumber)}</td><td>${esc(r.baseImponible)}</td><td>${esc(r.ivaCausado)}</td><td>${esc(r.total)}</td></tr>`,
   ).join("");
   const html = `<!DOCTYPE html><html lang="es-VE"><head><meta charset="utf-8"><title>Libro de Compras</title></head><body><h1>Libro de Compras</h1><p>${esc(meta.empresa)} · ${esc(meta.periodo)}</p><table><thead><tr><th>Fecha</th><th>RIF</th><th>Razón</th><th>Factura</th><th>Control</th><th>Base</th><th>IVA</th><th>Total</th></tr></thead><tbody>${trs}</tbody></table><p>Plantilla ${TEMPLATE_VERSIONS.purchaseBook}</p></body></html>`;
+  return { html, sha256: createHash("sha256").update(html).digest("hex") };
+}
+
+/** REP-01: Libro de Ventas (factura y Z: la fila Z conserva su identidad en docNumber). */
+export function renderSalesBookHtml(meta: { empresa: string; periodo: string }, rows: SalesBookRow[]): { html: string; sha256: string } {
+  const trs = rows.map((r) =>
+    `<tr><td>${esc(r.fechaFiscal)}</td><td>${esc(r.kind)}</td><td>${esc(r.rif)}</td><td>${esc(r.razonSocial)}</td><td>${esc(r.docNumber)}</td><td>${esc(r.baseImponible)}</td><td>${esc(r.ivaCausado)}</td><td>${esc(r.total)}</td></tr>`,
+  ).join("");
+  const html = `<!DOCTYPE html><html lang="es-VE"><head><meta charset="utf-8"><title>Libro de Ventas</title></head><body><h1>Libro de Ventas</h1><p>${esc(meta.empresa)} · ${esc(meta.periodo)}</p><table><thead><tr><th>Fecha</th><th>Tipo</th><th>RIF</th><th>Razón</th><th>Documento</th><th>Base</th><th>IVA</th><th>Total</th></tr></thead><tbody>${trs}</tbody></table><p>Plantilla ${TEMPLATE_VERSIONS.salesBook}</p></body></html>`;
   return { html, sha256: createHash("sha256").update(html).digest("hex") };
 }
 
@@ -43,5 +55,16 @@ export function renderSummaryHtml(meta: { empresa: string; periodo: string }, s:
   ];
   const trs = rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join("");
   const html = `<!DOCTYPE html><html lang="es-VE"><head><meta charset="utf-8"><title>Resumen IVA</title></head><body><h1>Resumen IVA</h1><p>${esc(meta.empresa)} · ${esc(meta.periodo)}</p><table>${trs}</table></body></html>`;
+  return { html, sha256: createHash("sha256").update(html).digest("hex") };
+}
+
+/** REP-01: comprobante ISLR desde el snapshot de emisión (G9: formato de serie provisional). */
+export function renderIslrCertificateHtml(data: {
+  certificateNumber: string; fechaEmision: string; fechaRetencion: string;
+  beneficiario: string; concepto: string; baseSujeta: string;
+  porcentaje: string; sustraendo: string; retainedAmount: string;
+}): { html: string; sha256: string } {
+  const pct = `${(Number(data.porcentaje) * 100).toFixed(2)}%`;
+  const html = `<!DOCTYPE html><html lang="es-VE"><head><meta charset="utf-8"><title>Comprobante ${esc(data.certificateNumber)}</title></head><body><h1>Comprobante de retención ISLR ${esc(data.certificateNumber)}</h1><p>Beneficiario: ${esc(data.beneficiario)} · Concepto: ${esc(data.concepto)}</p><p>Emisión: ${esc(data.fechaEmision)} · Retención: ${esc(data.fechaRetencion)}</p><table><thead><tr><th>Base</th><th>%</th><th>Sustraendo</th><th>Retenido</th></tr></thead><tbody><tr><td>${esc(data.baseSujeta)}</td><td>${esc(pct)}</td><td>${esc(data.sustraendo)}</td><td>${esc(data.retainedAmount)}</td></tr></tbody></table><p>Plantilla ${TEMPLATE_VERSIONS.islrCertificate}</p></body></html>`;
   return { html, sha256: createHash("sha256").update(html).digest("hex") };
 }

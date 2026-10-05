@@ -23,7 +23,7 @@ Cuatro propiedades que la arquitectura debe garantizar (en orden de prioridad an
 | Base de datos | PostgreSQL ≥ 16 | `numeric` exacto, `daterange` + `EXCLUDE` para vigencias, RLS, transacciones robustas (ADR-002/003/004) |
 | ORM / queries | Drizzle (+ SQL explícito donde haga falta) | Control de transacciones y `SET LOCAL` por request; `numeric` como string (ADR-012) |
 | Auth | Auth.js o Better Auth, sesiones en DB *(elegir en F1)* | Sesiones revocables; autorización `rol × empresa` propia (ADR-010) |
-| Jobs en segundo plano | `pg-boss` (cola sobre PostgreSQL) | Sin Redis; suficiente para 100–200 docs/mes (ADR-008) |
+| Jobs en segundo plano | Ejecutor `render:retry` por planificador del host; `pg-boss` diferido (ADR-031, ex ADR-008) | Sin Redis; suficiente para 100–200 docs/mes |
 | Validación | Zod (cliente + **servidor**) | Esquemas compartidos; el servidor es la autoridad |
 | Aritmética monetaria | `decimal.js` | Nunca `number`/`float` para dinero (ADR-003) |
 | PDF | HTML/CSS → PDF server-side (Chromium headless en el worker) | Fidelidad a formatos del cliente; verificado en spike F1/F5 (ADR-026 cierra ADR-009) |
@@ -154,7 +154,7 @@ Archivo → source_files (bytes originales + sha256)
        → confirmación del usuario
        → documentos definitivos (TX atómica; trazabilidad source_file_id + row_number)
 ```
-- Archivos pequeños: síncrono. Archivos grandes: job `pg-boss` con progreso.
+- Archivos pequeños: síncrono. Archivos grandes: reintento por planificador (`render:retry`, ADR-031); cola `pg-boss` diferida hasta gatillo.
 - Las diferencias entre retención importada y recalculada se **marcan**, nunca se sobrescriben.
 
 ### Emisión de comprobantes

@@ -15,7 +15,8 @@ describe("Fiscal Change Control", () => {
     const [c] = await db.insert(companies).values({ rif: `J-47${s}-A`, rifOriginal: `J-47${s}-A`, razonSocial: "Rw CA", condicionIva: "ordinario" }).returning({ id: companies.id });
     await db.insert(companyUser).values({ companyId: c!.id, userId: u!.id, role: "contador" });
     const ctx = { companyId: c!.id, userId: u!.id };
-    const base = { ruleKind: "iva" as const, baseFormulaKind: "iva_causado", legalReference: "Providencia X", changeReason: "ajuste" };
+    // Datos de prueba: synthetic (ACC-03 exige dorados firmados para lo no sintético).
+    const base = { ruleKind: "iva" as const, baseFormulaKind: "iva_causado", legalReference: "Providencia X", changeReason: "ajuste", synthetic: true };
     try {
       const v1 = await createDraft(ctx, { ...base, effectiveFrom: "2026-01-01", porcentaje: "0.75" });
       expect(v1.ok).toBe(true);
@@ -47,6 +48,29 @@ describe("Fiscal Change Control", () => {
 
       const trail = await db.select().from(auditEvents).where(eq(auditEvents.companyId, c!.id));
       expect(trail.filter((t) => t.entityType === "withholding_rule").length).toBeGreaterThanOrEqual(8);
+    } finally {
+      await db.delete(withholdingRules).where(eq(withholdingRules.companyScopeKey, c!.id));
+      await db.delete(auditEvents).where(eq(auditEvents.companyId, c!.id));
+      await db.delete(companyUser).where(eq(companyUser.companyId, c!.id));
+      await db.delete(companies).where(eq(companies.id, c!.id));
+      await db.delete(users).where(eq(users.id, u!.id));
+    }
+  });
+
+  it("ACC-03: lo no sintético no activa sin dorados firmados (fail-closed)", async () => {
+    const [u] = await db.insert(users).values({ email: `g3-${s}@test.local`, passwordHash: "x", name: "G" }).returning({ id: users.id });
+    const [c] = await db.insert(companies).values({ rif: `J-48${s}-A`, rifOriginal: `J-48${s}-A`, razonSocial: "G3 CA", condicionIva: "ordinario" }).returning({ id: companies.id });
+    await db.insert(companyUser).values({ companyId: c!.id, userId: u!.id, role: "contador" });
+    const ctx = { companyId: c!.id, userId: u!.id };
+    try {
+      const d = await createDraft(ctx, { ruleKind: "iva", baseFormulaKind: "iva_causado", legalReference: "Providencia X", changeReason: "gate", effectiveFrom: "2026-01-01", porcentaje: "0.75" });
+      expect(d.ok).toBe(true);
+      if (!d.ok) throw new Error("setup");
+      await submitRule(ctx, d.id);
+      await approveRule(ctx, d.id);
+      const act = await activateRule(ctx, d.id);
+      expect(act.ok).toBe(false);
+      if (!act.ok) expect(act.error.code).toBe("GATE_NO_COVERAGE");
     } finally {
       await db.delete(withholdingRules).where(eq(withholdingRules.companyScopeKey, c!.id));
       await db.delete(auditEvents).where(eq(auditEvents.companyId, c!.id));

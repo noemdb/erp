@@ -59,8 +59,8 @@ const bento = [
   {
     icon: Calculate,
     title: "Motor versionado",
-    text: "Cada cálculo aplica la alícuota y el porcentaje vigentes a la fecha fiscal y deja constancia de la regla aplicada, con su justificación a la vista del contador.",
-    badge: "Alícuota vigente",
+    text: "Cada cálculo propone alícuota y porcentaje vigentes a la fecha fiscal y muestra la regla aplicada con su justificación. Nada se activa sin tu matriz firmada.",
+    badge: "Preview con explanation[]",
     wide: true,
     chips: ["Fecha fiscal manda", "Regla con vigencia"],
   },
@@ -72,9 +72,9 @@ const bento = [
   },
   {
     icon: Approval,
-    title: "Numeración sin huecos",
-    text: "Correlativo único por empresa, tipo de comprobante y período, reservado en la misma operación. Un fallo no consume número; lo anulado no se reutiliza.",
-    badge: "N° 202609-000128",
+    title: "Numeración IVA sin huecos",
+    text: "Correlativo único IVA por empresa y período, reservado en la misma transacción de emisión. Un fallo no consume número; lo anulado no se reutiliza. Formato ISLR pendiente de tu definición (G9).",
+    badge: "N° ejemplo — cifras ficticias",
   },
   {
     icon: VerifiedUser,
@@ -90,53 +90,53 @@ const bento = [
 const steps = [
   {
     n: "01",
-    title: "Registra una vez",
-    text: "Compra, venta, nota de crédito, nota de débito, reporte Z o pago. Manual o desde el CSV del sistema anterior, con revisión por lotes.",
+    title: "El asistente registra una vez",
+    text: "El sistema captura compra, venta, nota de crédito, nota de débito, reporte Z o pago —manual o desde el CSV del sistema anterior— con revisión por lotes. Pensado para 100–200 documentos/mes.",
     wide: true,
     chips: ["Factura", "NC · ND", "Reporte Z", "Pago"],
   },
   {
     n: "02",
-    title: "Calcula con regla vigente",
-    text: "El motor aplica alícuota y porcentaje por vigencia y deja constancia de la regla aplicada, visible para el contador.",
+    title: "Revisas con regla vigente",
+    text: "El motor propone alícuota y porcentaje por vigencia y te muestra la justificación antes de emitir. Sin matriz firmada no hay regla definitiva.",
     wide: true,
-    chips: ["Alícuota 16 %", "Retención 75 %"],
+    chips: ["Preview", "Regla con vigencia"],
   },
   {
     n: "03",
-    title: "Emite el comprobante",
-    text: "Comprobante de IVA o comprobante de ISLR multi-factura: número correlativo, copia inalterable, PDF/Excel, huella digital y asiento en bitácora en la misma operación.",
+    title: "Tú emites el comprobante",
+    text: "Comprobante de IVA multi-factura (ISLR con serie provisional hasta G9): número en transacción + snapshot inmutable + auditoría; el PDF se genera tras confirmar, con reintentos. Nunca se edita: se anula o sustituye.",
     wide: true,
     dark: true,
-    mono: "N° 202609-000128 · 3 facturas · 7.344,00",
+    mono: "Ejemplo ficticio N° 202609-000128 · 3 facturas · 7.344,00",
   },
   {
     n: "04",
     title: "Deriva libros y resumen",
-    text: "Libro de Compras, Libro de Ventas, Resumen de IVA y conciliación con tolerancia 0. Sin transcripción a Excel.",
+    text: "Libro de Compras, Libro de Ventas, Resumen de IVA y conciliación (objetivo tolerancia 0; provisional 0,01 hasta que definas redondeo G8). Sin transcripción a Excel.",
   },
   {
     n: "05",
-    title: "Cierra con acta",
+    title: "Tú cierras con acta",
     text: "El período fiscal se congela con acta de cierre y huella digital sobre documentos y reportes. Reapertura solo con motivo y responsable.",
   },
 ];
 
 const roles = [
   {
-    icon: CloudUpload,
-    rol: "Administrativo",
-    text: "Importa CSV, registra y corrige, prepara el período. 100–200 documentos/mes sin fórmulas frágiles.",
+    icon: AssignmentTurnedIn,
+    rol: "Contador (tú)",
+    text: "Revisas el preview con justificación visible, emites comprobantes y firmas el cierre. Solo tú cambias criterio G2 y activas reglas.",
   },
   {
-    icon: AssignmentTurnedIn,
-    rol: "Contador",
-    text: "Valida, configura reglas con vigencia, emite comprobantes de retención y firma el cierre.",
+    icon: CloudUpload,
+    rol: "Asistente automático (el sistema)",
+    text: "Prepara por ti: registra una vez, deriva libros de compra/venta, propone retenciones con justificación y arma el resumen como insumo para tu declaración. No firma: deja todo listo para tu revisión.",
   },
   {
     icon: FindInPage,
     rol: "Auditor",
-    text: "Traza total → documento fiscal → fila del CSV → archivo. Lee la bitácora inalterable.",
+    text: "Solo lectura: traza total → documento fiscal → fila del CSV → archivo. Lee la bitácora inalterable.",
   },
   {
     icon: Group,
@@ -251,16 +251,18 @@ export function LandingContent({ userName }: LandingContentProps) {
                 IVA · ISLR · Multiempresa — Venezuela
               </Badge>
               <h1 className="mt-5 text-balance text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl">
-                Del registro al cierre,{" "}
+                Tu asistente auxiliar,{" "}
                 <span className="bg-gradient-to-r from-[#120c27] via-[#352574] to-[#37c8a1] bg-clip-text text-transparent">
-                  sin reescribir Excel
+                  tú firmas el cierre
                 </span>
               </h1>
               <p className="mt-5 max-w-xl text-pretty text-base leading-relaxed text-periwinkle-600 sm:text-lg">
-                Registra compras, ventas, pagos y retenciones una sola vez y
-                deriva Libro de Compras, Libro de Ventas, Resumen de IVA y
-                comprobantes de IVA/ISLR en PDF/Excel. Para empresas que hoy
-                operan en Excel + software legacy + máquina fiscal.
+                Para contadores: el sistema actúa como tu asistente auxiliar.
+                Simplifica tus procesos —Libro de Compras, Libro de Ventas,
+                retenciones y resumen como insumo para tu declaración—
+                cargando una sola vez con justificación visible. Tú revisas,
+                emites y cierras con acta. Si no cuadra con tu Excel, el mes
+                no se cierra.
               </p>
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 {userName ? (
@@ -298,7 +300,7 @@ export function LandingContent({ userName }: LandingContentProps) {
                     className="h-3.5 w-3.5 text-icy-aqua-600"
                     aria-hidden
                   />
-                  Conciliación tolerancia 0
+                  Preview con justificación visible
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <Lock className="h-3.5 w-3.5 text-periwinkle-400" aria-hidden />
@@ -314,9 +316,9 @@ export function LandingContent({ userName }: LandingContentProps) {
               </div>
               <dl className="mt-6 grid max-w-lg grid-cols-3 gap-3 text-sm">
                 {[
-                  ["Documentos/mes", "100–200"],
-                  ["Respuesta trazable", "≤ 3 clics"],
-                  ["Cálculos validados", "100 %"],
+                  ["Diseñado para", "100–200 docs/mes"],
+                  ["Trazabilidad", "total → archivo"],
+                  ["Estado", "En validación piloto"],
                 ].map(([dt, dd]) => (
                   <div
                     key={dt}
@@ -353,13 +355,13 @@ export function LandingContent({ userName }: LandingContentProps) {
                     </span>
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-wider text-icy-aqua-700">
-                        Comprobante de retención · IVA
+                        Comprobante de retención · IVA · ejemplo ficticio
                       </p>
                       <CardTitle className="mt-0.5 font-mono text-base tracking-tight">
                         N° 202609-000128
                       </CardTitle>
                       <CardDescription>
-                        Período 2026-09 · segunda quincena
+                        Período 2026-09 · segunda quincena · cifras ilustrativas
                       </CardDescription>
                     </div>
                   </div>
@@ -417,11 +419,11 @@ export function LandingContent({ userName }: LandingContentProps) {
                   </div>
                   <div className="rounded-md bg-gradient-to-r from-[#120c27] to-[#352574] px-4 py-3 text-white shadow-md shadow-[#120c27]/20">
                     <div className="flex items-baseline justify-between text-[13px] text-periwinkle-300">
-                      <span>Base imponible · IVA 16 %</span>
+                      <span>Base imponible · IVA ejemplo</span>
                       <span className="tabular-nums">61.200,00 · 9.792,00</span>
                     </div>
                     <div className="mt-1.5 flex items-baseline justify-between border-t border-white/15 pt-1.5">
-                      <span className="font-medium">IVA retenido · 75 %</span>
+                      <span className="font-medium">IVA retenido · ejemplo</span>
                       <span className="font-mono text-base font-semibold tabular-nums">
                         7.344,00
                       </span>
@@ -455,7 +457,7 @@ export function LandingContent({ userName }: LandingContentProps) {
               </div>
               <Badge className="absolute -bottom-4 left-6 rotate-[-3deg] gap-1.5 py-1.5 pl-2.5 pr-3 shadow-lg animate-float">
                 <Approval className="h-3.5 w-3.5" aria-hidden />
-                Comprobante de IVA · correlativo sin saltos
+                Comprobante de IVA · ejemplo sin valor fiscal
               </Badge>
               <Badge
                 variant="secondary"
@@ -480,12 +482,11 @@ export function LandingContent({ userName }: LandingContentProps) {
             Motor + garantías
           </Badge>
           <h2 className="mt-3 max-w-2xl text-balance text-3xl font-bold tracking-tight">
-            Hecho → motor versionado → comprobante inmutable → cierre
-            reproducible
+            Tú firmas cada cifra: el auxiliar propone, el motor deja constancia
           </h2>
           <p className="mt-3 max-w-2xl text-pretty text-periwinkle-600">
-            Cuatro garantías técnicas que sostienen cada cifra fiscal, del
-            documento de origen al cierre del período.
+            Cuatro garantías técnicas — probadas en desarrollo, pendientes de
+            tu validación en mes piloto — del documento de origen al cierre.
           </p>
           <div className="mt-8 grid gap-3 rounded-lg border border-periwinkle-200 bg-periwinkle-50 p-3 sm:grid-cols-2 lg:grid-cols-4">
             {bento.map((b, i) => (
@@ -707,10 +708,10 @@ export function LandingContent({ userName }: LandingContentProps) {
           className="mx-auto max-w-6xl scroll-mt-20 px-6 pb-14"
         >
           <Badge variant="outline" className="rounded-md px-3 py-1">
-            Para todo el equipo
+            Para ti, contador
           </Badge>
           <h2 className="mt-3 text-balance text-2xl font-bold tracking-tight">
-            Un sistema, cuatro formas de trabajar
+            Un auxiliar, cuatro formas de trabajar contigo
           </h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {roles.map((r, i) => (
@@ -832,19 +833,21 @@ export function LandingContent({ userName }: LandingContentProps) {
               La prueba
             </Badge>
             <h2 className="mt-3 max-w-2xl text-balance text-3xl font-bold tracking-tight">
-              El mes real manda: igual a Excel o no se cierra
+              Tu mes real manda: igual a tu Excel o no se cierra
             </h2>
             <p className="mt-3 max-w-2xl text-pretty text-periwinkle-600">
-              El sistema se valida contra el mes real de la empresa, celda por
-              celda. Si algo no cuadra, el mes no se cierra.
+              Requisito de go-live, no resultado logrado: validamos celda por
+              celda contra tu mes piloto. Estado actual: infraestructura lista
+              en desarrollo, 1 caso didáctico verde; faltan tu plantilla
+              validada, tus CSV/Z reales y tus 30–50 casos firmados.
             </p>
           </Reveal>
           <dl className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[
-              ["Diferencia contra Excel", "0"],
-              ["Huecos en numeración", "0"],
-              ["Fugas entre empresas", "0"],
-              ["Meses que cuadran", "12/12"],
+              ["Gate: diferencia vs tu Excel", "0"],
+              ["Gate: huecos en numeración IVA", "0"],
+              ["Gate: fugas entre empresas", "0"],
+              ["Casos firmados por ti", "0/30–50"],
             ].map(([dt, dd], i) => (
               <Reveal key={dt} delay={i * 80} className="h-full">
                 <div className="flex h-full flex-col justify-center rounded-md border border-periwinkle-200 bg-white px-5 py-4 text-center shadow-sm">
@@ -864,7 +867,7 @@ export function LandingContent({ userName }: LandingContentProps) {
                     Hoy: Excel + sistema anterior
                   </CardTitle>
                   <CardDescription>
-                    Lo que se quiere dejar atrás
+                    Lo que dejas atrás con tu auxiliar
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -897,19 +900,19 @@ export function LandingContent({ userName }: LandingContentProps) {
                 />
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base tracking-tight">
-                    Con ERP-TributarioLite
+                    Con tu asistente automático
                   </CardTitle>
                   <CardDescription>
-                    Una sola carga, todo derivado
+                    Tú validas y firmas, él prepara
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2.5 text-sm leading-relaxed text-periwinkle-700">
                     {[
                       "Libros y resumen derivados de los documentos, sin transcribir",
-                      "Regla con vigencia y justificación visible para el contador",
-                      "Desglose total → factura → archivo en 3 clics o menos",
-                      "Acta de cierre con huella: si no cuadra, no cierra",
+                      "Preview con regla y justificación visible antes de emitir",
+                      "Desglose total → factura → archivo preparado para tu revisión",
+                      "Acta de cierre con huella: si no cuadra con tu Excel, no cierra",
                     ].map((t) => (
                       <li key={t} className="flex gap-2.5">
                         <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-icy-aqua-100">
@@ -945,22 +948,22 @@ export function LandingContent({ userName }: LandingContentProps) {
                   Gate de go-live
                 </Badge>
                 <h2 className="mt-4 text-balance text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                  Mes real igual a Excel, o no se cierra el mes
+                  Tu firma es el go-live: mes piloto igual a tu Excel
                 </h2>
                 <CardDescription className="mt-3 max-w-xl text-periwinkle-200">
-                  Paralelo Excel vs sistema igual a cero, 0 huecos en
-                  numeración bajo concurrencia, 0 fugas entre empresas y cierre
-                  reproducible con huella digital. Firma del contador como gate de
-                  go-live.
+                  Paralelo Excel vs sistema igual a cero, 0 huecos IVA bajo
+                  concurrencia, 0 fugas entre empresas y cierre reproducible
+                  con huella. Sin tu matriz firmada y tus casos validados no se
+                  cierra F0/F2.
                 </CardDescription>
                 <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-periwinkle-300">
                   <span className="inline-flex items-center gap-1.5">
-                    <CheckCircle className="h-3.5 w-3.5" aria-hidden /> Excel =
-                    0 diferencia
+                    <CheckCircle className="h-3.5 w-3.5" aria-hidden /> Gate:
+                    Excel = 0 diferencia
                   </span>
                   <span className="inline-flex items-center gap-1.5">
                     <VerifiedUser className="h-3.5 w-3.5" aria-hidden /> 0 huecos
-                    · 0 fugas
+                    IVA · 0 fugas · tu firma
                   </span>
                 </div>
               </div>
@@ -1040,7 +1043,7 @@ export function LandingContent({ userName }: LandingContentProps) {
             </nav>
             <p className="flex items-center gap-4">
               <span className="flex items-center gap-1.5">
-                Hecho → motor → comprobante → libro → cierre
+                Tu auxiliar prepara → tú firmas → cierre
                 <ArrowForward className="h-3.5 w-3.5" aria-hidden />
               </span>
               <a

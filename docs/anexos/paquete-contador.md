@@ -1,6 +1,6 @@
 # Paquete para el contador — qué necesitamos de ti (F0)
 
-> El sistema está construido y verde (28 tests), pero los **valores fiscales** solo los defines tú. Sin esto no hay go-live. Marca cada punto APROBADO / MODIFICAR / PENDIENTE con fecha.
+> El sistema está construido y verde (73 tests al 2026-10-04 — cifra snapshot, ver `CHANGELOG.md`), pero los **valores fiscales** solo los defines tú. Sin esto no hay go-live. Marca cada punto APROBADO / MODIFICAR / PENDIENTE con fecha.
 
 ## Respuestas recibidas el 2026-10-01 (seguimiento pendiente)
 
@@ -14,7 +14,7 @@
 - La plantilla XLSX está en `blueprint/datos/formatos_libro_de_compras_libro_de_ventas_resumen_comprobante_ret_de_islr_comprobante_de_retencion_iva.xlsx`. Falta validarla como golden master. No replicar sus datos identificables en fixtures o documentación; anonimizar primero.
 - Para numeración ISLR y permisos, el cliente remite al cuestionario, que solo contiene propuestas generales (respetar numeración y mantener controles/trazabilidad); no aporta formato real ni matriz de responsabilidades.
 - `blueprint/cuestionarioClient.md` es un cuestionario de levantamiento con respuestas propuestas, no un formulario completado. No tratar sus propuestas como decisiones aprobadas del cliente.
-- `pendientes/PRIMERA_REV/asesoria-fiscal-F0.md` y `dorados-propuestos-F0.json` son insumos de asesoría/candidatos, no dictamen ni golden aprobado. El JSON contiene 17 escenarios; porcentajes expresados como puntos porcentuales no coinciden directamente con la entrada decimal del motor, y `ISLR-09` requiere usar base gravable 900 para obtener 306,00.
+- `pendientes/PRIMERA_REV/asesoria-fiscal-F0.md` y `dorados-propuestos-F0.json` son insumos de asesoría/candidatos, no dictamen ni golden aprobado. El JSON contiene 17 escenarios; el contrato de unidades del motor está cerrado (porcentajes como fracción, base ISLR `base_gravable` — ENMIENDA v1.1 E-2) y los candidatos normalizados viven en `pendientes/TERCERA_REV/files/`; `ISLR-09` ya usa base gravable 900 para obtener 306,00 (a verificar contigo).
 
 La revisión legal preliminar de la Providencia IVA SNAT/2025/000054 (arts. 4, 5 y 13) y del Decreto 1.808 de ISLR (art. 1) señala que el evento de retención es el pago o abono en cuenta, lo que ocurra primero. La matriz enlaza reproducciones consultadas y mantiene las reglas como borrador no firmado.
 

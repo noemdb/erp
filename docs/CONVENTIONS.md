@@ -10,11 +10,16 @@ src/
     identity/       # users, sessions, login/logout, company_user
     tenancy/        # companies, branches, withTenant(), authorize()
     parties/        # parties, party_tax_profiles (+repo, schemas, service)
-    fiscal-docs/    # purchases, sales, settlement events, allocations
+    fiscal-docs/    # purchases, settlement events, allocations
+    sales/          # sales_documents + lines, modo Z por empresa
+    payments/       # eventos de liquidación (payment/account_credit) y asignaciones
     tax-engine/     # puro: computeDocumentTaxes, computeIva/IslrWithholding, explanation
     imports/        # source_files, batches, rows, parser, mappings
     withholdings/   # rules, series, iva/islr issue/void, certificados
+    rules/          # workflow borrador→activo (Fiscal Change Control, ADR-022)
     periods/        # fiscal_periods, checklist, close/reopen
+    deadlines/      # fiscal_obligations, fiscal_holidays, tablero
+    received/       # withholdings_received + links (G3, sin neteo en resumen)
     reporting/      # libros, resumen, conciliación, pdf/excel
     audit/          # audit.record() append-only
     attachments/    # upload privado, urls firmadas
@@ -30,8 +35,7 @@ fixtures/
   tax-scenarios/*.json  # dorados contador (30–50)
   csv-corpus/           # legacy + Z reales y adversariales
   golden-master/*.xlsx  # plantillas originales cliente
-tests/
-  unit/ property/ integration/ e2e/ fuga/ concurrencia/
+tests junto al código (`*.test.ts` al lado del módulo, no `tests/` raíz)
 docs/               # PROJECT, ARCHITECTURE, DOMAIN, DATABASE, API, SECURITY, DECISIONS, TODO
 ```
 
@@ -69,7 +73,7 @@ Idioma: código y comentarios en inglés técnico, UI/errores usuario en es-VE. 
 - Servidor primero: Server Components + revalidación, Server Actions tipadas. Estado cliente solo UI local (filtros, wizard import).
 - `withTenant(ctx, fn)` en toda TX + `authorize()` en una capa. `SET LOCAL` por TX.
 - Motor puro: `(company, counterparty, doc, asOf, rules filtradas) => { amounts, ruleVersionId, ruleSnapshot, explanation[] }`. Determinista byte a byte.
-- Emisión transaccional: lock → `UPDATE series RETURNING` → snapshot → PDF/Excel → hash → `issued` + audit. Fallo = rollback sin consumir número.
+- Emisión transaccional: lock → `UPDATE series RETURNING` → snapshot + HTML inmutable → `issued` + audit en TX; render PDF **fuera** de la TX, idempotente post-commit con reintentos (ADR-027). Fallo = rollback sin consumir número.
 - Import staging: crudo `JSONB` + normalizado + errores por fila, idempotencia `sha256` + clave natural, diferencia retención marcada no sobrescrita.
 - Reportes derivados: libros desde documentos, `data_snapshot + sha256` versionado, drill-down total→documento→fila CSV.
 - `audit.record(tx, { action, entity, before/after, reason })` en misma TX.

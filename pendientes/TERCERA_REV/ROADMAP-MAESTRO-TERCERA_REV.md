@@ -1,6 +1,7 @@
 # ROADMAP MAESTRO — Implementación de los pendientes (TERCERA_REV)
 
 > **Estado:** propuesta v1.0 · **Fecha:** 2026-10-02 (viernes) · **Dueño:** equipo + contador cliente + responsable del cliente
+> **Enmienda v1.1 (2026-10-04):** ver `ENMIENDA-v1.1-2026-10-04.md` + ADR-029 + `docs/runbooks/incidente-serverc-2026-10-04.md`. H-1/H-2 y §6.1/§6.2 quedan reemplazados (clave en historial + `origin/main`); H0 suma SEC-04; F0-03 con contrato cerrado; F0-01 límite lun 05-oct.
 > **Fuentes:** `pendientes-implementacion-2026-10-02.md`, `consolidado-docs-2026-10-02.md`, y los roadmaps 01–05 (F0, funcionalidad condicionada, reportes, aceptación, operación).
 > **Qué es:** el plan único que ordena **todos** los pendientes por hito, con dependencias, esfuerzo, ruta crítica y criterios de salida. Los roadmaps 01–05 siguen siendo el detalle de diseño; este documento los integra y añade lo que la tercera revisión descubrió.
 > **Qué no es:** una aprobación fiscal. Ninguna decisión del contador se adelanta aquí.
@@ -19,8 +20,8 @@ Se construyó mucho: branding por empresa, compras manual multilínea con previe
 
 | # | Hallazgo | Severidad | Acción |
 |---|---|---|---|
-| **H-1** | **Clave privada SSH (`serverc`) en la raíz del repo**, sin `.gitignore` y sin rotar, sigue presente | **Crítica** | SEC-01 (primero de todo) |
-| H-2 | **Todo el trabajo de la sesión sigue sin commitear** (front, backend, branding, seeder). Un `git add -A` accidental subiría la clave al historial; un fallo de disco perdería días de trabajo | Alta | SEC-02 → GIT-01 (en ese orden, con orden explícita del dueño) |
+| **H-1** | **Clave privada SSH (`serverc`) en la raíz del repo**, sin `.gitignore` y sin rotar, sigue presente | **Crítica** | SEC-01 (primero de todo) **— REEMPLAZADO por ENMIENDA v1.1 E-1: clave trackeada en `7c70dbe` y en `origin/main`; rotar en servidor + purgar historial (SEC-01′/SEC-04, ADR-029)** |
+| H-2 | **Todo el trabajo de la sesión sigue sin commitear** (front, backend, branding, seeder). Un `git add -A` accidental subiría la clave al historial; un fallo de disco perdería días de trabajo | Alta | SEC-02 → GIT-01 (en ese orden, con orden explícita del dueño) **— REEMPLAZADO por E-1: el trabajo sí se commiteó (wips hasta 2026-10-04, árbol limpio, `main` al día con `origin/main`); GIT-01 solo tras purge + escáner** |
 | H-3 | `seed:company-rules` carga valores fiscales como activos: **contradice** "no cargar valores sin matriz firmada" | Alta | GIT-02 (guardia) |
 | H-4 | ADR-008 documenta `pg-boss`, pero no está instalado: no hay cola real y el render pendiente solo se reintenta **por acción manual** | Media | FUN-06 (decidir y cerrar) |
 | H-5 | ADR-024 fija UploadThing para almacenamiento: **no verifiqué** sus garantías de retención, versionado o exportación; un restore de BD no cubre los archivos | Media-Alta | OPS-04 |
@@ -76,6 +77,7 @@ Se construyó mucho: branding por empresa, compras manual multilínea con previe
 | SEC-01 | Rotar/eliminar la clave SSH `serverc`/`serverc.pub` y revocar su acceso en el servidor | A | 0.5–1 | — |
 | SEC-02 | `.gitignore` (claves, `.env*`, `*.pem`, `serverc*`) + escáner de secretos en pre-commit y CI | A | 0.5–1 | — |
 | SEC-03 | Inventario y rotación del resto de secretos (BD owner/`app_runtime`, `AUTH_SECRET`, `FILE_SIGNING_SECRET`, token de almacenamiento, contraseñas de seed) | A | 1–1.5 | Runbook listo |
+| SEC-04 | **(Nuevo, ENMIENDA v1.1 E-1)** Purgar `serverc*` del historial + force-push coordinado + verificación en origin y clones | A | 0.5–1 | Rotación §1 hecha + aviso a clones |
 | GIT-01 | Plan de commits por rebanadas + etiqueta de respaldo (**solo con orden explícita**) tras SEC-01/02 | A | 0.5–1 | Orden del dueño |
 | GIT-02 | Guardia de `seed:company-rules` (sintético por defecto, prohibido en prod, matriz firmada por hash) | A | 0.5–1 | — |
 | TST-01 | Corregir el único test rojo (`least-privilege`): configuración explícita de `app_runtime` y mensaje claro | A | 0.5 | — |
@@ -84,16 +86,16 @@ Se construyó mucho: branding por empresa, compras manual multilínea con previe
 | DOC-03 | `DECISIONS.md` en orden numérico y rango de ADR en `README.md` | A | 0.25–0.5 | — |
 | DOC-04 | Convención de "snapshot con fecha" para cifras de tests en `CHANGELOG.md` | A | 0.1 | — |
 | DOC-05 | ADR de ratificación de ADR-001…012 y de la decisión de **auth propio** con sesiones en BD | A | 0.5–1 | — |
-| F0-01 | Enviar al contador el paquete F0 + pedido de muestras + preguntas de formato (arranca la ruta crítica) | A | 0.5 | — |
+| F0-01 | Enviar al contador el paquete F0 + pedido de muestras + preguntas de formato (arranca la ruta crítica) | A | 0.5 | — **(límite lun 05-oct; venció hito 02-oct — ENMIENDA v1.1 E-4)** |
 
-**Subtotal H0:** 5.35–8.85 días-persona (12 ítems).
+**Subtotal H0:** 5.35–8.85 días-persona (12 ítems) **+ SEC-04 (0.5–1) + nota GIT-02 schema `origin` (0.25–0.5) ⇒ ≈ 6.1–10.35 (13 ítems) — ENMIENDA v1.1 E-5. H0 no cierra sin purge verificado + escáner activo.**
 
 ### H1 — Listo para datos reales, M2 y ciclo en sombra
 
 | ID | Pendiente | Cat. | Esfuerzo (días) | Bloqueador |
 |---|---|---|---|---|
 | F0-02 | Cotejo de la normativa citada contra la Gaceta Oficial | A | 1–2 | — |
-| F0-03 | Normalizar los 17 candidatos y corregir ISLR-09 (requiere el contrato de unidades del motor) | A | 1–1.5 | Contrato del motor |
+| F0-03 | Normalizar los 17 candidatos y corregir ISLR-09 (requiere el contrato de unidades del motor) | A | 1–1.5 | Contrato del motor **(cerrado por ENMIENDA v1.1 E-2: fracción + `base_gravable`; queda alinear tipos; ISLR-09 ya corregido a verificar)** |
 | F0-04 | Hoja de la Sesión 1 con salidas reales de `g8:calibrate` y `g2:divergence` | C | 1–2 | Muestras reales |
 | F0-05 | Muestras reales anonimizadas (mes legacy, Z por marca, libros del contador) + XLSX validado | C | 1–2 | Cliente |
 | F0-06 | Sesión 1 — decisiones Tier A (G8, G2 a/b/c, base ISLR, UT, mínimos PJD, G9, G1) y RDF | B | 0.5–1 | Contador |
@@ -251,6 +253,12 @@ flowchart LR
 
 ### 6.1 SEC-01 — Clave SSH `serverc` (hacerlo primero, hoy)
 
+> **ENMIENDA v1.1 E-1 (2026-10-04):** este procedimiento queda reemplazado
+> por `docs/runbooks/incidente-serverc-2026-10-04.md` (ADR-029). La clave ya
+> está en historial (`7c70dbe`) y en `origin/main`: rotar en servidor antes
+> de purgar, luego `git filter-repo` + force-push coordinado. Lo que sigue
+> se conserva como contexto de su fecha.
+
 1. **Alcance:** identificar **qué servidor(es)** y **qué usuario/privilegios** abre; si la clave tiene frase de contraseña.
 2. **Asumir compromiso.** Estuvo en un workspace con agentes, copias y posible sincronización: no basta con borrarla.
 3. **Revisar exposición:** historial de git y *reflog*/stash/otras ramas (`git log --all -- serverc*`), artefactos de CI, carpetas sincronizadas en la nube, historial de la shell.
@@ -262,6 +270,10 @@ flowchart LR
 **Hecho cuando:** la clave vieja no autentica en ningún host; los registros revisados y firmados; archivos fuera del workspace.
 
 ### 6.2 SEC-02 / GIT-01 — Higiene del repo y respaldo del trabajo
+
+> **ENMIENDA v1.1 E-1:** añadir SEC-04 (purge) antes de cualquier rebanada
+> GIT-01; `.gitignore` debe cubrir `serverc*`; evidencia sin secretos.
+> Detalle en `docs/runbooks/incidente-serverc-2026-10-04.md`.
 
 | Paso | Detalle |
 |---|---|

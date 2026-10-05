@@ -15,7 +15,7 @@
 | `API.md` | ✅ | Contrato actualizado; varias operaciones siguen pendientes |
 | `SECURITY.md` | ✅ | Regenerado RBAC rol×empresa |
 | `CONVENTIONS.md` | ✅ | Regenerado |
-| `DECISIONS.md` | ✅ | ADR-001–028 (013/014 bloqueados; 018–020 propuestos; 021/022/023/024/025/026/027/028 aceptados) |
+| `DECISIONS.md` | ✅ | ADR-001–031 (013/014 bloqueados; 018–020 propuestos; 008 diferida por 031; 021–031 aceptadas) |
 | `PROJECT.md` | ✅ | Elevator pitch, alcance y métricas definidos |
 | Cuestionario PDF vs G1–G12 | ✅ | Contrastado, ver ROADMAP §3/§11 |
 | `anexos/` (matriz generada, RDF, diferimiento, roles, bitácora) | ✅ parcial | Plantillas e infra listas; falta matriz v1 + dorados firmados |
@@ -59,14 +59,14 @@
 |---|---|---|
 | Staging + subida idempotente | ✅ | `source_files` íntegro + `sha256` dedup + tipo por contenido + UI subir/lotes/detalle + test. typecheck+lint+17 tests+build verdes |
 | Parser + validación + preview (F3-2) | ✅ | Separador/BOM, coma-punto, fechas DD/MM+ISO, nulos sin "0", alias columnas, valid/warning/rejected + contadores, UI preview + revalidar. 19 tests verdes. Perfiles de mapeo guardables quedan pendientes si el legacy lo exige |
-| Confirmación → documentos + Z + async (F3-3) | ✅ | Solo válidas+advertencias → docs (alícuota derivada documentada), trazabilidad archivo+fila+lote, revalidar conserva imported (idempotente), Z con máquina auto + salto=advertencia, rechazadas.csv, test confirma+reconfirma+Z. pg-boss async queda para F7 si el volumen lo exige |
+| Confirmación → documentos + Z + async (F3-3) | ✅ | Solo válidas+advertencias → docs (alícuota derivada documentada), trazabilidad archivo+fila+lote, revalidar conserva imported (idempotente), Z con máquina auto + salto=advertencia, rechazadas.csv, test confirma+reconfirma+Z. Cola `pg-boss` diferida (ADR-031); reintento por `render:retry` del host |
 
 ### F4 — Retenciones IVA/ISLR (3 sem)
 | Bloque | Estado | Aceptación |
 |---|---|---|
 | Reglas vigencia + conceptos ISLR + `explanation[]` | ✅ parcial | 8 tablas + EXCLUDE + seed 75%/conceptos + `reserveNumber` sin huecos (test 20 concurrentes + rollback). Falta UI edición contador |
-| Emisión transaccional multi-factura + anulación `replaces_id` | ✅ parcial IVA | Preview + emisión (período, número, snapshot+hash, líneas, audit) + anulación con motivo + UI bandeja/nueva/detalle + test ciclo y 5 paralelas únicas. Hallazgo: reintento en TX abortada no recupera → UPSERT atómico de una sentencia. Falta ISLR |
-| PDF/Excel fiel + concurrencia emisión 50–100 | ✅ parcial | ISLR (concepto+pago, serie provisional `ISLR-AAAAMM-######`, UI, test) + entrega IVA con fecha + UI. PDF fiel pasa a F5 (spike ADR-009); control de plazo queda como configurable pendiente de valor contador |
+| Emisión transaccional multi-factura + anulación `replaces_id` | ✅ parcial | Preview + emisión IVA e ISLR (período, número, snapshot+hash, líneas, audit) + anulación/sustitución con motivo + UI bandeja/nueva/detalle + test ciclo y 5 paralelas únicas. Hallazgo: reintento en TX abortada no recupera → UPSERT atómico de una sentencia. Render PDF fuera de la TX (ADR-027). Falta: UI edición contador + PDF fiel (→ F5) |
+| PDF/Excel fiel + concurrencia emisión 50–100 | ✅ parcial | ISLR (concepto+pago, serie provisional `ISLR-AAAAMM-######`, UI, test) + entrega IVA con fecha + UI. Render ISLR post-commit archivado (REP-01, `renderIslrPdf` + matriz `anexos/matriz-render-v1.md`); Excel sobre plantilla y paridad art. 16 tras formato aprobado. Control de plazo pendiente de valor contador |
 
 ### F5 — Libros y Resumen (2.5 sem)
 | Bloque | Estado | Aceptación |
@@ -103,7 +103,9 @@
 | Mismo documento simultáneo → 1 gana | ✅ | `same-doc.test.ts` (lock asesoría) |
 | E2E servicios (import→cierre) | ✅ | `e2e-flow.test.ts` |
 | Reporte aceptación | ✅ | `acceptance/acceptance-report.md` (`npm run acceptance:evidence`) |
-| Período real M2/M5, Playwright, dorados firmados | 🔲 | Bloqueado: muestras + firma contador |
+| Período real M2/M5, dorados firmados | 🔲 | Bloqueado: muestras + firma contador |
+| Playwright arnés + humo por rol | ✅ | `playwright.config.ts` + `e2e/seed.ts` (4 roles) + setup por UI con storageState + reloj controlado + humo login/dashboard por rol + negativa (6/6 local). Recorridos P0 en ACC-06 |
+| Gate activación (dorados antes de activar) | ✅ | `activation-gate.ts` en `transition()`: no sintético exige ≥1 firmado de su clase con 100% reproducido (`GATE_NO_COVERAGE`/`GATE_FAILED`); sintético omite (no activable en prod). Firmas ligadas al hash (ACC-02) |
 
 ### 2.0.2 Ola 1 (R3/R4 del cliente)
 | Bloque | Estado | Aceptación |
@@ -122,13 +124,22 @@
 | F2/F4 abono en cuenta | Captura y comparación dual implementadas; `unset` por defecto y emisión fail-closed salvo convergencia estricta. Sin decisión del cliente sobre causación/fecha contable ni cálculo de parcialidades/sustraendo. IVA aún no usa eventos | 2026-10-01 | Revisar preview y firmar criterio/atribución por porción/sustraendo con contador; aprobar reglas y dorados antes de go-live |
 | F4 ISLR y G9 | Asesoría/escenarios proponen tasas y serie sin firma; conceptos reales, UT, base con/sin IVA, mínimos, sustraendo parcial y numeración siguen sin validar. IVA tiene posible desajuste de reinicio por verificar | 2026-10-01 | Cotejo en fuente oficial + decisión contador; no parametrizar tasas ni cambiar secuencias antes de aprobar |
 | F4 cuatro ojos | Asesoría propone aprobación separada y reglas especiales para anulaciones ya enteradas; matriz real de usuarios y política del cliente no confirmadas | 2026-10-01 | Aprobar matriz por empresa y decidir excepción si solo hay un usuario contador antes de implementar estados/aprobaciones |
-| F0 golden candidates | 17 escenarios propuestos no validados; ISLR-09 usa base gravable 900 al calcular 306,00 y las unidades de porcentaje no coinciden con contrato del motor | 2026-10-01 | Normalizar formato/unidades, revisar resultados a mano con contador y firmar antes de mover a fixtures ejecutables |
+| F0 golden candidates | 17 escenarios propuestos no validados; contrato de unidades cerrado 2026-10-04 (fracción + `base_gravable`, ENMIENDA v1.1 E-2); ISLR-09 ya corregido (base 900 → 306.00) a verificar con contador | 2026-10-01 | Alinear normalizador con tipos reales del motor, revisar a mano con contador y firmar antes de mover a fixtures ejecutables |
+| SEG incidente `serverc` | Clave SSH privada commiteada en `7c70dbe` y presente en `origin/main`; `.gitignore` no la cubre | 2026-10-04 | ADR-029 + runbook `incidente-serverc-2026-10-04.md`: rotar en servidor → rotar secretos → purge + force-push → escáner. H0 bloqueado hasta purge verificado |
 | F2/F3 | XLSX disponible pero no validado; cuestionario no confirma CSV/Z reales; G7 solo precisa “por sucursal” | 2026-10-01 | Cotejar golden y confirmar fuente del Libro de Ventas, período y archivos reales |
 | F0 roles | Cuestionario/asesoría proponen controles genéricos y cuatro ojos, sin aprobación ni matriz de responsabilidades | 2026-10-01 | Obtener matriz de quién prepara, revisa, aprueba, emite, anula y reemite; confirmar viabilidad del control |
 | F0 | Matriz + dorados pendientes | 2026-09-30 | Sesión semanal contador |
 
 ## Backlog v2 (no construir)
 Factura electrónica (`electronically_issued`), portal supplier, correo (pg-boss lista), API adaptadores, OCR por staging, calendario/alertas.
+
+## Dashboard ?company (2026-10-04)
+| Bloque | Estado | Notas |
+|---|---|---|
+| UX dashboard empresa | ✅ | `dashboard/page.tsx`: períodos vía `listPeriods` (ctx trae máx. 5 sin orden); nav acotada a últimos 8 + enlace a Períodos; estados es-VE (`periodStatusVe`); tarjeta muestra abierto Vigente o último; 8 indicadores clicables a drill-down; actividad solo empresa seleccionada (`listAuditEvents` + `limit: 8`, antes N×500); CTA "Listo para revisión" solo contador conciliado sin hallazgos; vacíos en gráficos. `QuickActions` con `canWrite` (administrativo/contador; resto ve "Ver resumen"). `AuditFilter.limit` opcional (defecto 500, compatible). Rev2: `CompanySwitch` (botón empresa actual + diálogo `w-[90%]` con lista seleccionable: logo/inicial, RIF, condición, rol y período; reemplaza pills). Checklist: build+typecheck+lint verdes, audit tests 2/2 con env, sin API nueva, sin ADR nuevo |
+| Bloque | Estado | Notas |
+|---|---|---|
+| Síntesis landing para contador | ✅ | `src/app/landing-content.tsx`: hero "tú firmas, auxiliar prepara"; quitados `100%`/`12/12`/`≤3 clics` como logros; ejemplo N° 202609-000128 etiquetado ficticio; paso emisión corregido a ADR-027 (TX número+snapshot+audit, PDF post-commit); conciliación provisional 0,01 hasta G8; numeración limitada a IVA hasta G9; prueba/go-live como gate con estado `0/30–50` firmados. Rev2 2026-10-04: el auxiliar es el sistema (no una persona); "resumen como insumo para tu declaración" según DOMAIN; fix `/docs/comprobantes/islr` (serie G9 pendiente, PDF sigue patrón IVA). Checklist: funciona (typecheck por verificar), sin API nueva, sin sensibles, sin ADR nuevo |
 
 ---
 Ver también: `README.md`, `PROJECT.md`, `DECISIONS.md`, `CHANGELOG.md`, `anexos/checklist-F0.md`. Estándar header docs: `Estado / Actualizado / Dueño / Fuentes`.

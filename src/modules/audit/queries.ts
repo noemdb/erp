@@ -10,10 +10,13 @@ export type AuditFilter = {
   action?: string;
   from?: string | Date;
   to?: string | Date;
+  /** Tope de filas (defecto 500, techo v1). */
+  limit?: number;
 };
 
 /** Bitácora filtrable (auditor: solo lectura). Límite 500 por página v1. */
 export async function listAuditEvents(ctx: Ctx, filter?: AuditFilter) {
+  const limit = Math.min(Math.max(filter?.limit ?? 500, 1), 500);
   return withTenant(ctx, async (tx) => {
     const conds = [eq(auditEvents.companyId, ctx.companyId)];
     if (filter?.entityType) conds.push(eq(auditEvents.entityType, filter.entityType));
@@ -21,7 +24,7 @@ export async function listAuditEvents(ctx: Ctx, filter?: AuditFilter) {
     if (filter?.action) conds.push(eq(auditEvents.action, filter.action));
     if (filter?.from) conds.push(gte(auditEvents.occurredAt, new Date(filter.from)));
     if (filter?.to) conds.push(lte(auditEvents.occurredAt, new Date(filter.to)));
-    return tx.select().from(auditEvents).where(and(...conds)).orderBy(desc(auditEvents.occurredAt)).limit(500);
+    return tx.select().from(auditEvents).where(and(...conds)).orderBy(desc(auditEvents.occurredAt)).limit(limit);
   });
 }
 

@@ -27,3 +27,8 @@ dorados firmados 100% · fugas 0 · emisiones 50–100 sin duplicados/huecos · 
 
 - Archivos: 32/32 ok · Tests: 48 pasados, 0 fallidos
 - Golden: 4/4 ok · Propiedades: 1/1 ok
+
+## Corrida 2026-10-04T23:55:19.508Z
+
+- Archivos: 46/47 ok · Tests: 77 pasados, 1 fallidos
+- Golden: 5/5 ok · Propiedades: 1/1 ok

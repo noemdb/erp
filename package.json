@@ -30,6 +30,11 @@
     "import:autodetect": "tsx scripts/autodetect-report.ts",
     "migration:report": "tsx scripts/migration-report.ts",
     "series:reconcile": "tsx scripts/reconcile-series.ts",
+    "render:retry": "tsx --env-file=.env scripts/render-retry.ts",
+    "acceptance:gate": "node scripts/acceptance-gate.mjs",
+    "e2e": "playwright test",
+    "e2e:seed": "tsx --env-file=.env e2e/seed.ts",
+    "e2e:install": "playwright install --with-deps chromium",
     "boundaries": "depcruise src --config .dependency-cruiser.cjs"
   },
   "dependencies": {
@@ -63,6 +68,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",

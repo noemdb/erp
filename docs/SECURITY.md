@@ -14,7 +14,8 @@
 
 ## Autenticación
 
-- **Estrategia:** Auth.js o Better Auth (elegir F1), sesiones en PostgreSQL, cookie `HttpOnly`, `Secure`, `SameSite=Lax`.
+- **Estrategia:** auth propio con sesiones en PostgreSQL (ADR-030; cierra la
+  alternativa "Auth.js o Better Auth"), cookie `HttpOnly`, `Secure`, `SameSite=Lax`.
 - **Expiración/revocación:** expiración por inactividad + absoluta, revocación por usuario (cierre sesión / disable). MFA recomendado Contador y Admin (alcance v1 pendiente).
 - **Contraseñas:** Argon2id, mínimo 10 en restablecimiento, recuperación **solo asistida por admin** (ADR-025): token ≥256 bits (solo hash), un solo uso, TTL 60 min, invalida sesiones+tokens, auditoría por etapa. Break-glass por CLI en runbook.
 - **Rate limiting auth:** login y reset con límite estricto + bloqueo progresivo. Ver abajo.
@@ -62,7 +63,7 @@ Reglas: cambio de empresa activa reconstruye contexto, sin caché cross-tenant. 
 | `login`, `resetPassword` | estricto (p.ej. 5/min/IP + bloqueo progresivo) | 429 `RATE_LIMITED` + alerta |
 | `upload` / `validateBatch` / `confirmImport` | medio por usuario/empresa | 429 + job diferido |
 | `issueWithholding`, `closePeriod` | estricto por empresa (evita doble emisión) + `Idempotency-Key` | 429, sin consumir número |
-| `reports` export PDF/Excel | medio (worker pg-boss si pesado) | 429 / encolar |
+| `reports` export PDF/Excel | medio (reintento `render:retry`; cola diferida ADR-031) | 429 / reintentar |
 
 Ajustar valores en F7 con pruebas. Todo 429 usa `RATE_LIMITED`.
 

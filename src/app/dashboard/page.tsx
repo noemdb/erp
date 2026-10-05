@@ -27,9 +27,11 @@ import { AppHeader, PageFooter } from "@/components/layout/app-shell";
 import { getSessionUser, listMemberships } from "@/modules/identity/session";
 import { getCompanyContext, listUserCompanies } from "@/modules/tenancy/repo";
 import { getAutoControls, getConciliation, getIvaSummary, type IvaSummary } from "@/modules/reporting/summary";
+import { listPeriods } from "@/modules/periods/service";
 import { listAuditEvents } from "@/modules/audit/queries";
 import { TrendChart, CompositionDonut, CuotaChart, RetencionesChart } from "./trend-chart";
 import { NewCompanyButton, EditCompanyButton } from "@/components/companies/company-dialog";
+import { CompanySwitch, type SwitchCompany } from "@/components/companies/company-switch";
 import { CompanyForm } from "@/components/companies/company-form";
 import { QuickActions } from "@/components/companies/quick-actions";
 import { cn } from "@/lib/utils";
@@ -45,6 +47,22 @@ function periodLabel(range: unknown): string {
   if (typeof range !== "string") return "—";
   const m = range.replace(/[[)()]/g, "").split(",")[0]?.split("-");
   return m && m.length >= 2 ? `${m[1]}-${m[0]?.slice(2)}` : "—";
+}
+
+/** Estado de período en es-VE (la BD guarda `open/under_review/...`). */
+function periodStatusVe(status: string): string {
+  switch (status) {
+    case "open":
+      return "abierto";
+    case "under_review":
+      return "en revisión";
+    case "closed":
+      return "cerrado";
+    case "reopened":
+      return "reabierto";
+    default:
+      return status;
+  }
 }
 
 /** Date → "05-10-2026 14:32" (America/Caracas). */
@@ -253,7 +271,8 @@ export default async function DashboardPage({
   const ctx = await getCompanyContext(selected.id, user.id);
   if (!ctx) redirect("/dashboard");
 
-  const periods = [...ctx.periods].sort((a, b) =>
+  // Períodos completos vía servicio (ctx.periods trae máx. 5 sin orden).
+  const periods = (await listPeriods({ companyId: selected.id, userId: user.id })).sort((a, b) =>
     String(a.range).localeCompare(String(b.range))
   );
   const current =
@@ -310,48 +329,56 @@ export default async function DashboardPage({
       title: "Débito fiscal",
       sub: "Ventas del período",
       value: fmtVe(summary.debitoFiscal),
+      href: `/c/${selected.id}/reportes/resumen-iva`,
     },
     {
       icon: Business,
       title: "Crédito fiscal",
       sub: "Compras del período",
       value: fmtVe(summary.creditoFiscal),
+      href: `/c/${selected.id}/reportes/resumen-iva`,
     },
     {
       icon: Approval,
       title: "IVA retenido",
       sub: "Comprobantes emitidos",
       value: fmtVe(summary.retIvaEmitidas),
+      href: `/c/${selected.id}/retenciones`,
     },
     {
       icon: Calculate,
       title: "Cuota del período",
       sub: "Débito menos crédito",
       value: fmtVe(summary.cuotaPeriodo),
+      href: `/c/${selected.id}/reportes/resumen-iva`,
     },
         {
           icon: AttachMoney,
           title: "Ventas gravadas",
           sub: "Base imponible ventas",
           value: fmtVe(summary.ventasGravadas),
+          href: `/c/${selected.id}/reportes/libro-ventas`,
         },
         {
           icon: Payments,
           title: "Compras gravadas",
           sub: "Base imponible compras",
           value: fmtVe(summary.comprasGravadas),
+          href: `/c/${selected.id}/reportes/libro-compras`,
         },
         {
           icon: Gavel,
           title: "ISLR retenido",
           sub: "Comprobantes emitidos",
           value: fmtVe(summary.retIslrEmitidas),
+          href: `/c/${selected.id}/retenciones-islr`,
         },
         {
           icon: FactCheck,
           title: "Retenido recibido",
           sub: "Aplicado al período",
           value: fmtVe(summary.retRecibidasAplicadas),
+          href: `/c/${selected.id}/retenciones-recibidas`,
         },
   ];
 
@@ -376,6 +403,8 @@ export default async function DashboardPage({
     iva: Number(t.retIvaEmitidas),
     islr: Number(t.retIslrEmitidas),
   }));
+  const hasTrend = trend.length > 0;
+  const donutTotal = donutData.reduce((a, d) => a + d.value, 0);
 
   const concDiffs = conciliation.items.filter((i) => !i.ok);
   const pendingControls = controls.items.filter(
@@ -440,21 +469,20 @@ export default async function DashboardPage({
     payment: "pago",
     party: "tercero",
   };
+  // Actividad solo de la empresa seleccionada (antes: todas × 500 filas).
   const activity = (
-    await Promise.all(
-      overviews.map(async ({ company: c }) =>
-        (await listAuditEvents({ companyId: c.id, userId: user.id }))
-          .slice(0, 4)
-          .map((e) => ({ ...e, companyName: c.razonSocial, companyId: c.id }))
-      )
+    await listAuditEvents(
+      { companyId: selected.id, userId: user.id },
+      { limit: 8 }
     )
-  )
-    .flat()
-    .sort(
-      (a, b) =>
-        new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime()
-    )
-    .slice(0, 8);
+  ).map((e) => ({ ...e, companyName: selected.razonSocial, companyId: selected.id }));
+
+  // CTA de cierre: período abierto, conciliado y sin hallazgos.
+  const readyToClose =
+    viewing?.status === "open" &&
+    concDiffs.length === 0 &&
+    pendingControls.length === 0 &&
+    (ctx.role === "contador");
 
   return (
     <div className="min-h-screen bg-white text-periwinkle-900 antialiased">
@@ -465,140 +493,83 @@ export default async function DashboardPage({
       />
 
       <main className="mx-auto max-w-6xl px-6 pb-16">
-        {/* Empresas */}
+        {/* Selector compacto (el resumen domina; las tarjetas viven sin selección). */}
         <section className="pt-10" aria-label="Empresas">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-bold tracking-tight">Empresas</h2>
-            <NewCompanyButton />
-          </div>
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {overviews.map(({ company, ctx: cctx }) => {
-              const active = company.id === selected.id;
-              const p = cctx?.periods[0];
-              return (
-                <article
-                  key={company.id}
-                  className={cn(
-                    "flex h-full flex-col overflow-hidden rounded-md border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md",
-                    active
-                      ? "border-transparent ring-2 ring-[#352574]"
-                      : "border-periwinkle-200 brightness-90 hover:brightness-100"
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "relative h-24 shrink-0 overflow-hidden",
-                      !company.colorDistintivo &&
-                        "bg-gradient-to-br from-[#120c27] to-[#352574]"
-                    )}
-                    style={
-                      company.colorDistintivo
-                        ? { backgroundColor: company.colorDistintivo }
-                        : undefined
-                    }
-                  >
-                    <div
-                      className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:28px_28px]"
-                      aria-hidden
-                    />
-                    {company.logoUrl ? (
-                      <img
-                        src={company.logoUrl}
-                        alt={`Logo de ${company.razonSocial}`}
-                        loading="lazy"
-                        className="absolute bottom-2 left-4 h-14 max-w-40 rounded-sm bg-white/90 object-contain p-1 shadow-sm"
-                      />
-                    ) : (
-                      <AccountBalance
-                        className="absolute -bottom-3 left-4 h-16 w-16 text-white/15"
-                        aria-hidden
-                      />
-                    )}
-                    {active && (
-                      <span className="absolute right-3 top-3 rounded-md bg-white/15 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur">
-                        Actual
-                      </span>
-                    )}
-                  </div>
-                  <div className="px-5 pt-4">
-                    <h3 className="truncate font-semibold tracking-tight">
-                      {company.razonSocial}
-                    </h3>
-                    <p className="mt-0.5 truncate font-mono text-xs text-periwinkle-500">
-                      RIF {company.rifOriginal}
-                    </p>
-                  </div>
-                  <p className="px-5 pt-2 text-sm leading-relaxed text-periwinkle-600">
-                    {company.condicionIva}
-                    {cctx?.role ? ` · Rol ${cctx.role}` : ""}
-                  </p>
-                  <p className="px-5 pt-2 font-mono text-[11px] tabular-nums text-periwinkle-500">
-                    {p
-                      ? `${periodLabel(String(p.range))} · ${p.status === "open" ? "abierto" : p.status}`
-                      : "Sin períodos"}
-                  </p>
-                  <div className="mt-auto flex gap-2 px-5 pb-5 pt-4">
-                    <Link
-                      href={`/c/${company.id}`}
-                      className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md bg-[#120c27] px-4 py-2 text-sm font-medium text-white shadow-md shadow-[#120c27]/20 transition-all hover:-translate-y-0.5 active:scale-[0.98]"
-                    >
-                      Entrar
-                      <ArrowForward className="h-4 w-4" aria-hidden />
-                    </Link>
-                    <Link
-                      href={`/dashboard?company=${company.id}`}
-                      aria-current={active ? "page" : undefined}
-                      className={cn(
-                        "inline-flex flex-1 items-center justify-center rounded-md border px-4 py-2 text-sm font-medium transition-colors",
-                        active
-                          ? "border-[#352574] bg-periwinkle-100 text-[#120c27]"
-                          : "border-periwinkle-200 bg-white text-periwinkle-600 hover:bg-periwinkle-100 hover:text-[#120c27]"
-                      )}
-                    >
-                      Ver resumen
-                    </Link>
-                    <EditCompanyButton
-                      iconOnly
-                      company={{
-                        id: company.id,
-                        rif: company.rifOriginal,
-                        razonSocial: company.razonSocial,
-                        condicionIva: company.condicionIva,
-                        domicilioFiscal: company.domicilioFiscal,
-                        nombreComercial: company.nombreComercial,
-                        telefono: company.telefono,
-                        emailContacto: company.emailContacto,
-                        colorDistintivo: company.colorDistintivo,
-                        logoUrl: company.logoUrl,
-                      }}
-                    />
-                  </div>
-                </article>
-              );
-            })}
+          <div className="flex items-center gap-3">
+            <CompanySwitch
+              selectedId={selected.id}
+              companies={overviews.map(({ company, ctx: cctx }): SwitchCompany => {
+                const sortedP = [...(cctx?.periods ?? [])].sort((a, b) =>
+                  String(a.range).localeCompare(String(b.range))
+                );
+                const cur =
+                  sortedP.find((x) => x.status === "open") ??
+                  sortedP[sortedP.length - 1];
+                return {
+                  id: company.id,
+                  razonSocial: company.razonSocial,
+                  rifOriginal: company.rifOriginal,
+                  condicionIva: company.condicionIva,
+                  logoUrl: company.logoUrl,
+                  role: cctx?.role ?? null,
+                  periodText: cur
+                    ? `${periodLabel(String(cur.range))} · ${periodStatusVe(cur.status)}`
+                    : null,
+                };
+              })}
+            />
+            <Link
+              href={`/c/${selected.id}`}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-[#352574] hover:underline"
+            >
+              Entrar
+              <ArrowForward className="h-4 w-4" aria-hidden />
+            </Link>
+            <span className="ms-auto shrink-0">
+              <NewCompanyButton />
+            </span>
           </div>
         </section>
 
-        <section className="mt-10">
+        <section className="mt-10" aria-label="Resumen fiscal">
+          <div
+            className="rounded-lg border-2 bg-white p-5 shadow-sm"
+            style={{ borderColor: selected.colorDistintivo ?? "#352574" }}
+          >
           <Badge variant="outline" className="rounded-md px-3 py-1">
             Resumen fiscal
           </Badge>
-          <h1 className="mt-3 text-balance text-3xl font-bold tracking-tight sm:text-4xl">
-            {selected.razonSocial}
-          </h1>
+          <div className="mt-3 flex items-center gap-4">
+            {selected.logoUrl ? (
+              <img
+                src={selected.logoUrl}
+                alt={`Logo de ${selected.razonSocial}`}
+                className="h-14 w-14 shrink-0 rounded-md border border-periwinkle-200 bg-white object-contain p-1.5 shadow-sm"
+              />
+            ) : (
+              <span
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-white shadow-sm"
+                style={{ background: selected.colorDistintivo ?? "#120c27" }}
+              >
+                <Business className="h-6 w-6" aria-hidden />
+              </span>
+            )}
+            <h1 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
+              {selected.razonSocial}
+            </h1>
+          </div>
           <p className="mt-2 text-sm text-periwinkle-500">
             Período {viewing ? periodLabel(String(viewing.range)) : "—"} ·{" "}
-            {viewing?.status === "open"
-              ? "abierto"
-              : (viewing?.status ?? "sin períodos")}
+            {viewing ? periodStatusVe(viewing.status) : "sin períodos"}
           </p>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
             {periods.length > 1 ? (
-              <nav className="flex flex-wrap gap-1.5" aria-label="Períodos">
+              <nav className="flex flex-wrap items-center gap-1.5" aria-label="Períodos">
                 {[...periods]
                   .sort((a, b) =>
                     String(b.range).localeCompare(String(a.range))
                   )
+                  .slice(0, 8)
                   .map((p) => (
                     <Link
                       key={p.id}
@@ -614,14 +585,23 @@ export default async function DashboardPage({
                       )}
                     >
                       {periodLabel(String(p.range))}
-                      {p.status !== "open" ? " · cerrado" : ""}
+                      {p.status !== "open" ? ` · ${periodStatusVe(p.status)}` : ""}
                     </Link>
                   ))}
+                {periods.length > 8 && (
+                  <Link
+                    href={`/c/${selected.id}/periodos`}
+                    className="rounded-md px-3 py-1.5 text-xs font-medium text-periwinkle-600 hover:text-[#120c27] hover:underline"
+                  >
+                    Ver los {periods.length} →
+                  </Link>
+                )}
               </nav>
             ) : (
               <span />
             )}
-            {current && <QuickActions companyId={selected.id} />}
+            {current && <QuickActions companyId={selected.id} canWrite={ctx.role === "administrativo" || ctx.role === "contador"} />}
+          </div>
           </div>
         </section>
 
@@ -674,6 +654,26 @@ export default async function DashboardPage({
           </section>
         )}
 
+        {/* Listo para revisión: abierto, conciliado y sin hallazgos. */}
+        {readyToClose && (
+          <section className="mt-6" aria-label="Listo para revisión">
+            <Link
+              href={`/c/${selected.id}/periodos`}
+              className="group flex items-center gap-3 rounded-md border border-icy-aqua-600/30 bg-icy-aqua-50/70 px-4 py-3 transition-all hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <CheckCircle
+                className="h-5 w-5 shrink-0 text-icy-aqua-700"
+                aria-hidden
+              />
+              <span className="text-sm text-periwinkle-900">
+                <strong>Todo cuadra.</strong> Envía el período{" "}
+                {viewing ? periodLabel(String(viewing.range)) : ""} a revisión
+                para cerrar →
+              </span>
+            </Link>
+          </section>
+        )}
+
         {!current && (
           <Card className="mt-8 rounded-lg border-icy-aqua-200 bg-gradient-to-r from-icy-aqua-50/60 to-white">
             <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
@@ -681,7 +681,7 @@ export default async function DashboardPage({
                 Sin movimientos todavía: registra tu primera compra o venta
                 y el período se crea solo. Los indicadores muestran 0,00.
               </p>
-              <QuickActions companyId={selected.id} />
+              <QuickActions companyId={selected.id} canWrite={ctx.role === "administrativo" || ctx.role === "contador"} />
             </CardContent>
           </Card>
         )}
@@ -690,6 +690,11 @@ export default async function DashboardPage({
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {indicators.map((k, i) => (
                   <Reveal key={k.title} delay={i * 80} className="h-full">
+                    <Link
+                      href={k.href}
+                      aria-label={`${k.title}: ${k.value}. Ver detalle`}
+                      className="block h-full rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[#37c8a1]"
+                    >
                     <Card className="h-full rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
                       <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-2">
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-periwinkle-100 text-[#120c27]">
@@ -710,12 +715,23 @@ export default async function DashboardPage({
                         </p>
                       </CardContent>
                     </Card>
+                    </Link>
                   </Reveal>
                 ))}
               </div>
             </section>
 
             {/* Gráficos */}
+            {!hasTrend ? (
+              <section className="mt-3" aria-label="Gráficos">
+                <Card className="rounded-lg border-icy-aqua-200 bg-gradient-to-r from-icy-aqua-50/60 to-white">
+                  <CardContent className="p-5 text-sm leading-relaxed text-periwinkle-600">
+                    Aún no hay períodos con movimientos para graficar. Registra
+                    documentos y la tendencia débito vs crédito aparecerá aquí.
+                  </CardContent>
+                </Card>
+              </section>
+            ) : (
             <section className="mt-3" aria-label="Gráficos">
               <div className="grid gap-3 lg:grid-cols-3">
                 <Reveal className="lg:col-span-2">
@@ -744,7 +760,13 @@ export default async function DashboardPage({
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <CompositionDonut data={donutData} />
+                    {donutTotal > 0 ? (
+                      <CompositionDonut data={donutData} />
+                    ) : (
+                      <p className="py-8 text-center text-sm text-periwinkle-500">
+                        Sin base imponible en este período.
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
                 </Reveal>
@@ -782,6 +804,7 @@ export default async function DashboardPage({
                 </Reveal>
               </div>
             </section>
+            )}
 
             {/* Comparativa */}
             {comparison.length > 1 && (
@@ -827,7 +850,7 @@ export default async function DashboardPage({
                             </td>
                             <td className="px-3 py-2.5 font-mono text-xs tabular-nums text-periwinkle-500">
                               {row.period
-                                ? `${row.period.label} · ${row.period.status === "open" ? "abierto" : row.period.status}`
+                                ? `${row.period.label} · ${periodStatusVe(row.period.status)}`
                                 : "—"}
                             </td>
                             <td className="px-3 py-2.5 text-right font-mono tabular-nums">

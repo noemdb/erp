@@ -15,7 +15,7 @@ export default async function IslrDoc() {
         { title: "Registra y asigna el evento", body: "Primero el pago o abono en Pagos, asignado a sus compras. Sin evento asignado no hay disparador válido." },
         { title: "Compara escenarios (G2)", body: "La previsualización muestra fecha efectiva, período, regla, porcentaje, sustraendo y monto. Con criterio unset, ambos escenarios deben converger o se bloquea." },
         { title: "Elige concepto de pago", body: "El concepto determina porcentaje y sustraendo según vigencia. Verifica tipo de beneficiario y condiciones." },
-        { title: "Emite y entrega", body: "Numeración por serie propia de la empresa; snapshot + PDF + hash. Registra entrega al beneficiario." },
+        { title: "Emite y entrega", body: "Serie propia por empresa (formato definitivo pendiente de tu definición, G9); snapshot inmutable + hash y registro de entrega al beneficiario. El PDF sigue el mismo patrón del IVA cuando se habilite." },
         { title: "Corrige anulando", body: "Tras emitir, no se crean eventos anteriores del beneficiario sin anular primero el comprobante y revisar el caso." },
       ]}
       callouts={[

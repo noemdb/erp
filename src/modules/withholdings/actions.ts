@@ -53,6 +53,15 @@ export async function renderIvaPdfAction(companyId: string, id: string) {
   return res;
 }
 
+export async function renderIslrPdfAction(companyId: string, id: string) {
+  const ctx = await emisor(companyId);
+  if (!ctx) return { ok: false as const, error: { code: "FORBIDDEN", message: "Solo quien puede emitir." } };
+  const { renderIslrPdf } = await import("./render-job");
+  const res = await renderIslrPdf(ctx, id);
+  if (res.ok) revalidatePath(`/c/${companyId}/retenciones-islr/${id}`);
+  return res;
+}
+
 export async function previewIslrAction(companyId: string, input: Parameters<typeof previewIslr>[1]) {
   const ctx = await emisor(companyId);
   if (!ctx) return { ok: false as const, error: { code: "FORBIDDEN", message: "Solo quien puede emitir." } };
