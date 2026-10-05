@@ -15,6 +15,7 @@
     "seed:admin": "tsx src/db/seed-admin.ts",
     "seed:rules": "tsx src/db/seed-rules.ts",
     "seed:company-rules": "tsx --env-file=.env src/db/seed-company-rules.ts",
+    "seed:practica": "tsx --env-file=.env src/db/seed-practica.ts",
     "acceptance:report": "node scripts/acceptance-report.mjs",
     "acceptance:evidence": "node scripts/collect-evidence.mjs",
     "goldens:check": "node scripts/validate-goldens.mjs",
