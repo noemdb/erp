@@ -2,6 +2,7 @@ import Link from "next/link";
 import AccountBalance from "@mui/icons-material/AccountBalance";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import { UserMenu } from "./user-menu";
+import { CompanyNav } from "./company-nav";
 
 export type ShellUser = { name: string; email: string };
 
@@ -20,6 +21,7 @@ export function AppHeader({
   role,
   companyCount = 1,
   branding,
+  companyId,
 }: {
   /** Título junto al logo (empresa, sección). */
   title: string;
@@ -31,6 +33,8 @@ export function AppHeader({
   companyCount?: number;
   /** Branding de la empresa actual (solo panel de empresa). */
   branding?: { color?: string | null; logoUrl?: string | null };
+  /** Si se informa, muestra el botón "Gestión" que abre el drawer derecho. */
+  companyId?: string;
 }) {
   const accent = safeAccent(branding?.color ?? null);
   return (
@@ -72,6 +76,7 @@ export function AppHeader({
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {companyId && <CompanyNav companyId={companyId} />}
           <UserMenu
             name={user.name}
             email={user.email}
