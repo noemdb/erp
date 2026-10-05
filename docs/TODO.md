@@ -105,6 +105,7 @@
 | Reporte aceptación | ✅ | `acceptance/acceptance-report.md` (`npm run acceptance:evidence`) |
 | Período real M2/M5, dorados firmados | 🔲 | Bloqueado: muestras + firma contador |
 | Playwright arnés + humo por rol | ✅ | `playwright.config.ts` + `e2e/seed.ts` (4 roles) + setup por UI con storageState + reloj controlado + humo login/dashboard por rol + negativa (6/6 local). Recorridos P0 en ACC-06 |
+| Playwright P0 + negativos + seguridad | ✅ | `p0.journeys` (compra contador crea→lista, importación preview con advertencia tercero-nuevo, reglas por rol) + `p0.security` (cross-tenant→dashboard, API 401, página→login, rate-limit al 6.º). 14/14 local contra dev |
 | Gate activación (dorados antes de activar) | ✅ | `activation-gate.ts` en `transition()`: no sintético exige ≥1 firmado de su clase con 100% reproducido (`GATE_NO_COVERAGE`/`GATE_FAILED`); sintético omite (no activable en prod). Firmas ligadas al hash (ACC-02) |
 
 ### 2.0.2 Ola 1 (R3/R4 del cliente)

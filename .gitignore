@@ -107,6 +107,7 @@ Thumbs.db
 
 # ── playwright e2e (sesiones y reportes locales, nunca al repo) ──────
 e2e/.auth/
+e2e/.ctx.json
 test-results/
 playwright-report/
 playwright/.cache

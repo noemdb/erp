@@ -1,4 +1,6 @@
 import type { Page } from "@playwright/test";
+import { readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
 import { ROLES, emailDe, type Rol } from "./seed";
 
 /** Reloj controlado: congela el navegador en una fecha fija (determinismo, sin Date.now del host). */
@@ -26,3 +28,15 @@ export async function loginUI(page: Page, rol: Rol) {
 
 export { ROLES, emailDe, type Rol };
 export const AUTH_DIR = ".auth";
+
+/** IDs del seed (`npm run e2e:seed` escribe e2e/.ctx.json). CWD = raíz del repo. */
+export function leerCtx(): { demoCompanyId: string; companyBId: string } {
+  const p = join(process.cwd(), "e2e", ".ctx.json");
+  if (!existsSync(p)) throw new Error("falta e2e/.ctx.json: corre npm run e2e:seed primero.");
+  return JSON.parse(readFileSync(p, "utf8"));
+}
+
+/** Sufijo único por corrida para documentos e2e (evita DUPLICATE_DOCUMENT entre corridas). */
+export function sello(): string {
+  return Date.now().toString(36).toUpperCase();
+}

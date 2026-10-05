@@ -4,6 +4,8 @@
  * Uso: E2E_PASSWORD=<clave> npm run e2e:seed (con .env cargado para DATABASE_URL).
  */
 import { eq } from "drizzle-orm";
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { db } from "../src/db/client";
 import { users, companies, companyUser } from "../src/db/schema";
 import { hashPassword } from "../src/modules/identity/password";
@@ -44,6 +46,21 @@ async function main() {
     if (mem.length > 0) console.log(`membresía ${email} → ${rol} (una sola empresa: el login redirige a /c/…)`);
   }
   console.log("listo: 4 roles en empresa demo.");
+  // Empresa B sin membresías: sirve al test cross-tenant (debe redirigir a /dashboard).
+  const RIF_B = "J-00000002-1";
+  let companyB = (await db.select().from(companies).where(eq(companies.rif, RIF_B)).limit(1))[0];
+  if (!companyB) {
+    [companyB] = await db
+      .insert(companies)
+      .values({ rif: RIF_B, rifOriginal: RIF_B, razonSocial: "Empresa E2E-B (sin acceso), C.A.", condicionIva: "ordinario" })
+      .returning();
+    console.log("empresa E2E-B creada (sin membresías)");
+  }
+  writeFileSync(
+    join(process.cwd(), "e2e", ".ctx.json"),
+    JSON.stringify({ demoCompanyId: company!.id, companyBId: companyB!.id }, null, 2),
+  );
+  console.log("ctx escrito: e2e/.ctx.json (ignorado por git).");
   process.exit(0);
 }
 

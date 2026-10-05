@@ -10,6 +10,8 @@
 
 - 2026-10-04: Guía `pendientes/TERCERA_REV/guia/` (README + 02-ruta-externa + 03-ingenieria-posterior): detalle operativo de muestras→Sesión 1→matriz→dorados (dueños, aceptaciones, plan B) y de la ingeniería posterior (precondiciones, aceptación, orden, tablero semanal).
 
+- 2026-10-04: ACC-06 P0 E2E (14/14 verde local): `p0.journeys` (J1 compra contador con RIF/factura únicos por corrida → visible en lista; J2 CSV→lote validado con advertencia honesta de tercero nuevo, sin confirmar; J3 reglas: auditor solo-lectura, contador ve borrador) + `p0.security` (S1 cross-tenant→dashboard con Empresa E2E-B sin membresías; S2 API 401 y página→login sin sesión; S3 rate-limit al 6.º intento). Seed escribe `e2e/.ctx.json` (ignorado). Hallazgos: `import.meta` no existe en el transform CJS de Playwright (`process.cwd()`); inputs del formulario de compra sin `id` (labels rotos, deuda a11y menor); el lote nace en `uploaded` (hay que pulsar Validar filas). Escrituras marcadas E2E- en dev. Typecheck verde, lint 0 errores nuevos. Sin commit.
+
 - 2026-10-04: ACC-03 gate de activación (`src/modules/rules/activation-gate.ts` + `transition()`): lo no sintético solo activa si reproduce el 100% de sus firmados (`GATE_NO_COVERAGE` sin cobertura, `GATE_FAILED` con diffs); sintético omite (guardia prod intacta). Verificado puro (7 tests), servicio (bloqueo + workflow sintético) y e2e temporal con firmado real en disco (ruta positiva pasa; hash manipulado ⇒ NO_COVERAGE). `workflow.test` marca sus datos synthetic; seeder autorizado deja aprobada-pendiente ante GATE_*. Procedimiento de firma en `fixtures/tax-scenarios/README.md`. Suites afectadas 20/20, typecheck verde, lint 0 errores. Sin commit.
 
 > Convención (DOC-04): cada entrada lleva fecha; las cifras de tests
