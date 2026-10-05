@@ -1,5 +1,9 @@
 # CHANGELOG docs/
 
+- 2026-10-05: F0-01 enviado (carátula `docs/anexos/pedido-F0-01.md`): 18 preguntas asesoría F0 §9 + 5 formato ROADMAP-03 §3.7 + post-cierre + piloto/tiempos + M-1…M-4 (límite muestras 16-oct). Cumple Enmienda E-4 (límite 05-oct). Pendiente canal/acuse.
+
+- 2026-10-05: SEC-02′ cerrado post-purge: `scan-secrets.mjs` vuelve a bloquear `serverc*` (fin ceguera ADR-032) + hook pre-commit instalado; triple verificación limpia (scan, historial, trackeados). GIT-01 rebanada commiteada.
+
 - 2026-10-04: ADR-032 (orden del dueño): `serverc*` excluido del escáner de secretos (pre-commit + CI); commits desbloqueados, purge SEC-04 mañana. Escáner ciego ante `serverc` hasta entonces; resto de patrones intacto.
 
 - 2026-10-04: Dashboard `?company` UX: períodos completos vía servicio, nav acotada 8, estados es-VE, indicadores clicables a drill-down, actividad por empresa con `limit`, CTA de cierre para contador, `QuickActions` con gating por rol, vacíos en gráficos. Build+typecheck+lint verdes.

@@ -25,7 +25,7 @@
 ### F0 — Línea base fiscal (requiere contador)
 | Bloque | Estado | Notas |
 |---|---|---|
-| Paquete contador (`anexos/paquete-contador.md`) | ✅ | Enviable: matriz preliminar + checklist + preguntas; 17 escenarios candidatos no aprobados ni ejecutables como dorados |
+| Paquete contador (`anexos/paquete-contador.md`) | ✅ | Enviable: matriz preliminar + checklist + preguntas; 17 escenarios candidatos no aprobados ni ejecutables como dorados. **F0-01 enviado 2026-10-05**: carátula `anexos/pedido-F0-01.md` (18 preguntas asesoría §9 + 5 formato ROADMAP-03 §3.7 + post-cierre + piloto/tiempos + M-1…M-4). Pendiente: anotar canal/acuse y respuesta del contador |
 | Matriz Reglas v1 firmada | 🔲 | Borrador legal IVA iniciado; falta cotejo/firma y completar ISLR por concepto |
 | Escenarios dorados 30–50 | 🔲 | `pendientes/PRIMERA_REV/dorados-propuestos-F0.json` contiene candidatos no validados; no son fixtures ejecutables ni gate aprobado. Faltan escenarios firmados por contador. |
 | Muestras reales | 🔲 | XLSX disponible; validar como golden y confirmar ≥1 mes de CSV legacy + Z reales |
