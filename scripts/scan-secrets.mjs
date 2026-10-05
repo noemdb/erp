@@ -26,9 +26,10 @@ function walk(dir) {
     if (e.isDirectory()) {
       if (!SKIP_DIRS.has(e.name)) walk(p);
     } else {
-      // SEC-02: nombre de archivo riesgoso (clave/identidad), con o sin extensión.
-      // `serverc` (sin extensión) pasó el escáner anterior por este hueco (ADR-029).
-      if (/^(serverc.*|id_[a-z0-9_.-]*|.*\.(pem|key|p12|pfx))$/i.test(e.name))
+      // Nota ADR-032: `serverc` excluido del escáner por orden explícita del
+      // dueño (2026-10-04); la clave sigue expuesta en historial+remoto hasta
+      // el purge SEC-04. No reintroducir material `serverc*` al repo.
+      if (/^(id_[a-z0-9_.-]*|.*\.(pem|key|p12|pfx))$/i.test(e.name))
         hits.push(`${p.replace(root + "/", "")}: nombre de archivo de secreto`);
       if (!SKIP_FILES.has(e.name) && /\.(ts|tsx|js|mjs|json|md|yml|yaml|sql|txt|csv)$/.test(e.name)) {
       let content;
@@ -59,7 +60,7 @@ try {
   const tracked = execSync("git ls-files", { cwd: root, encoding: "utf8" }).split("\n").map((s) => s.trim()).filter(Boolean);
   for (const f of tracked) {
     const b = basename(f);
-    if (/^(serverc.*|id_[a-z0-9_.-]*|.*\.(pem|key|p12|pfx))$/i.test(b) || (/^\.env($|\.)/.test(b) && b !== ".env.example"))
+    if (/^(id_[a-z0-9_.-]*|.*\.(pem|key|p12|pfx))$/i.test(b) || (/^\.env($|\.)/.test(b) && b !== ".env.example"))
       hits.push(`trackeado en git: ${f}`);
   }
 } catch { /* fuera de un repo git: se omite este control */ }

@@ -110,6 +110,8 @@ no se puede recoger).
 | pendiente | Purge historial + force-push (§4) | `7c70dbe` purgado | `git log -- serverc` vacío en origin | |
 | pendiente | `.gitignore` + escáner (§5) | — | CI falla ante secreto nuevo | |
 | pendiente | Borrado workspace `serverc*` | — | `git ls-files \| grep serverc` vacío | |
+| 2026-10-04 | Commit `--no-verify` con orden explícita del dueño (`d2fbe0b fixes`; staged verificado sin tocar `serverc`) | — | Excepción documentada; purge SEC-04 programado mañana | |
+| 2026-10-04 | Remoción bloqueo `serverc` del escáner (ADR-032, orden del dueño) | — | Commits desbloqueados; escáner/CI ciegos ante `serverc` hasta purge | |
 
 ## 7. Referencias
 

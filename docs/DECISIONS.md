@@ -609,3 +609,26 @@ mañana.
 Sin cola real hasta v2 o gatillo. `ARCHITECTURE.md`/`API.md`/`SECURITY.md`
 que mencionan "worker pg-boss" se leen como diseño futuro, no capacidad
 actual.
+
+---
+
+## ADR-032 — Remoción del bloqueo `serverc` del escáner (orden del dueño)
+**Fecha:** 2026-10-04
+**Estado:** Aceptada (orden explícita del dueño; revierte parcialmente ADR-029 § blindaje)
+
+### Contexto
+El pre-commit/CI bloqueaba todo commit por 4 hallazgos `serverc` (nombre +
+trackeo). El dueño ordena eliminar la restricción por completo para poder
+commitear, con purge SEC-04 programado para mañana.
+
+### Decisión
+Excluir `serverc*` de las dos regex de `scripts/scan-secrets.mjs` (nombre de
+archivo y trackeo). Se mantienen: patrones de material (clave privada, AWS,
+`sk_live`, postgres con credenciales, password), `id_*`, `*.pem/key/p12/pfx`,
+`.env` trackeado y cobertura `.gitignore`.
+
+### Consecuencias
+El escáner y el CI quedan **ciegos ante `serverc`**: la clave privada sigue
+expuesta en historial + `origin/main` sin ninguna alarma hasta el purge.
+Si el purge no ocurre, la exposición es permanente y silenciosa. El dueño
+acepta el riesgo. No reintroducir material `serverc*` al repo.
