@@ -1,5 +1,7 @@
 # CHANGELOG docs/
 
+- 2026-10-05: Intake M-1…M-4 listo para muestras reales: `import:autodetect` corre sobre corpus sintético (compras-legacy 80% válido; Z dispara gatillo 1 → perfiles FUN-05 pendientes de layouts reales) y `golden:inspect` inventaría el XLSX de formatos (0 `#REF!`). Gate de entrada operativo; a la espera del envío del contador (límite 16-oct).
+
 - 2026-10-05: F0-01 enviado (carátula `docs/anexos/pedido-F0-01.md`): 18 preguntas asesoría F0 §9 + 5 formato ROADMAP-03 §3.7 + post-cierre + piloto/tiempos + M-1…M-4 (límite muestras 16-oct). Cumple Enmienda E-4 (límite 05-oct). Pendiente canal/acuse.
 
 - 2026-10-05: SEC-02′ cerrado post-purge: `scan-secrets.mjs` vuelve a bloquear `serverc*` (fin ceguera ADR-032) + hook pre-commit instalado; triple verificación limpia (scan, historial, trackeados). GIT-01 rebanada commiteada.
