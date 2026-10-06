@@ -79,4 +79,16 @@ export const DOC_SECTIONS: DocSection[] = [
       { title: "Bitácora", href: "/docs/control/bitacora", available: true, description: "Auditoría append-only." },
     ],
   },
+  {
+    id: "5",
+    title: "Caso práctico",
+    tagline: "Un mes completo de punta a punta, con cifras reales de la simulación.",
+    status: "disponible",
+    pages: [
+      { title: "La historia", href: "/docs/caso-practico/resumen", available: true, description: "Los protagonistas y el mes en una mirada." },
+      { title: "La carga del mes", href: "/docs/caso-practico/carga", available: true, description: "Del archivo a los documentos, paso a paso." },
+      { title: "Pagos y comprobantes", href: "/docs/caso-practico/comprobacion", available: true, description: "El pago, las activaciones y los cálculos revisados." },
+      { title: "Cierre y consistencia", href: "/docs/caso-practico/cierre", available: true, description: "Bitácora, pruebas y lista de cierre." },
+    ],
+  },
 ];

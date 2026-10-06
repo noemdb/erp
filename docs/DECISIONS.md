@@ -632,3 +632,31 @@ El escáner y el CI quedan **ciegos ante `serverc`**: la clave privada sigue
 expuesta en historial + `origin/main` sin ninguna alarma hasta el purge.
 Si el purge no ocurre, la exposición es permanente y silenciosa. El dueño
 acepta el riesgo. No reintroducir material `serverc*` al repo.
+
+---
+
+## ADR-033 — Signo de NC en agregados + `voided_at/reason/replaces_id` físicos en documentos (propuesta)
+**Fecha:** 2026-10-05
+**Estado:** Propuesta (requiere firma del contador; hasta entonces se documenta, no se codifica — mismo régimen que G4/G8/G9)
+
+### Contexto
+Corrección casoUso003 (ND `716917eb`→`voided`, NC `6acc6ce7` `credit_note` afectado `001-00001` fechas 2023-09-10/11/10, `TODO ✅` 2026-10-05) dejó 10 activos visibles pero dos deudas intactas:
+1. `getPurchaseBook` (lista+CSV), `getIvaSummary` (`sum()`), `getConciliation` (`tot()`) suman la NC en vez de restarla: `Base 10.000 / IVA 1.588,15` incluye `+100/+16` de la NC. Además `listEligiblePurchases` no filtra por `kind`, por lo que la NC aparece como elegible para retención de IVA.
+2. `DATABASE.md:321` y `DOMAIN.md` documentan `voided_at` en `purchase_documents`, pero el físico (`src/db/schema/fiscal-docs.ts`, comentario F1-4b) solo tiene `status`: sin `voided_at`, sin `void_reason`, sin `replaces_id`. El motivo vive únicamente en `audit_events.reason` (`voidPurchaseDocument` misma TX). `sales_documents`, mismo hueco por revisar. Las tablas de comprobantes (`withholdings.ts`) sí tienen `voidedAt/voidReason`.
+
+### Alternativas consideradas
+| Opción | Pros | Contras |
+|---|---|---|
+| NC resta en agregados + elegibles excluye NC/ND (propuesta) | Libro/resumen/conciliación cuadran fiscalmente; preview IVA no sugiere retener una NC | Cambia totales vigentes y requiere re-aprobar dorados/golden que asumían la suma |
+| Columna firmada (`+`/`-`) sin cambiar agregados | Trazable sin romper reportes actuales | Mantiene el error fiscal en totales; doble fuente de verdad |
+| Dejar la suma actual | Nada que construir | Cierre con totales fiscalmente incorrectos; bloquea F5/M5 |
+| Migración aditiva `voided_at timestamptz + void_reason text + replaces_id uuid→self` (propuesta) | Trazabilidad en el dato + anulación/sustitución (`replaces_id`) sin reescribir historia; `UNIQUE … WHERE status<>voided` ya existe | Requiere migración + backfill `NULL` + tests; `sales_documents` debe revisarse igual |
+| Solo auditoría como hoy | Sin migración | El documento no dice cuándo/por qué se anuló ni a cuál sustituye |
+
+### Decisión (propuesta, sin implementar hasta firma)
+1. NC (`credit_note`) resta `base_imponible/iva_causado/total` en `getPurchaseBook`, `getIvaSummary`, `getConciliation`; ND (`debit_note`) suma. `listEligiblePurchases` excluye NC/ND (solo `invoice` con IVA>0 entra a retención). Tests: libro con 9F+1NC, resumen y conciliación, preview IVA sin NC.
+2. Migración aditiva (sin reescritura): `purchase_documents` (+ `sales_documents` si confirma revisión) agregan `voided_at timestamptz NULL`, `void_reason text NULL`, `replaces_id uuid NULL → self(id)`; `voidPurchaseDocument` los escribe junto a `status='voided'` en la misma TX (mantiene `audit void` como está). Sin tocar series: el número anulado no se reutiliza.
+3. Hasta la aceptación: libros/resumen/conciliación se marcan **provisionales** y no habilitan cierre/M5; la simulación de Carlos se limita a `preview` (IVA/ISLR) sin emitir.
+
+### Consecuencias
+Sin firma del contador no hay código de agregados ni migración; F5 (libros/resumen fiel) y el cierre del período septiembre-2023 siguen bloqueados. Aceptar este ADR convierte las deudas de `TODO 2026-10-05` en plan con tests y revalidación de dorados.

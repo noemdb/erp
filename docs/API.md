@@ -85,6 +85,7 @@ Común: `fecha_fiscal` determina `fiscal_period_id`, nunca se sustituye por fech
 - Errores: `TOTAL_MISMATCH`, `DUPLICATE_DOCUMENT`, `CREDIT_NOTE_EXCEEDS_BALANCE`, `MISSING_AFFECTED_DOCUMENT`, `PERIOD_CLOSED`.
 
 ### `voidPurchaseDocument(id, { reason })` — anula sin borrar, exige motivo, conserva número. Si período cerrado requiere reapertura o `fiscal_adjustments`.
+- Implementado 2026-10-05: `validated|included→voided` (DOMAIN), `NOT_FOUND`/`INVALID_STATE_TRANSITION`/`VALIDATION_ERROR` (motivo≥3), trigger→`PERIOD_CLOSED`; motivo en `audit_events.reason` (sin `voided_at` físico); `voidPurchaseAction` exige `docs.create` (sin permiso nuevo); `getPurchaseBook` (lista+CSV), `getIvaSummary` y `getConciliation` excluyen `voided`. El signo NC en agregados sigue pendiente (requiere ADR).
 
 ### `createSalesDocument(...)` — análogo + `kind invoice|z_summary|credit_note|debit_note|export|third_party`, `range_from/to` solo Z, `source_type imported|manual` (`electronically_issued` reservado v2), `machine_id/z_report_id?`. Regla G7: no mezclar factura individual + Z misma sucursal/período (validación app).
 
@@ -148,6 +149,7 @@ Parámetros comunes: `companyId, fiscalPeriodId, branchId?, format pdf|xlsx|csv`
 
 ### `GET /api/companies/[companyId]/reports/purchase-book?periodId=&format=` / `sales-book` / `iva-summary` / `iva-withholdings` / `islr-withholdings` / `conciliation`
 - `purchase_book|sales_book`: columnas = plantilla golden master, cortes por clasificación/alícuota. Soporta modo factura y Z.
+- `iva_withholdings` (CSV): columnas `comprobante,emision,rif_beneficiario,razon_social,retenido,estado`; incluye anulados marcados, filtro `periodId`, neutraliza inyección `=+-@`. PDF/Excel fiel en F5.
 - `iva_summary`: débitos, créditos, exentas, exportaciones, importaciones, ajustes, excedente anterior, retenciones aplicadas/no aplicadas, cuota. Drill-down: cada total enlaza a documentos.
 - `conciliation`: libros ↔ resumen ↔ comprobantes, tolerancia 0 (salvo ADR-014).
 - Export Excel vía `exceljs` sobre plantilla original (neutralizar CSV injection `=+-@`), PDF vía HTML→Chromium en worker. Almacena con `sha256`.

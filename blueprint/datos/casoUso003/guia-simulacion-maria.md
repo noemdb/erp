@@ -16,7 +16,7 @@ Esta guía está diseñada para ejecutar la simulación completa del sistema des
 
 ### 1. Contexto de Negocio
 Es la primera semana de octubre. María debe cargar las compras de septiembre del sistema legacy de "Empresa Demo, C.A." 
-usando el archivo `compras_septiembre_legacy.csv` (10 filas).
+usando el archivo `compras-septiembre-legacy.csv` (10 filas).
 
 ### 2. Acción en UI (Lo que hace María)
 1.  Ingresa al módulo **Importaciones** > **Lote Compras**.

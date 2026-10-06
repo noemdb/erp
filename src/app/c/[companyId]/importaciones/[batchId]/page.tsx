@@ -30,6 +30,9 @@ import {
 } from "@/modules/imports/labels";
 import { ValidateButton } from "./validate-button";
 import { ConfirmButton } from "./confirm-button";
+import { RowStatusFilter } from "./row-status-filter";
+
+const ROW_STATUS_ORDER = ["pending", "valid", "warning", "rejected", "imported"] as const;
 
 const NEXT_STEP: Record<string, string> = {
   uploaded: "Valida las filas para clasificarlas en válidas, advertencias y rechazadas.",
@@ -43,10 +46,14 @@ const NEXT_STEP: Record<string, string> = {
 
 export default async function LotePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ companyId: string; batchId: string }>;
+  searchParams?: Promise<{ estado?: string | string[] }>;
 }) {
   const { companyId, batchId } = await params;
+  const sp = searchParams ? await searchParams : {};
+  const rawList = sp.estado == null ? [] : Array.isArray(sp.estado) ? sp.estado : [sp.estado];
   const user = await getSessionUser();
   if (!user) redirect("/login");
   const ctx = await getCompanyContext(companyId, user.id);
@@ -60,6 +67,28 @@ export default async function LotePage({
   const { batch, rows } = data;
   const canImport = (await authorize(companyId, user.id, "imports.run")).ok;
   const sorted = [...rows].sort((a, b) => a.rowNumber - b.rowNumber);
+  const validSet = new Set<string>(ROW_STATUS_ORDER);
+  const selectedEstados = [
+    ...new Set(
+      rawList
+        .flatMap((v) => String(v).split(","))
+        .map((v) => v.trim())
+        .filter((v) => validSet.has(v)),
+    ),
+  ];
+  const batchBase = `${base}/importaciones/${batchId}`;
+  const counts = new Map<string, number>();
+  for (const r of sorted) counts.set(r.status ?? "—", (counts.get(r.status ?? "—") ?? 0) + 1);
+  const visible =
+    selectedEstados.length === 0
+      ? sorted
+      : sorted.filter((r) => selectedEstados.includes(r.status ?? ""));
+  const filterOptions = ROW_STATUS_ORDER.map((s) => ({
+    value: s,
+    label: es(ROW_STATUS_ES, s),
+    count: counts.get(s) ?? 0,
+  }));
+  const selectedLabels = selectedEstados.map((s) => es(ROW_STATUS_ES, s)).join(", ");
   const ignoredColumns =
     (batch.mappingProfile as { ignoredColumns?: string[] } | null)?.ignoredColumns ?? [];
 
@@ -194,7 +223,7 @@ export default async function LotePage({
         {/* Filas */}
         <section className="mt-8" aria-label="Filas del lote">
           <Reveal>
-            <Card className="overflow-hidden rounded-lg">
+            <Card className="overflow-visible rounded-lg">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base tracking-tight">
                   Filas del lote
@@ -202,26 +231,54 @@ export default async function LotePage({
                 <CardDescription>
                   {sorted.length === 0
                     ? "Sin filas cargadas todavía."
-                    : `${sorted.length} ${sorted.length === 1 ? "fila" : "filas"} en orden de archivo.`}
+                    : selectedEstados.length === 0
+                      ? `${sorted.length} ${sorted.length === 1 ? "fila" : "filas"} en orden de archivo.`
+                      : `${visible.length} de ${sorted.length} filas · ${selectedLabels}.`}
                 </CardDescription>
+                {sorted.length > 0 && (
+                  <RowStatusFilter
+                    selected={selectedEstados}
+                    baseHref={batchBase}
+                    total={sorted.length}
+                    options={filterOptions}
+                  />
+                )}
               </CardHeader>
               <CardContent className="p-0">
                 {sorted.length === 0 ? (
                   <p className="px-5 pb-5 text-sm text-periwinkle-500">
                     Valida el lote para clasificar cada fila.
                   </p>
+                ) : visible.length === 0 ? (
+                  <p className="px-5 pb-5 text-sm text-periwinkle-500">
+                    Sin filas en {selectedEstados.length === 1 ? "estado" : "estados"} “{selectedLabels}”.{" "}
+                    <Link
+                      href={batchBase}
+                      className="text-[#352574] underline decoration-periwinkle-300 underline-offset-2 hover:text-[#120c27]"
+                    >
+                      Ver todas
+                    </Link>
+                    .
+                  </p>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto rounded-b-lg">
                     <table className="w-full min-w-[48rem] text-sm">
                       <thead>
                         <tr className="border-y border-periwinkle-200 bg-periwinkle-50/70 text-left text-[11px] font-semibold uppercase tracking-wider text-periwinkle-500">
                           <th scope="col" className="px-4 py-3 text-right">Fila</th>
-                           <th scope="col" className="px-4 py-3">Estado</th>
+                           <th scope="col" className="px-4 py-3">
+                            <span className="inline-flex items-center gap-2">
+                              Estado
+                              {selectedEstados.length > 0 && (
+                                <span className="sr-only">(filtrado por {selectedLabels})</span>
+                              )}
+                            </span>
+                          </th>
                            <th scope="col" className="px-4 py-3">Errores / avisos</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {sorted.map((r) => (
+                        {visible.map((r) => (
                           <tr
                             key={r.id}
                             className="border-b border-periwinkle-100 last:border-0"

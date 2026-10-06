@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 import { z } from "zod";
-import { eq, and } from "drizzle-orm";
+import { eq, and, ne } from "drizzle-orm";
 import { withTenant, type DrizzleTx } from "@/modules/tenancy/with-tenant";
 import { resolvePeriod } from "@/modules/periods/resolve";
 import { puedeAplicarNotaCredito } from "@/modules/tax-engine/compute";
@@ -169,6 +169,41 @@ export async function createPurchaseDocument(
   }
 }
 
+/** Anulación de compra: validated|included → voided. No borra, no libera número, motivo obligatorio (queda en auditoría). Período cerrado lo bloquea el trigger (PERIOD_CLOSED). */
+export async function voidPurchaseDocument(
+  ctx: { companyId: string; userId: string },
+  id: string,
+  reason: string,
+): Promise<{ ok: true } | { ok: false; error: ServiceError }> {
+  if (reason.trim().length < 3)
+    return { ok: false, error: { code: "VALIDATION_ERROR", message: "Motivo de anulación requerido." } };
+  try {
+    return await withTenant(ctx, async (tx) => {
+      const [doc] = await tx.select().from(purchaseDocuments).where(eq(purchaseDocuments.id, id)).limit(1);
+      if (!doc || doc.companyId !== ctx.companyId)
+        return { ok: false as const, error: { code: "NOT_FOUND", message: "Documento no existe." } };
+      if (doc.status !== "validated" && doc.status !== "included")
+        return { ok: false as const, error: { code: "INVALID_STATE_TRANSITION", message: `No anulable desde ${doc.status}.` } };
+      await tx.update(purchaseDocuments).set({ status: "voided" }).where(eq(purchaseDocuments.id, id));
+      await record(
+        tx,
+        { companyId: ctx.companyId, actorUserId: ctx.userId, action: "void", entityType: "purchase_document", entityId: id, before: { status: doc.status }, after: { status: "voided" }, reason },
+        `tx-void-purchase-${id}`,
+      );
+      return { ok: true as const };
+    });
+  } catch (e) {
+    if (typeof e === "object" && e !== null && "code" in e) {
+      const code = (e as { code: unknown }).code;
+      const message = "message" in e ? String((e as { message: unknown }).message) : "";
+      if (code === "P0001" && message.includes("PERIOD_CLOSED"))
+        return { ok: false, error: { code: "PERIOD_CLOSED", message: "Período cerrado: reapertura o ajuste requerido." } };
+      if (typeof code === "string") return { ok: false, error: e as ServiceError };
+    }
+    throw e;
+  }
+}
+
 export type PurchaseBookRow = {
   id?: string;
   kind: string;
@@ -183,7 +218,7 @@ export type PurchaseBookRow = {
   total: string;
 };
 
-/** Libro de Compras provisional (derivado de documentos, F1). Filtra por período si se indica. */
+/** Libro de Compras provisional (derivado de documentos, F1). Excluye anulados. Filtra por período si se indica. */
 export async function getPurchaseBook(ctx: { companyId: string; userId: string }, periodId?: string): Promise<PurchaseBookRow[]> {
   return withTenant(ctx, async (tx) => {
     const docs = await tx
@@ -202,8 +237,8 @@ export async function getPurchaseBook(ctx: { companyId: string; userId: string }
       .from(purchaseDocuments)
       .where(
         periodId
-          ? and(eq(purchaseDocuments.companyId, ctx.companyId), eq(purchaseDocuments.fiscalPeriodId, periodId))
-          : eq(purchaseDocuments.companyId, ctx.companyId),
+          ? and(eq(purchaseDocuments.companyId, ctx.companyId), eq(purchaseDocuments.fiscalPeriodId, periodId), ne(purchaseDocuments.status, "voided"))
+          : and(eq(purchaseDocuments.companyId, ctx.companyId), ne(purchaseDocuments.status, "voided")),
       );
     const out: PurchaseBookRow[] = [];
     for (const d of docs) {

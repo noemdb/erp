@@ -68,6 +68,7 @@
 | Reglas vigencia + conceptos ISLR + `explanation[]` | ✅ parcial | 8 tablas + EXCLUDE + seed 75%/conceptos + `reserveNumber` sin huecos (test 20 concurrentes + rollback). Falta UI edición contador |
 | Emisión transaccional multi-factura + anulación `replaces_id` | ✅ parcial | Preview + emisión IVA e ISLR (período, número, snapshot+hash, líneas, audit) + anulación/sustitución con motivo + UI bandeja/nueva/detalle + test ciclo y 5 paralelas únicas. Hallazgo: reintento en TX abortada no recupera → UPSERT atómico de una sentencia. Render PDF fuera de la TX (ADR-027). Falta: UI edición contador + PDF fiel (→ F5) |
 | PDF/Excel fiel + concurrencia emisión 50–100 | ✅ parcial | ISLR (concepto+pago, serie provisional `ISLR-AAAAMM-######`, UI, test) + entrega IVA con fecha + UI. Render ISLR post-commit archivado (REP-01, `renderIslrPdf` + matriz `anexos/matriz-render-v1.md`); Excel sobre plantilla y paridad art. 16 tras formato aprobado. Control de plazo pendiente de valor contador |
+| Reporte CSV retenciones IVA (`iva-withholdings`) | ✅ 2026-10-05 | `GET /api/companies/[id]/reports/iva-withholdings?periodId=&format=csv` (documentado en `API.md`, faltaba ruta): `getIvaWithholdingsReport` + CSV con anti-inyección + CTA en bandeja. Aceptación: 401 sin sesión, 403 sin `reports.read`, CSV con columnas `comprobante,emision,rif_beneficiario,razon_social,retenido,estado` (anulados marcados), filtro `periodId`, tests puros + integración, build verde. PDF/Excel fiel queda en F5 |
 
 ### F5 — Libros y Resumen (2.5 sem)
 | Bloque | Estado | Aceptación |
@@ -113,6 +114,12 @@
 | Bloque | Estado | Aceptación |
 |---|---|---|
 | Adjuntos 7.A–7.B + recuperación 6.A + runbooks | ✅ | UploadThing/fs por sha256, magic bytes, dedup, HMAC+TTL, tokens un solo uso, break-glass. 57 tests + build verdes |
+
+## Correcciones operativas dev (2026-10-05)
+| Bloque | Estado | Notas |
+|---|---|---|
+| Anulación compras + corrección NC 001-00004 (fila 9 lote f785fdcc) | ✅ | `voidPurchaseDocument` + action + UI Anulación + `voided` excluido de libro/resumen/conciliación; tests 2/2 nuevos; datos dev corregidos (ND→voided, NC credit_note 2023-09-10). Checklist: typecheck + lint 0 errores + suites fiscal-docs/reporting/imports 25/25 verdes; `docs.create` reutilizado (sin permiso nuevo); motivo en auditoría, sin PII en logs. Deudas intactas: signo NC en agregados (requiere ADR → ADR-033 propuesta 2026-10-05) y `voided_at` de `DATABASE.md:321` inexistente en físico (→ ADR-033: migración aditiva propuesta) |
+| Caso práctico sim #2 en `/docs` (sección 5, 4 páginas) | ✅ | `caso-practico/resumen+carga+comprobacion+cierre` con pasos en 2 columnas (guía/práctica), cifras reales sim #2, sin tecnicismos ni URLs, rutas como `Panel → X`. Checklist: typecheck + lint 0 errores + `build` verde (4 rutas en manifiesto); sin API nueva, sin sensibles, sin ADR nuevo. Retro en `retrospectiva-sim2.md` |
 
 ## Checklist por bloque
 - [ ] Funciona + errores/casos límite + tests + sentido dominio

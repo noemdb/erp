@@ -30,6 +30,7 @@ const SECTION_ICONS: Record<string, typeof EditNote> = {
   "2": ReceiptLong,
   "3": FolderOpen,
   "4": Summarize,
+  "5": MenuBook,
 };
 
 const PAGE_ICONS: Record<string, typeof EditNote> = {
@@ -49,6 +50,10 @@ const PAGE_ICONS: Record<string, typeof EditNote> = {
   "/docs/control/libro-ventas": MenuBook,
   "/docs/control/resumen-iva": Summarize,
   "/docs/control/bitacora": History,
+  "/docs/caso-practico/resumen": MenuBook,
+  "/docs/caso-practico/carga": UploadFile,
+  "/docs/caso-practico/comprobacion": Calculate,
+  "/docs/caso-practico/cierre": History,
 };
 
 export function DocsSidebar({ current }: { current?: string }) {

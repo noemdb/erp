@@ -16,6 +16,7 @@
     "seed:rules": "tsx src/db/seed-rules.ts",
     "seed:company-rules": "tsx --env-file=.env src/db/seed-company-rules.ts",
     "seed:practica": "tsx --env-file=.env src/db/seed-practica.ts",
+    "sim:limpieza-caso003": "MIG_URL=\"${DATABASE_MIGRATION_URL:-$DIRECT_URL}\"; test -n \"$MIG_URL\" || { echo 'Sin URL migradora: define DATABASE_MIGRATION_URL o DIRECT_URL (rol migrador/owner, nunca el de la app).' >&2; exit 1; }; psql \"$MIG_URL\" -v company=a1f8bba4-f088-4a71-942a-2fad94820cf0 -f blueprint/datos/casoUso003/limpieza-casoUso003.sql",
     "acceptance:report": "node scripts/acceptance-report.mjs",
     "acceptance:evidence": "node scripts/collect-evidence.mjs",
     "goldens:check": "node scripts/validate-goldens.mjs",

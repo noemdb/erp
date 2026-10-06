@@ -3,7 +3,8 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { users, companies, companyUser, parties, purchaseDocuments, purchaseDocumentLines, fiscalPeriods, auditEvents } from "@/db/schema";
-import { createPurchaseDocument } from "./service";
+import { createPurchaseDocument, voidPurchaseDocument, getPurchaseBook } from "./service";
+import { getIvaSummary } from "@/modules/reporting/summary";
 
 const s = randomUUID().slice(0, 8);
 
@@ -70,6 +71,52 @@ describe("createPurchaseDocument (esqueleto M1)", () => {
       lines: [{ taxCategory: "exempt" as const, taxRate: null, base: "100.00", iva: "16.00" }],
     });
     expect(badEx.ok).toBe(false);
+
+    // cleanup (audit primero: FK a company)
+    const docs = await db.select().from(purchaseDocuments).where(eq(purchaseDocuments.companyId, c!.id));
+    for (const d of docs) await db.delete(purchaseDocumentLines).where(eq(purchaseDocumentLines.documentId, d.id));
+    await db.delete(purchaseDocuments).where(eq(purchaseDocuments.companyId, c!.id));
+    await db.delete(auditEvents).where(eq(auditEvents.companyId, c!.id));
+    await db.delete(parties).where(eq(parties.companyId, c!.id));
+    await db.delete(fiscalPeriods).where(eq(fiscalPeriods.companyId, c!.id));
+    await db.delete(companyUser).where(eq(companyUser.companyId, c!.id));
+    await db.delete(companies).where(eq(companies.id, c!.id));
+    await db.delete(users).where(eq(users.id, u!.id));
+  });
+
+  it("anula validated→voided, rechaza re-anulación y excluye del libro/resumen", async () => {
+    const [u] = await db.insert(users).values({ email: `void-${s}@test.local`, passwordHash: "x", name: "Void" }).returning({ id: users.id });
+    const [c] = await db.insert(companies).values({ rif: `J-33${s}-A`, rifOriginal: `J-33${s}-A`, razonSocial: "Void CA", condicionIva: "ordinario" }).returning({ id: companies.id });
+    await db.insert(companyUser).values({ companyId: c!.id, userId: u!.id, role: "administrativo" });
+    const ctx = { companyId: c!.id, userId: u!.id };
+    const base = { partyRif: "J-12345678-9", partyRazon: "Proveedor X", docNumber: "F-9", controlNumber: "C-9", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "16" };
+
+    const ok = await createPurchaseDocument(ctx, base);
+    expect(ok.ok).toBe(true);
+    const id = ok.ok ? ok.id : "";
+
+    const [created] = await db.select().from(purchaseDocuments).where(eq(purchaseDocuments.id, id));
+    const sum1 = await getIvaSummary(ctx, created!.fiscalPeriodId);
+    expect(sum1.creditoFiscal).toBe("16.00");
+
+    const short = await voidPurchaseDocument(ctx, id, "x");
+    expect(short.ok).toBe(false);
+
+    const v = await voidPurchaseDocument(ctx, id, "tipo incorrecto: era NC");
+    expect(v.ok).toBe(true);
+
+    const again = await voidPurchaseDocument(ctx, id, "otra vez");
+    expect(again.ok).toBe(false);
+    if (!again.ok) expect(again.error.code).toBe("INVALID_STATE_TRANSITION");
+
+    const nope = await voidPurchaseDocument(ctx, randomUUID(), "motivo válido");
+    expect(nope.ok).toBe(false);
+    if (!nope.ok) expect(nope.error.code).toBe("NOT_FOUND");
+
+    const book = await getPurchaseBook(ctx);
+    expect(book).toHaveLength(0);
+    const sum2 = await getIvaSummary(ctx, created!.fiscalPeriodId);
+    expect(sum2.creditoFiscal).toBe("0.00");
 
     // cleanup (audit primero: FK a company)
     const docs = await db.select().from(purchaseDocuments).where(eq(purchaseDocuments.companyId, c!.id));

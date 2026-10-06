@@ -1,5 +1,17 @@
 # CHANGELOG docs/
 
+- 2026-10-06: Caso práctico sim #2 en `/docs` (sección 5 `Caso práctico`, 4 páginas resumen/carga/comprobacion/cierre): pasos en 2 columnas guía/práctica con cifras reales (lote 10/0/9/1, NC 001-00004, pago 1.500→004-00099, preview IVA 1.179,12, ISLR 6/6 bloqueado), sin tecnicismos ni URLs, índice+sidebar cableados desde `content.ts`. Retro sim #2 en `retrospectiva-sim2.md`. Typecheck+lint+build verdes. Sin commit.
+
+- 2026-10-06: Nomenclatura `blueprint/datos/casoUso003` a kebab-case sin acentos (CONVENTIONS Archivos): `guia-simulacion-maria.md`, `compras-septiembre-legacy.csv` (`git mv`, historial conservado), `escenario-02-revision-estado-real.md`, `compras-septiembre-2025-rerun.csv`, `guia-rerun-limpio.md`, `retrospectiva-casoUso003.md`, `limpieza-casoUso003.sql` (sin cambio); eliminado el blob truncado `…María (Adm` (contenido idéntico al renombrado); refs internas actualizadas. Sin commit.
+
+- 2026-10-06: `sim:limpieza-caso003` en `package.json`: corre `limpieza-casoUso003.sql` con `DATABASE_MIGRATION_URL` (rol migrador, falla si falta) y `company` fija a la demo. Sin commit.
+
+- 2026-10-06: Retrospectiva + kit rerun casoUso003 (doc-only, sin commit): `RETROSPECTIVA-casoUso003.md` (11 hallazgos), `limpieza-casoUso003.sql` (rol migrador, orden hijas→padres, config a pre-sim, verificación todo-0), `compras_rerun_v2.csv` (año 2025 por regla seed `[2025-01-01)`; resto idéntico para re-demostrar rechazo NC/aviso G2/alias), `GUIA-rerun-limpio.md` (orden: intake → NC manual → evento+asignación → agente+perfiles → previews sin emitir). Sin ejecución en BD ni cambios de código.
+
+- 2026-10-05: Cierre María casoUso003 + pase Carlos (solo preview) + ADR-033 propuesta: guía estado-real con addendum (ND 716917eb→voided, NC 6acc6ce7 2023-09-10/11/10) y §6 Esc.4 (bitácora: upload/confirm/create/void, export CSV, timeline lote/fila) + preview IVA (excluir NC 001-00004 a mano; emisión bloqueada por F0/signo) + preview ISLR dual (fila 5 sin evento; criterio `unset`, sin emitir ni configurar). ADR-033: NC resta en libro/resumen/conciliación + elegibles solo facturas; migración aditiva `voided_at/void_reason/replaces_id`; sin código hasta firma. Libros/resumen provisionales, cierre bloqueado. Sin commit.
+
+- 2026-10-05: Anulación compras + corrección NC 001-00004 (fila 9 lote f785fdcc): `voidPurchaseDocument` (motivo≥3, `validated|included→voided`, audit en TX, trigger mapea PERIOD_CLOSED) + `voidPurchaseAction` (`docs.create`) + UI Anulación en detalle + `getPurchaseBook`/`getIvaSummary`/`getConciliation` excluyen `voided`. Datos dev: ND 716917eb→`voided`, NC `credit_note` 001-00004/12348 afectado 001-00001 fechas 2023-09-10/11/10 (actor contador). 10 activos (9F+1NC). Suites fiscal-docs/reporting/imports 25/25 + typecheck + lint (0 errores) verdes. Deuda intacta: signo NC en agregados (requiere ADR). Sin commit.
+
 - 2026-10-05: Importación F3-4: alias legacy `monto_iva/total_factura/nombre_proveedor` + avisos explícitos (`tipo_doc`≠F rechazado, `abono≠0` warning con evento G2 manual, `alicuota_iva/fecha_recepcion` en `ignoredColumns` + nota UI, columna Errores/avisos). CSV `casoUso003` normalizado a canónicas; validación real 10 filas (9 avisos + 1 NC rechazada). Suite imports 7/7 + typecheck/lint verdes. Sin commit.
 
 - 2026-10-05: Intake M-1…M-4 listo para muestras reales: `import:autodetect` corre sobre corpus sintético (compras-legacy 80% válido; Z dispara gatillo 1 → perfiles FUN-05 pendientes de layouts reales) y `golden:inspect` inventaría el XLSX de formatos (0 `#REF!`). Gate de entrada operativo; a la espera del envío del contador (límite 16-oct).
@@ -114,4 +126,14 @@
 - 2026-09-30: Crea PROJECT.md, README.md, anexos F0 (matriz/dorados/checklist), assets trazabilidad, headers estándar.
 
 - 2026-10-02: Branding empresa en UI: `AppHeader` con `branding` opcional (logo + franja `colorDistintivo` sanitizado `#rrggbb`) + hero del panel `/c/[id]` con logo y degradado acentuado. Fallback a marca cuando no hay branding.
+
+- 2026-10-05: Bandejas embellecidas `/c/[id]/compras`, `/c/[id]/reportes/libro-compras`, `/c/[id]/retenciones` (hero + KPIs + tabla + branding; totales con `Decimal`; estados es-VE). Deuda saldada 2026-10-05: `GET .../reports/iva-withholdings?format=csv` implementado (`getIvaWithholdingsReport` + CSV anti-inyección + CTA en bandeja, tests 3/3, columna documentada en `API.md`). PDF/Excel fiel sigue en F5.
+
+- 2026-10-05: Página `/c/[id]/retenciones/nueva` embellecida (hero + pasos 1-2-3 + tabla elegibles con elegir-todas y resumen + tarjeta de cálculo con `explanation[]` por línea y versión de regla; permiso `withholdings.issue` verificado en servidor con aviso si falta; fecha invalida el preview).
+
+- 2026-10-05: Fix `EMPRESA_NO_AGENTE` en `/c/[id]/retenciones/nueva`: `listEligiblePurchases` vacío si la empresa no es agente + aviso dedicado con CTA a Configuración + errores `NOT_APPLICABLE` en lenguaje del contador. Verificado en Empresa Demo (no agente).
+
+- 2026-10-05: Dup `Empresa Demo` (mismo RIF en `a1f8` con datos y `1419` vacía): flags Sí/Sí copiados a `a1f8` vía `updateFiscalProfile` auditado; seed-admin ahora busca por `rifOriginal` (idempotente, verificado sin tercera fila). `1419` se conserva intacta por decisión del dueño.
+
+- 2026-10-05: Deduplicada `Empresa Demo` (RIF J-00000001-0): eliminada fila vacía `1419` (1 membresía + 9 eventos propios, cero datos fiscales) + membresía admin restaurada en `a1f8` vía `seed:admin`; terceros visibles (6 filas). Queda una sola demo con datos.
 

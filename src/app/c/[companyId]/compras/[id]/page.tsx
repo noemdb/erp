@@ -21,8 +21,10 @@ import { Reveal } from "@/components/ui/reveal";
 import { AppHeader, PageFooter } from "@/components/layout/app-shell";
 import { getSessionUser, listMemberships } from "@/modules/identity/session";
 import { getCompanyContext } from "@/modules/tenancy/repo";
+import { authorize } from "@/modules/tenancy/authorize";
 import { listPeriods } from "@/modules/periods/service";
 import { getPurchaseDetail } from "@/modules/fiscal-docs/service";
+import { VoidPurchaseForm } from "./void-form";
 
 /** "1234567.89" → "1.234.567,89" (solo presentación es-VE). */
 function fmtMonto(s: string | null | undefined): string {
@@ -108,6 +110,9 @@ export default async function CompraDetallePage({
   const periods = await listPeriods({ companyId, userId: user.id });
   const per = periods.find((p) => p.id === (doc as { fiscalPeriodId?: string }).fiscalPeriodId);
   const perClosed = per?.status === "closed";
+  const canVoid = (await authorize(companyId, user.id, "docs.create")).ok;
+  const docStatus = (doc as { status?: string }).status ?? "";
+  const voidable = docStatus === "validated" || docStatus === "included";
 
   const st = statusMeta[(doc as { status?: string }).status ?? ""] ?? {
     label: (doc as { status?: string }).status ?? "—",
@@ -546,6 +551,35 @@ export default async function CompraDetallePage({
             </Card>
           </Reveal>
         </section>
+
+        {/* Anulación */}
+        {(docStatus === "voided" || (canVoid && voidable)) && (
+          <section className="mt-8" aria-label="Anulación del documento">
+            <Reveal>
+              <Card className="rounded-lg">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base tracking-tight">Anulación</CardTitle>
+                  <CardDescription>
+                    Anula sin borrar ni liberar número. El motivo queda en auditoría.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {docStatus === "voided" ? (
+                    <p className="text-sm text-periwinkle-500">
+                      Documento anulado: no se edita ni se re-anula. El motivo consta en la bitácora.
+                    </p>
+                  ) : perClosed ? (
+                    <p className="text-sm text-periwinkle-500">
+                      Período cerrado: requiere reapertura para anular.
+                    </p>
+                  ) : (
+                    <VoidPurchaseForm companyId={companyId} id={id} />
+                  )}
+                </CardContent>
+              </Card>
+            </Reveal>
+          </section>
+        )}
 
         <div className="mt-8">
           <Link

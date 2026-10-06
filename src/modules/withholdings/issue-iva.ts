@@ -190,9 +190,68 @@ export async function listIva(ctx: Ctx) {
   return withTenant(ctx, (tx) => tx.select().from(ivaWithholdings).where(eq(ivaWithholdings.companyId, ctx.companyId)).limit(200));
 }
 
-/** Compras elegibles: validadas, con IVA, aún no retenidas (líneas de comprobantes no anulados). */
+export type IvaWithholdingsReportRow = {
+  certificateNumber: string;
+  fechaEmision: string;
+  rif: string;
+  razonSocial: string;
+  totalRetained: string;
+  status: string;
+};
+
+/** Filas del reporte de retenciones IVA (incluye anulados, marcados en `status`). Filtra por período si se indica. */
+export async function getIvaWithholdingsReport(ctx: Ctx, periodId?: string): Promise<IvaWithholdingsReportRow[]> {
+  return withTenant(ctx, async (tx) => {
+    const heads = await tx
+      .select()
+      .from(ivaWithholdings)
+      .where(
+        periodId
+          ? and(eq(ivaWithholdings.companyId, ctx.companyId), eq(ivaWithholdings.fiscalPeriodId, periodId))
+          : eq(ivaWithholdings.companyId, ctx.companyId),
+      )
+      .limit(500);
+    const out: IvaWithholdingsReportRow[] = [];
+    for (const h of heads) {
+      const [p] = await tx.select().from(parties).where(eq(parties.id, h.beneficiaryId)).limit(1);
+      out.push({
+        certificateNumber: h.certificateNumber,
+        fechaEmision: h.fechaEmision ?? "",
+        rif: p?.rifOriginal ?? "",
+        razonSocial: p?.razonSocial ?? "",
+        totalRetained: h.totalRetained,
+        status: h.status,
+      });
+    }
+    return out.sort((a, b) => (a.fechaEmision < b.fechaEmision ? -1 : 1));
+  });
+}
+
+export const IVA_WITHHOLDINGS_CSV_HEAD = "comprobante,emision,rif_beneficiario,razon_social,retenido,estado";
+
+/** Celda CSV con comillas + neutralización de inyección (=+-@). Pura, testeable sin DB. */
+export function ivaWithholdingsCell(v: string): string {
+  const t = /^[=+\-@]/.test(v) ? `'${v}` : v;
+  return `"${t.replace(/"/g, '""')}"`;
+}
+
+/** CSV del reporte (cabecera + filas). Puro, testeable sin DB. */
+export function toIvaWithholdingsCsv(rows: IvaWithholdingsReportRow[]): string {
+  const body = rows
+    .map((r) =>
+      [r.certificateNumber, r.fechaEmision, r.rif, r.razonSocial, r.totalRetained, r.status]
+        .map(ivaWithholdingsCell)
+        .join(","),
+    )
+    .join("\n");
+  return `${IVA_WITHHOLDINGS_CSV_HEAD}\n${body}`;
+}
+
+/** Compras elegibles: validadas, con IVA, aún no retenidas (líneas de comprobantes no anulados). Vacío si la empresa no es agente. */
 export async function listEligiblePurchases(ctx: Ctx) {
   return withTenant(ctx, async (tx) => {
+    const [company] = await tx.select().from(companies).where(eq(companies.id, ctx.companyId)).limit(1);
+    if (!company?.agenteRetencionIva) return [];
     const used = await tx
       .select({ purchaseDocumentId: ivaWithholdingLines.purchaseDocumentId })
       .from(ivaWithholdingLines)

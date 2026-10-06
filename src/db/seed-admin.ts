@@ -18,7 +18,9 @@ async function main() {
     console.log("usuario creado:", email);
   } else console.log("usuario existe:", email);
 
-  let company = (await db.select().from(companies).where(eq(companies.rif, "J-00000001-0")).limit(1))[0];
+  // Por rifOriginal (crudo y estable): `rif` se normaliza en la UI y el lookup por
+  // `rif` crudo no encontraba la fila existente, creando duplicados (J-00000001-0 vs J000000010).
+  let company = (await db.select().from(companies).where(eq(companies.rifOriginal, "J-00000001-0")).limit(1))[0];
   if (!company) {
     [company] = await db
       .insert(companies)

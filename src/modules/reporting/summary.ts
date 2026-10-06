@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 import { createHash } from "node:crypto";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, ne, desc } from "drizzle-orm";
 import { withTenant } from "@/modules/tenancy/with-tenant";
 import { record } from "@/modules/audit/record";
 import {
@@ -33,8 +33,8 @@ export async function getIvaSummary(ctx: Ctx, periodId: string): Promise<IvaSumm
       }
       return { b: b.toFixed(2), i: i.toFixed(2), ex: ex.toFixed(2) };
     };
-    const buys = await tx.select().from(purchaseDocuments).where(and(eq(purchaseDocuments.companyId, ctx.companyId), eq(purchaseDocuments.fiscalPeriodId, periodId)));
-    const sells = await tx.select().from(salesDocuments).where(and(eq(salesDocuments.companyId, ctx.companyId), eq(salesDocuments.fiscalPeriodId, periodId)));
+    const buys = await tx.select().from(purchaseDocuments).where(and(eq(purchaseDocuments.companyId, ctx.companyId), eq(purchaseDocuments.fiscalPeriodId, periodId), ne(purchaseDocuments.status, "voided")));
+    const sells = await tx.select().from(salesDocuments).where(and(eq(salesDocuments.companyId, ctx.companyId), eq(salesDocuments.fiscalPeriodId, periodId), ne(salesDocuments.status, "voided")));
     const cb = sum(buys), vb = sum(sells);
     const ivaW = await tx.select().from(ivaWithholdings).where(and(eq(ivaWithholdings.companyId, ctx.companyId), eq(ivaWithholdings.fiscalPeriodId, periodId)));
     const islrW = await tx.select().from(islrWithholdings).where(and(eq(islrWithholdings.companyId, ctx.companyId), eq(islrWithholdings.fiscalPeriodId, periodId)));
@@ -57,8 +57,8 @@ export type ConciItem = { nombre: string; esperado: string; real: string; ok: bo
 /** Conciliación libros ↔ resumen ↔ comprobantes (tolerancia 0.01). */
 export async function getConciliation(ctx: Ctx, periodId: string): Promise<{ ok: boolean; items: ConciItem[] }> {
   return withTenant(ctx, async (tx) => {
-    const buys = await tx.select().from(purchaseDocuments).where(and(eq(purchaseDocuments.companyId, ctx.companyId), eq(purchaseDocuments.fiscalPeriodId, periodId)));
-    const sells = await tx.select().from(salesDocuments).where(and(eq(salesDocuments.companyId, ctx.companyId), eq(salesDocuments.fiscalPeriodId, periodId)));
+    const buys = await tx.select().from(purchaseDocuments).where(and(eq(purchaseDocuments.companyId, ctx.companyId), eq(purchaseDocuments.fiscalPeriodId, periodId), ne(purchaseDocuments.status, "voided")));
+    const sells = await tx.select().from(salesDocuments).where(and(eq(salesDocuments.companyId, ctx.companyId), eq(salesDocuments.fiscalPeriodId, periodId), ne(salesDocuments.status, "voided")));
     const s = await getIvaSummary(ctx, periodId);
     const tot = (xs: { total: string }[]) => xs.reduce((a, d) => a.plus(d.total), new Decimal(0)).toFixed(2);
     const items: ConciItem[] = [
