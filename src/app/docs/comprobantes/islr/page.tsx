@@ -1,11 +1,11 @@
 import { DocArticle, getDocsSession } from "../../_components";
 
 export default async function IslrDoc() {
-  const { user, companyCount } = await getDocsSession();
+  const { user, companyCount, canManageUsers } = await getDocsSession();
   return (
     <DocArticle
       user={user}
-      companyCount={companyCount}
+      companyCount={companyCount} canManageUsers={canManageUsers}
       current="/docs/comprobantes/islr"
       crumb="Comprobantes · Retenciones ISLR"
       section="2 · Comprobantes"

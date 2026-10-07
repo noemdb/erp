@@ -1,11 +1,11 @@
 import { DocArticle, getDocsSession } from "../../_components";
 
 export default async function PeriodosDoc() {
-  const { user, companyCount } = await getDocsSession();
+  const { user, companyCount, canManageUsers } = await getDocsSession();
   return (
     <DocArticle
       user={user}
-      companyCount={companyCount}
+      companyCount={companyCount} canManageUsers={canManageUsers}
       current="/docs/control/periodos"
       crumb="Control · Períodos"
       section="4 · Control y reportes"

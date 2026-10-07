@@ -1,11 +1,11 @@
 import { DocArticle, getDocsSession } from "../../_components";
 
 export default async function TercerosDoc() {
-  const { user, companyCount } = await getDocsSession();
+  const { user, companyCount, canManageUsers } = await getDocsSession();
   return (
     <DocArticle
       user={user}
-      companyCount={companyCount}
+      companyCount={companyCount} canManageUsers={canManageUsers}
       current="/docs/datos-base/terceros"
       crumb="Datos base · Terceros"
       section="3 · Datos base"

@@ -12,9 +12,9 @@ const STEPS = [
 ];
 
 export default async function ComprasDoc() {
-  const { user, companyCount } = await getDocsSession();
+  const { user, companyCount, canManageUsers } = await getDocsSession();
   return (
-    <DocsShell user={user} companyCount={companyCount} current="/docs/registrar/compras" breadcrumb={<><span aria-hidden>/</span><span className="text-periwinkle-900">Registrar · Compras</span></>}>
+    <DocsShell user={user} companyCount={companyCount} canManageUsers={canManageUsers} current="/docs/registrar/compras" breadcrumb={<><span aria-hidden>/</span><span className="text-periwinkle-900">Registrar · Compras</span></>}>
       <Badge variant="outline">1 · Registrar</Badge>
       <h1 className="mt-3 text-3xl font-bold tracking-tight">Compras</h1>
       <p className="mt-2 max-w-2xl text-sm text-periwinkle-500">El hecho fiscal de compra se registra una sola vez: factura con número y número de control, NC/ND vinculadas, importaciones con su régimen. De aquí derivan Libro de Compras, retenciones y Resumen IVA.</p>

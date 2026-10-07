@@ -11,9 +11,9 @@ const STEPS = [
 ];
 
 export default async function PagosDoc() {
-  const { user, companyCount } = await getDocsSession();
+  const { user, companyCount, canManageUsers } = await getDocsSession();
   return (
-    <DocsShell user={user} companyCount={companyCount} current="/docs/registrar/pagos" breadcrumb={<><span aria-hidden>/</span><span className="text-periwinkle-900">Registrar · Pagos</span></>}>
+    <DocsShell user={user} companyCount={companyCount} canManageUsers={canManageUsers} current="/docs/registrar/pagos" breadcrumb={<><span aria-hidden>/</span><span className="text-periwinkle-900">Registrar · Pagos</span></>}>
       <Badge variant="outline">1 · Registrar</Badge>
       <h1 className="mt-3 text-3xl font-bold tracking-tight">Pagos</h1>
       <p className="mt-2 max-w-2xl text-sm text-periwinkle-500">Evento de liquidación (no tesorería): el hecho de pagar o abonar. Dispara retenciones de ISLR y deja trazabilidad evento → compra → comprobante.</p>

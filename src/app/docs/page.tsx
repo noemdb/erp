@@ -26,9 +26,9 @@ const FLOWS_BY_HREF: Record<string, FlowProcess> = {
 };
 
 export default async function DocsPage() {
-  const { user, companyCount } = await getDocsSession();
+  const { user, companyCount, canManageUsers } = await getDocsSession();
   return (
-    <DocsShell user={user} companyCount={companyCount}>
+    <DocsShell user={user} companyCount={companyCount} canManageUsers={canManageUsers}>
       <div className="flex items-center gap-2">
         <Badge variant="outline">Ayuda de usuario</Badge>
         <StatusBadge status="disponible" />

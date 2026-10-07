@@ -3,11 +3,11 @@ import { DocsShell, getDocsSession, DocCallout } from "../../_components";
 import { Paso, PasoNav } from "../_steps";
 
 export default async function CasoCarga() {
-  const { user, companyCount } = await getDocsSession();
+  const { user, companyCount, canManageUsers } = await getDocsSession();
   return (
     <DocsShell
       user={user}
-      companyCount={companyCount}
+      companyCount={companyCount} canManageUsers={canManageUsers}
       current="/docs/caso-practico/carga"
       breadcrumb={
         <>

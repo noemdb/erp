@@ -1,11 +1,11 @@
 import { DocArticle, getDocsSession } from "../../_components";
 
 export default async function ResumenDoc() {
-  const { user, companyCount } = await getDocsSession();
+  const { user, companyCount, canManageUsers } = await getDocsSession();
   return (
     <DocArticle
       user={user}
-      companyCount={companyCount}
+      companyCount={companyCount} canManageUsers={canManageUsers}
       current="/docs/control/resumen-iva"
       crumb="Control · Resumen IVA"
       section="4 · Control y reportes"

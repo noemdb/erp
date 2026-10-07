@@ -25,6 +25,7 @@ import {
 import { Reveal } from "@/components/ui/reveal";
 import { AppHeader, PageFooter } from "@/components/layout/app-shell";
 import { getSessionUser, listMemberships } from "@/modules/identity/session";
+import { canManageUsersAnywhere } from "@/modules/identity/admin";
 import { getCompanyContext, listUserCompanies } from "@/modules/tenancy/repo";
 import { getAutoControls, getConciliation, getIvaSummary, type IvaSummary } from "@/modules/reporting/summary";
 import { listPeriods } from "@/modules/periods/service";
@@ -92,6 +93,7 @@ export default async function DashboardPage({
 
   const memberships = await listMemberships(user.id);
   const companies = await listUserCompanies(user.id);
+  const canManageUsers = await canManageUsersAnywhere(user.id);
 
   // Sin membresías: alta directa (la ruta /companies está en desuso).
   if (memberships.length === 0 || companies.length === 0) {
@@ -101,6 +103,7 @@ export default async function DashboardPage({
           title="Panel general"
           user={user}
           companyCount={0}
+          canManageUsers={canManageUsers}
         />
         <main className="mx-auto max-w-2xl px-6 pb-16">
           <section className="pt-10" aria-label="Sin empresas">
@@ -162,6 +165,7 @@ export default async function DashboardPage({
           title="Panel general"
           user={user}
           companyCount={memberships.length}
+          canManageUsers={canManageUsers}
         />
         <main className="mx-auto max-w-6xl px-6 pb-16">
           {/* Empresas */}
@@ -490,6 +494,7 @@ export default async function DashboardPage({
         title="Panel general"
         user={user}
         companyCount={memberships.length}
+        canManageUsers={canManageUsers}
       />
 
       <main className="mx-auto max-w-6xl px-6 pb-16">

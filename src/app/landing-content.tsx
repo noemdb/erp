@@ -59,7 +59,7 @@ const bento = [
   {
     icon: Calculate,
     title: "Motor versionado",
-    text: "Cada cálculo propone alícuota y porcentaje vigentes a la fecha fiscal y muestra la regla aplicada con su justificación. Nada se activa sin tu matriz firmada.",
+    text: "Cada cálculo propone alícuota y porcentaje vigentes a la fecha fiscal con su justificación. Ninguna regla se activa sin tu decisión firmada.",
     badge: "Preview con explanation[]",
     wide: true,
     chips: ["Fecha fiscal manda", "Regla con vigencia"],
@@ -97,10 +97,10 @@ const steps = [
   },
   {
     n: "02",
-    title: "Revisas con regla vigente",
-    text: "El motor propone alícuota y porcentaje por vigencia y te muestra la justificación antes de emitir. Sin matriz firmada no hay regla definitiva.",
+    title: "Firmas la decisión que autoriza la regla",
+    text: "Registras el hecho, comparas opciones y firmas tu decisión fiscal. Sin tu firma no se activa ninguna regla.",
     wide: true,
-    chips: ["Preview", "Regla con vigencia"],
+    chips: ["Decisión firmada", "Regla con vigencia"],
   },
   {
     n: "03",
@@ -126,7 +126,7 @@ const roles = [
   {
     icon: AssignmentTurnedIn,
     rol: "Contador (tú)",
-    text: "Revisas el preview con justificación visible, emites comprobantes y firmas el cierre. Solo tú cambias criterio G2 y activas reglas.",
+    text: "Firmas decisiones, emites comprobantes y cierras con acta. Solo tú cambias criterio G2 y activas reglas.",
   },
   {
     icon: CloudUpload,
@@ -258,11 +258,10 @@ export function LandingContent({ userName }: LandingContentProps) {
               </h1>
               <p className="mt-5 max-w-xl text-pretty text-base leading-relaxed text-periwinkle-600 sm:text-lg">
                 Para contadores: el sistema actúa como tu asistente auxiliar.
-                Simplifica tus procesos —Libro de Compras, Libro de Ventas,
-                retenciones y resumen como insumo para tu declaración—
-                cargando una sola vez con justificación visible. Tú revisas,
-                emites y cierras con acta. Si no cuadra con tu Excel, el mes
-                no se cierra.
+                Carga una sola vez, deriva libros y retenciones con
+                justificación visible, y solo activa reglas con tu decisión
+                firmada. Tú revisas, firmas y cierras con acta. Si no cuadra
+                con tu Excel, el mes no se cierra.
               </p>
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 {userName ? (
@@ -764,12 +763,12 @@ export function LandingContent({ userName }: LandingContentProps) {
               <CardContent>
                 <ul className="space-y-2.5 text-sm leading-relaxed text-periwinkle-700">
                   {[
-                    "Facturas, notas de crédito y notas de débito con documento afectado obligatorio",
-                    "Reporte Z por máquina fiscal y modo de Libro de Ventas configurable por empresa",
+                    "Facturas, notas de crédito y débito con documento afectado obligatorio",
+                    "Reporte Z por máquina fiscal y Libro de Ventas por empresa",
+                    "Decisiones firmadas que autorizan cada regla: sin tu firma no se activa",
                     "Retenciones multi-factura y comprobantes con justificación visible",
-                    "Importación de CSV con control por lotes: archivos y filas validados, sin duplicados",
-                    "Libros, Resumen de IVA, conciliación con desglose y cierre con acta y huella",
-                    "Bitácora inalterable con registro en la misma operación",
+                    "CSV por lotes validado, sin duplicados",
+                    "Libros, resumen, conciliación y cierre con acta y huella",
                   ].map((t) => (
                     <li key={t} className="flex gap-2.5">
                       <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-icy-aqua-100">
@@ -801,11 +800,10 @@ export function LandingContent({ userName }: LandingContentProps) {
               <CardContent>
                 <ul className="space-y-2.5 text-sm leading-relaxed text-periwinkle-700">
                   {[
-                    "Factura electrónica y portal de proveedores (rol proveedor reservado, sin acceso)",
-                    "Contabilidad completa: diario, mayor y balance",
-                    "Nómina, inventario y conciliación bancaria",
+                    "Factura electrónica y portal de proveedores (sin acceso en v1)",
+                    "Contabilidad completa, nómina e inventario",
                     "OCR/IA y API en tiempo real con legacy, Z o SENIAT",
-                    "Moneda extranjera, redondeo definitivo y formato ISLR: bloqueados hasta matriz firmada",
+                    "Moneda extranjera, redondeo definitivo y formato ISLR: bloqueados hasta tu firma",
                   ].map((t) => (
                     <li key={t} className="flex gap-2.5">
                       <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-periwinkle-100">
@@ -837,9 +835,9 @@ export function LandingContent({ userName }: LandingContentProps) {
             </h2>
             <p className="mt-3 max-w-2xl text-pretty text-periwinkle-600">
               Requisito de go-live, no resultado logrado: validamos celda por
-              celda contra tu mes piloto. Estado actual: infraestructura lista
-              en desarrollo, 1 caso didáctico verde; faltan tu plantilla
-              validada, tus CSV/Z reales y tus 30–50 casos firmados.
+              celda contra tu mes piloto. Estado actual: decisiones en sistema,
+              1 caso didáctico verde; faltan tu plantilla validada, tus CSV/Z
+              reales y tus decisiones y casos firmados.
             </p>
           </Reveal>
           <dl className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -948,13 +946,12 @@ export function LandingContent({ userName }: LandingContentProps) {
                   Gate de go-live
                 </Badge>
                 <h2 className="mt-4 text-balance text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                  Tu firma es el go-live: mes piloto igual a tu Excel
+                  Tu firma es el go-live: decisiones firmadas y mes igual a tu Excel
                 </h2>
                 <CardDescription className="mt-3 max-w-xl text-periwinkle-200">
-                  Paralelo Excel vs sistema igual a cero, 0 huecos IVA bajo
-                  concurrencia, 0 fugas entre empresas y cierre reproducible
-                  con huella. Sin tu matriz firmada y tus casos validados no se
-                  cierra F0/F2.
+                  Cada regla nace de tu decisión firmada, el paralelo Excel vs
+                  sistema da cero, la numeración IVA no tiene huecos y el cierre
+                  es reproducible con huella. Sin tu firma no se activa nada.
                 </CardDescription>
                 <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-periwinkle-300">
                   <span className="inline-flex items-center gap-1.5">

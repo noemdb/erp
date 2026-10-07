@@ -2,7 +2,7 @@ import { randomBytes, createHash, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { eq, and, gt, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
-import { users, sessions, passwordResetTokens, companyUser } from "@/db/schema";
+import { users, sessions, passwordResetTokens, companyUser, companies } from "@/db/schema";
 import { withTenant } from "@/modules/tenancy/with-tenant";
 import { record } from "@/modules/audit/record";
 import { hashPassword } from "./password";
@@ -58,5 +58,13 @@ export async function consumeResetLink(token: string, newPassword: string) {
 export async function listUsersForAdmin() {
   const us = await db.select().from(users).limit(200);
   const mems = await db.select().from(companyUser).limit(1000);
-  return us.map((u) => ({ ...u, passwordHash: undefined, companies: mems.filter((m) => m.userId === u.id).map((m) => `${m.companyId}:${m.role}`) }));
+  const cos = await db.select().from(companies).limit(200);
+  const nameOf = new Map(cos.map((c) => [c.id, c.razonSocial]));
+  return us.map((u) => ({
+    ...u,
+    passwordHash: undefined,
+    companies: mems
+      .filter((m) => m.userId === u.id)
+      .map((m) => ({ companyId: m.companyId, razonSocial: nameOf.get(m.companyId) ?? "—", role: m.role })),
+  }));
 }

@@ -22,6 +22,7 @@ export function AppHeader({
   companyCount = 1,
   branding,
   companyId,
+  canManageUsers = false,
 }: {
   /** Título junto al logo (empresa, sección). */
   title: string;
@@ -31,6 +32,8 @@ export function AppHeader({
   /** Rol en la empresa actual (solo panel de empresa). */
   role?: string;
   companyCount?: number;
+  /** Permiso users.manage en alguna empresa (menú Gestión de usuarios). */
+  canManageUsers?: boolean;
   /** Branding de la empresa actual (solo panel de empresa). */
   branding?: { color?: string | null; logoUrl?: string | null };
   /** Si se informa, muestra el botón "Gestión" que abre el drawer derecho. */
@@ -82,6 +85,7 @@ export function AppHeader({
             email={user.email}
             role={role}
             companyCount={companyCount}
+            canManageUsers={canManageUsers}
           />
         </div>
       </div>

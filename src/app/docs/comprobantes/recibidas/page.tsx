@@ -1,11 +1,11 @@
 import { DocArticle, getDocsSession } from "../../_components";
 
 export default async function RecibidasDoc() {
-  const { user, companyCount } = await getDocsSession();
+  const { user, companyCount, canManageUsers } = await getDocsSession();
   return (
     <DocArticle
       user={user}
-      companyCount={companyCount}
+      companyCount={companyCount} canManageUsers={canManageUsers}
       current="/docs/comprobantes/recibidas"
       crumb="Comprobantes · Recibidas"
       section="2 · Comprobantes"

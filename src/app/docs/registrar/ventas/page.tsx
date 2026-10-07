@@ -11,9 +11,9 @@ const STEPS = [
 ];
 
 export default async function VentasDoc() {
-  const { user, companyCount } = await getDocsSession();
+  const { user, companyCount, canManageUsers } = await getDocsSession();
   return (
-    <DocsShell user={user} companyCount={companyCount} current="/docs/registrar/ventas" breadcrumb={<><span aria-hidden>/</span><span className="text-periwinkle-900">Registrar · Ventas</span></>}>
+    <DocsShell user={user} companyCount={companyCount} canManageUsers={canManageUsers} current="/docs/registrar/ventas" breadcrumb={<><span aria-hidden>/</span><span className="text-periwinkle-900">Registrar · Ventas</span></>}>
       <Badge variant="outline">1 · Registrar</Badge>
       <h1 className="mt-3 text-3xl font-bold tracking-tight">Ventas</h1>
       <p className="mt-2 max-w-2xl text-sm text-periwinkle-500">Toda venta con relevancia tributaria: factura individual o consolidado diario Z. Alimenta el Libro de Ventas y el Resumen IVA (débitos).</p>

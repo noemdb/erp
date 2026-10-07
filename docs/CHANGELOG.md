@@ -1,5 +1,9 @@
 # CHANGELOG docs/
 
+- 2026-10-07: Gestión de usuarios en dropdown (solo admin): helper `canManageUsersAnywhere` (misma regla que `/usuarios`) propagado a `AppHeader`/`UserMenu` y a dashboard, manual y docs; en empresa vale rol admin actual. Sin API nueva. Sin commit.
+
+- 2026-10-07: Manual de Usuario por rol (`/manual`: contador/administrativo/auditor/admin con pasos y decisiones) + opción en el dropdown de usuario junto a Documentación (visible a todos los roles); `docs/manuales/` al día (contador con decisiones, nuevo `auditor.md`). Sin API nueva. Sin commit.
+
 - 2026-10-06: RDF implementado (ADR-034 aceptada): migración 0023 (`fiscal_decisions` + links + `rdf_series` + `source_decision_id`, RLS + trigger `rdf_immutable`) aplicada en Neon dev; módulo `src/modules/rdf/` (service/links/canonical/csv/actions/labels) + gate `GATE_NO_RDF` en `activateRule` (dorados primero, luego cobertura; sintéticas exentas); UI `/c/[id]/decisiones` (bandeja/nueva/detalle) + nav + ayuda `/docs/datos-base/decisiones` + export CSV `GET .../decisiones`; tests rdf+rules 16/16 (flujo firma+sha256, inmutabilidad app+trigger, fuga cross-empresa, 10 códigos concurrentes, gate con vínculo→applied) + typecheck + lint 0 errores + build verdes. Nota: `create-app-role.mjs` tiene default privileges, las tablas nuevas quedan cubiertas al re-ejecutarlo. Sin commit.
 
 - 2026-10-06: Spec RDF en sistema + asociación a regla (`blueprint/rdf/` README + 01-spec + 02-modelo + 03-api-ux + 04-tests-rollout, ADR-034 propuesta): entidad `fiscal_decisions` inmutable tras firma + puente `fiscal_decision_links` + `source_decision_id` + gate `GATE_NO_RDF` en activación. Docs al día: `DOMAIN` (término + entidad planificada), `DATABASE` (tablas planificadas sin migrar), `API` (acciones + código `GATE_NO_RDF`), `SECURITY` (RBAC RDF), `DECISIONS` (ADR-034), `TODO` (bloque 🔲), `anexos/RDF-plantilla` (nota de vigencia). Sin migración ni código hasta aceptación. Sin commit.
@@ -140,4 +144,6 @@
 - 2026-10-05: Dup `Empresa Demo` (mismo RIF en `a1f8` con datos y `1419` vacía): flags Sí/Sí copiados a `a1f8` vía `updateFiscalProfile` auditado; seed-admin ahora busca por `rifOriginal` (idempotente, verificado sin tercera fila). `1419` se conserva intacta por decisión del dueño.
 
 - 2026-10-05: Deduplicada `Empresa Demo` (RIF J-00000001-0): eliminada fila vacía `1419` (1 membresía + 9 eventos propios, cero datos fiscales) + membresía admin restaurada en `a1f8` vía `seed:admin`; terceros visibles (6 filas). Queda una sola demo con datos.
+
+- 2026-10-07: Gestión de usuarios en `/usuarios`: alta con membresía inicial, cambio de rol, alta/baja de accesos empresa·rol, suspender/reactivar (login ya rechaza no activos), todo auditado con gate `users.manage` por empresa; tests `users.test.ts` + `recovery.test.ts` verdes.
 

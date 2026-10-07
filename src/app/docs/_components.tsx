@@ -6,6 +6,7 @@ import CheckCircle from "@mui/icons-material/CheckCircle";
 import Schedule from "@mui/icons-material/Schedule";
 import { redirect } from "next/navigation";
 import { getSessionUser, listMemberships } from "@/modules/identity/session";
+import { canManageUsersAnywhere } from "@/modules/identity/admin";
 import { AppHeader, PageFooter } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { type DocSection } from "./content";
@@ -28,12 +29,14 @@ function StatusBadge({ status }: { status: DocSection["status"] }) {
 export function DocsShell({
   user,
   companyCount,
+  canManageUsers = false,
   current,
   breadcrumb,
   children,
 }: {
   user: { name: string; email: string };
   companyCount: number;
+  canManageUsers?: boolean;
   current?: string;
   breadcrumb?: ReactNode;
   children: ReactNode;
@@ -45,6 +48,7 @@ export function DocsShell({
         back={{ href: "/dashboard", label: "Dashboard" }}
         user={user}
         companyCount={companyCount}
+        canManageUsers={canManageUsers}
       />
       <main className="mx-auto w-full px-6 pb-16">
         <div className="flex items-center gap-2 pt-8 text-sm text-periwinkle-500">
@@ -68,7 +72,8 @@ export async function getDocsSession() {
   const user = await getSessionUser();
   if (!user) redirect("/login");
   const memberships = await listMemberships(user.id);
-  return { user, companyCount: memberships.length };
+  const canManageUsers = await canManageUsersAnywhere(user.id);
+  return { user, companyCount: memberships.length, canManageUsers };
 }
 
 export function DocCallout({
@@ -113,6 +118,7 @@ export function StepList({ steps }: { steps: { title: string; body: string }[] }
 export function DocArticle({
   user,
   companyCount,
+  canManageUsers = false,
   current,
   crumb,
   section,
@@ -125,6 +131,7 @@ export function DocArticle({
 }: {
   user: { name: string; email: string };
   companyCount: number;
+  canManageUsers?: boolean;
   current: string;
   crumb: string;
   section: string;
@@ -139,6 +146,7 @@ export function DocArticle({
     <DocsShell
       user={user}
       companyCount={companyCount}
+      canManageUsers={canManageUsers}
       current={current}
       breadcrumb={
         <>

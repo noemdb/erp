@@ -20,11 +20,14 @@ export function UserMenu({
   email,
   role,
   companyCount = 1,
+  canManageUsers = false,
 }: {
   name: string;
   email: string;
   role?: string;
   companyCount?: number;
+  /** Permiso users.manage en alguna empresa (igual que la página /usuarios). */
+  canManageUsers?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -114,6 +117,16 @@ export function UserMenu({
                 Mis empresas
               </Link>
             )}
+            {(canManageUsers || role === "admin") && (
+              <Link
+                role="menuitem"
+                href="/usuarios"
+                onClick={() => setOpen(false)}
+                className="block rounded-md px-3 py-2 text-sm text-periwinkle-700 transition-colors hover:bg-periwinkle-100 hover:text-[#120c27]"
+              >
+                Gestión de usuarios
+              </Link>
+            )}
             <Link
               role="menuitem"
               href="/docs"
@@ -121,6 +134,14 @@ export function UserMenu({
               className="block rounded-md px-3 py-2 text-sm text-periwinkle-700 transition-colors hover:bg-periwinkle-100 hover:text-[#120c27]"
             >
               Documentación
+            </Link>
+            <Link
+              role="menuitem"
+              href="/manual"
+              onClick={() => setOpen(false)}
+              className="block rounded-md px-3 py-2 text-sm text-periwinkle-700 transition-colors hover:bg-periwinkle-100 hover:text-[#120c27]"
+            >
+              Manual de Usuario
             </Link>
             <Link
               role="menuitem"
