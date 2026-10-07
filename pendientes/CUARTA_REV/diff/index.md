@@ -99,4 +99,17 @@
 | 11 | ABONO-03 | Pago total | ... | CU-05 | 🟡 |
 | 12-17 | ... | 6 casos base IVA | ... | F2 | 🟡 |
 
+> **Truncado aquí (quinta revisión, 2026-10-07).** La semilla completa se trabaja en
+> `pendientes/QUINTA_REV/taskIN/CONSOLIDADO-TASK.md` (Q-07) con el detalle por fila.
+> - Origen: `pendientes/PRIMERA_REV/dorados-propuestos-F0.json` (17 candidatos) +
+> `pendientes/SEGUNDA_REV/dorados-normalizados/` (IVA-01…05, ISLR-01…09, ABONO-01…03).
+> `ISLR-09` corregido (base 900 → 306,00) sin verificar con el contador → `⛔`.
+> Recordatorio de dependencia: los dorados con `⛔ G8/G2/G9` no son reproducibles hasta que el
+> RDF correspondiente esté firmado (`GATE_NO_RDF` impide activar la regla que los autoriza).
+
+## E. Tablero semanal (plantilla) — aplicado en QUINTA_REV
+
+La plantilla de §B quedó aplicada y con primera edición en
+`pendientes/QUINTA_REV/seguimiento/tablero-semanal.md`.
+
 
