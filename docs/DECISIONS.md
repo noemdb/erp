@@ -660,3 +660,28 @@ Corrección casoUso003 (ND `716917eb`→`voided`, NC `6acc6ce7` `credit_note` af
 
 ### Consecuencias
 Sin firma del contador no hay código de agregados ni migración; F5 (libros/resumen fiel) y el cierre del período septiembre-2023 siguen bloqueados. Aceptar este ADR convierte las deudas de `TODO 2026-10-05` en plan con tests y revalidación de dorados.
+
+---
+
+## ADR-034 — RDF en sistema + asociación a regla (propuesta, spec `blueprint/rdf/`)
+**Fecha:** 2026-10-06
+**Estado:** Aceptada e implementada 2026-10-06 (migración 0023, módulo `rdf`, UI `/decisiones`, gate `GATE_NO_RDF`)
+
+### Contexto
+La sesión práctica de 6 pasos (T03 operativo OK) deja su resultado en actas sueltas: no hay tabla, UI ni vínculo entre la decisión fiscal y `withholding_rules`. El gate ACC-03 verifica dorados firmados pero no verifica decisión firmada que autorice la regla.
+
+### Alternativas consideradas
+| Opción | Pros | Contras |
+|---|---|---|
+| Entidad `fiscal_decisions` + puente `fiscal_decision_links` + `source_decision_id` (elegida en spec) | Decisión trazable dato→RDF→regla→comprobante; gate fail-closed `GATE_NO_RDF`; historia inmutable | Requiere migración + módulo `rdf` + UI + tests |
+| Seguir en `.md` sueltos (`RDF-plantilla.md`) | Nada que construir | Sin trazabilidad en sistema; activación sin cobertura verificable |
+| Campo texto `legal_reference` como "RDF" | Trivial | No es entidad: sin estados, firma, hash ni cobertura |
+
+### Decisión (propuesta, sin implementar hasta aceptación)
+1. Nueva entidad `fiscal_decisions` (`RDF-YYYY-####` único por empresa, estados `draft→in_review→approved→signed→applied` +`returned/rejected/superseded`, `content_sha256`, firmante contador). Firmado = inmutable; corrección = nuevo RDF con `supersedes_id`.
+2. Asociación N:M `fiscal_decision_links(autoriza/aclara/deroga)` + atajo `withholding_rules.source_decision_id` (aditivo, inmutable desde `approved/active`).
+3. `activateRule` de regla no sintética exige cobertura RDF firmada además de dorados (`GATE_NO_RDF` si falta); éxito marca `signed→applied` en la misma TX.
+4. Todo por `withTenant` + `authorize()` + RLS; DB solo en `modules/rdf/repo`; Zod servidor; `tax-engine` intacto; evidencia PDF vía `attachments` existente.
+
+### Consecuencias
+Sin ADR-034 aceptado no hay migración ni código RDF. Aceptarlo desbloquea Fase 1 (RDF standalone) y Fase 2 (gate) del spec `blueprint/rdf/04-tests-rollout.md`; los valores fiscales reales siguen exigiendo matriz v1 firmada.

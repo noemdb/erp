@@ -52,6 +52,7 @@ export function CompanyDrawer({
         { label: "Terceros", href: `${base}/terceros` },
         { label: "Importaciones", href: `${base}/importaciones` },
         { label: "Reglas", href: `${base}/reglas` },
+        { label: "Decisiones", href: `${base}/decisiones` },
         { label: "Plazos", href: `${base}/plazos` },
         { label: "Configuración", href: `${base}/configuracion` },
       ],

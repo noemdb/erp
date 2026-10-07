@@ -31,6 +31,8 @@ Evaluada en una sola capa `authorize(ctx, action, resource)` + RLS como defensa 
 | Crear/editar documentos compra/venta/pagos (período abierto) | — | ✅ | ✅ | lectura |
 | Importar CSV / confirmar lote | — | ✅ | ✅ | lectura |
 | Editar `withholding_rules` / catálogos (solo contador, con log) | — | — | ✅ | lectura |
+| RDF: preparar borrador / enviar a revisión | — | ✅ | ✅ | lectura |
+| RDF: aprobar / firmar / vincular a regla (motivo + auditoría) | — | — | ✅ | lectura |
 | Configurar criterio G2 por empresa (`abono_criterion`) con motivo/auditoría | — | — | ✅ | lectura |
 | Previsualizar cálculo (`explanation[]`) | — | ✅ | ✅ | ✅ |
 | Emitir/anular comprobantes IVA/ISLR (motivo obligatorio) | — | pendiente cliente* | ✅ | lectura |

@@ -62,6 +62,7 @@ export const DOC_SECTIONS: DocSection[] = [
       { title: "Terceros", href: "/docs/datos-base/terceros", available: true, description: "Maestro de clientes y proveedores con RIF." },
       { title: "Importaciones", href: "/docs/datos-base/importaciones", available: true, description: "Carga masiva por CSV con staging." },
       { title: "Reglas", href: "/docs/datos-base/reglas", available: true, description: "Reglas de retención versionadas." },
+      { title: "Decisiones", href: "/docs/datos-base/decisiones", available: true, description: "Decisiones fiscales firmadas que autorizan reglas." },
       { title: "Configuración", href: "/docs/datos-base/configuracion", available: true, description: "Perfil fiscal de la empresa." },
       { title: "Plazos", href: "/docs/datos-base/plazos", available: true, description: "Plazos de entrega y declaración." },
     ],

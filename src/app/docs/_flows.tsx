@@ -24,6 +24,7 @@ export type FlowProcess =
   | "terceros"
   | "importaciones"
   | "reglas"
+  | "decisiones"
   | "configuracion"
   | "plazos"
   | "periodos"
@@ -130,6 +131,17 @@ const FLOWS: Record<FlowProcess, Flow> = {
       <>
         Activar una regla nueva cierra la anterior sin borrar la historia.
         Cada cálculo anota con qué regla se hizo.
+      </>
+    ),
+  },
+  decisiones: {
+    id: "decisiones",
+    process: "Decisiones",
+    subtitle: "Tus decisiones firmadas (contador firma)",
+    footer: (
+      <>
+        Sin decisión firmada no se activa ninguna regla. Lo firmado no se
+        edita: se sustituye con una decisión nueva.
       </>
     ),
   },

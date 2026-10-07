@@ -54,7 +54,7 @@ export type GateScenario = {
 };
 
 export type GateOk = { ok: true; corridos: number; nota?: string };
-export type GateFail = { ok: false; code: "GATE_NO_COVERAGE" | "GATE_FAILED" | "GATE_LOAD_ERROR"; message: string; failures?: { id: string; diff: string }[] };
+export type GateFail = { ok: false; code: "GATE_NO_COVERAGE" | "GATE_FAILED" | "GATE_LOAD_ERROR" | "GATE_NO_RDF"; message: string; failures?: { id: string; diff: string }[] };
 export type GateResult = GateOk | GateFail;
 
 /** Espejo de `canonical` en scripts/validate-goldens.mjs (test cruzado en scripts/validate-goldens.test.ts). */

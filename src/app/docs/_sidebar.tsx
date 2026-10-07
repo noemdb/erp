@@ -14,6 +14,7 @@ import Inbox from "@mui/icons-material/Inbox";
 import People from "@mui/icons-material/People";
 import UploadFile from "@mui/icons-material/UploadFile";
 import Rule from "@mui/icons-material/Rule";
+import Gavel from "@mui/icons-material/Gavel";
 import Settings from "@mui/icons-material/Settings";
 import Schedule from "@mui/icons-material/Schedule";
 import CalendarMonth from "@mui/icons-material/CalendarMonth";
@@ -43,6 +44,7 @@ const PAGE_ICONS: Record<string, typeof EditNote> = {
   "/docs/datos-base/terceros": People,
   "/docs/datos-base/importaciones": UploadFile,
   "/docs/datos-base/reglas": Rule,
+  "/docs/datos-base/decisiones": Gavel,
   "/docs/datos-base/configuracion": Settings,
   "/docs/datos-base/plazos": Schedule,
   "/docs/control/periodos": CalendarMonth,

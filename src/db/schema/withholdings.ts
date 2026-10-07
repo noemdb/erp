@@ -33,6 +33,8 @@ export const withholdingRules = pgTable("withholding_rules", {
   approvedBy: uuid("approved_by"),
   approvedAt: timestamp("approved_at", { withTimezone: true }),
   changeReason: text("change_reason"),
+  /** Atajo al RDF que autoriza la regla (ADR-034). Sin .references() para evitar ciclo con ./rdf; FK en SQL. Inmutable desde approved/active. */
+  sourceDecisionId: uuid("source_decision_id"),
 });
 
 /** Series de numeración por (empresa, sucursal?, tipo, período). Sin huecos vía UPDATE…RETURNING. */

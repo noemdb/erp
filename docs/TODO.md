@@ -15,7 +15,7 @@
 | `API.md` | ✅ | Contrato actualizado; varias operaciones siguen pendientes |
 | `SECURITY.md` | ✅ | Regenerado RBAC rol×empresa |
 | `CONVENTIONS.md` | ✅ | Regenerado |
-| `DECISIONS.md` | ✅ | ADR-001–031 (013/014 bloqueados; 018–020 propuestos; 008 diferida por 031; 021–031 aceptadas) |
+| `DECISIONS.md` | ✅ | ADR-001–034 (013/014 bloqueados; 018–020 propuestos; 008 diferida por 031; 021–031 aceptadas; 033–034 propuestas) |
 | `PROJECT.md` | ✅ | Elevator pitch, alcance y métricas definidos |
 | Cuestionario PDF vs G1–G12 | ✅ | Contrastado, ver ROADMAP §3/§11 |
 | `anexos/` (matriz generada, RDF, diferimiento, roles, bitácora) | ✅ parcial | Plantillas e infra listas; falta matriz v1 + dorados firmados |
@@ -27,6 +27,7 @@
 |---|---|---|
 | Paquete contador (`anexos/paquete-contador.md`) | ✅ | Enviable: matriz preliminar + checklist + preguntas; 17 escenarios candidatos no aprobados ni ejecutables como dorados. **F0-01 enviado 2026-10-05**: carátula `anexos/pedido-F0-01.md` (18 preguntas asesoría §9 + 5 formato ROADMAP-03 §3.7 + post-cierre + piloto/tiempos + M-1…M-4). Pendiente: anotar canal/acuse y respuesta del contador |
 | Matriz Reglas v1 firmada | 🔲 | Borrador legal IVA iniciado; falta cotejo/firma y completar ISLR por concepto |
+| RDF en sistema + asociación a regla (spec `blueprint/rdf/`, ADR-034) | ✅ | Implementado 2026-10-06: migración 0023 aplicada en Neon dev (`fiscal_decisions` + links + `rdf_series` + `source_decision_id`, RLS + trigger `rdf_immutable`); módulo `rdf` (máquina estados, cobertura, `sha256` canónico, CSV anti-inyección); UI `/decisiones` (bandeja/nueva/detalle por rol) + ayuda `/docs/datos-base/decisiones`; `activateRule` fail-closed (`GATE_NO_COVERAGE` → `GATE_NO_RDF`); tests rdf+rules 16/16 + typecheck + lint 0 errores + build verdes. Valores fiscales reales siguen exigiendo matriz v1 firmada |
 | Escenarios dorados 30–50 | 🔲 | `pendientes/PRIMERA_REV/dorados-propuestos-F0.json` contiene candidatos no validados; no son fixtures ejecutables ni gate aprobado. Faltan escenarios firmados por contador. |
 | Muestras reales | 🔲 | XLSX disponible; validar como golden y confirmar ≥1 mes de CSV legacy + Z reales |
 | Decisiones G1–G12 y roles | 🧪 | Precisiones parciales y asesoría técnica recibidas 2026-10-01; propuestas no son decisiones fiscales aprobadas. Ver `anexos/checklist-F0.md` y `pendientes/PRIMERA_REV/asesoria-fiscal-F0.md` |

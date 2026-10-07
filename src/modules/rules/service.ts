@@ -4,6 +4,7 @@ import { withTenant } from "@/modules/tenancy/with-tenant";
 import { record } from "@/modules/audit/record";
 import { withholdingRules, withholdingConcepts } from "@/db/schema";
 import { checkActivationGate, loadSignedScenarios } from "./activation-gate";
+import { hasRdfCoverage, markLinkedApplied } from "../rdf/links";
 
 export type Ctx = { companyId: string; userId: string };
 
@@ -22,6 +23,8 @@ export const DraftSchema = z.object({
   legalReference: z.string().min(3).max(500),
   changeReason: z.string().min(3).max(500),
   synthetic: z.boolean().default(false),
+  /** Atajo al RDF que autoriza la regla (ADR-034). Solo se fija al crear; desde approved/active es inmutable (sin vía de update). */
+  sourceDecisionId: z.string().uuid().nullable().optional(),
 });
 
 function lowerOf(range: string): string {
@@ -47,7 +50,7 @@ export async function createDraft(ctx: Ctx, raw: z.input<typeof DraftSchema>) {
         effectiveRange: `[${parsed.data.effectiveFrom},)`, porcentaje: parsed.data.porcentaje,
         sustraendo: parsed.data.sustraendo, baseFormulaKind: parsed.data.baseFormulaKind,
         legalReference: parsed.data.legalReference, status: "draft", changeReason: parsed.data.changeReason,
-        synthetic: parsed.data.synthetic,
+        synthetic: parsed.data.synthetic, sourceDecisionId: parsed.data.sourceDecisionId ?? null,
       })
       .returning({ id: withholdingRules.id });
     await record(tx, { companyId: ctx.companyId, actorUserId: ctx.userId, action: "draft", entityType: "withholding_rule", entityId: row!.id, after: parsed.data }, `tx-rule-${row!.id}`);
@@ -77,6 +80,10 @@ async function transition(ctx: Ctx, id: string, from: string[], to: string, acti
         scenarios,
       );
       if (!g.ok) return { ok: false as const, error: { code: g.code, message: g.message } };
+      // ADR-034 (I-RDF-3): además de dorados, exige RDF firmado vinculado con cobertura.
+      const covered = await hasRdfCoverage(tx, { companyId: ctx.companyId, ruleKind: r.ruleKind, conceptId: r.conceptId ?? null });
+      if (!covered)
+        return { ok: false as const, error: { code: "GATE_NO_RDF", message: "Regla sin decisión firmada que la autorice: vincule un RDF firmado con el mismo impuesto/concepto." } };
     }
 
     if (to === "active") {
@@ -96,6 +103,8 @@ async function transition(ctx: Ctx, id: string, from: string[], to: string, acti
         await tx.update(withholdingRules).set({ effectiveRange: `[${m[1]},${fromDate})`, status: "superseded" }).where(eq(withholdingRules.id, a.id));
         await record(tx, { companyId: ctx.companyId, actorUserId: ctx.userId, action: "supersede", entityType: "withholding_rule", entityId: a.id, before: { effectiveRange: a.effectiveRange, status: "active" }, after: { effectiveRange: `[${m[1]},${fromDate})`, status: "superseded" } }, `tx-rule-sup-${a.id}`);
       }
+      // ADR-034: las decisiones firmadas que autorizan pasan a aplicadas en la misma TX.
+      if (!r.synthetic) await markLinkedApplied(tx, ctx, id);
     }
 
     await tx.update(withholdingRules).set({

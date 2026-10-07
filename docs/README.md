@@ -14,7 +14,7 @@
 | `API.md` | Server Actions + Handlers | Tocas emisión/import/cierre |
 | `SECURITY.md` | RBAC, RLS, secretos, límites | Tocas auth/datos sensibles |
 | `CONVENTIONS.md` | Estilo, estructura, tests | Escribes código |
-| `DECISIONS.md` | ADR-001–027 (incluye propuestas abiertas 018–020 y controles G2/PDF/storage) | Dudas entre alternativas |
+| `DECISIONS.md` | ADR-001–034 (incluye propuestas abiertas 018–020, 033–034 y controles G2/PDF/storage) | Dudas entre alternativas |
 | `TODO.md` | Estado F0–F7 y bloqueos | Planificas/retomas |
 | `CHANGELOG.md` | Qué cambió por fecha | Auditoría docs |
 | `anexos/` | Matriz, dorados, checklist F0 y hoja de decisión G2 | Sesión con contador |

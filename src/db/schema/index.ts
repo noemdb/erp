@@ -14,3 +14,4 @@ export * from "./received";
 export * from "./deadlines";
 export * from "./attachments";
 export * from "./recovery";
+export * from "./rdf";

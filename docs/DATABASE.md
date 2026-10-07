@@ -669,6 +669,14 @@ Análogos, con:
 - `base_sujeta`, `porcentaje`, `sustraendo`, `retained_amount` en líneas.
 - Numeración `islr_withholding` con formato pendiente G9 (bloqueante para F4).
 
+#### `fiscal_decisions` + `fiscal_decision_links` (ADR-034, migración 0023 aplicada)
+
+Tablas propuestas (no crear migración hasta ADR-034 aceptado):
+- `fiscal_decisions(id, company_id, codigo RDF-YYYY-####, gap, titulo, pregunta, alternativas jsonb, decision, fundamento_normativo, formula, redondeo_metodo/etapa/precision, momento_fiscal, ejemplo_numerico jsonb, resultado_esperado text, moneda default VES, rule_kind, concept_id, vigencia_desde, impacto_sistema, status, version, supersedes_id, motivo, firmante_nombre/doc, firmado_por/en, content_sha256, evidencia_adjunto_id, created_by/at, updated_at)`. `UNIQUE(company_id, codigo)`; RLS por `company_id`; trigger `rdf_immutable` rechaza mutación en `signed/applied/superseded` salvo `signed→applied` por sistema.
+- `fiscal_decision_links(id, company_id, decision_id→fiscal_decisions RESTRICT, rule_id→withholding_rules RESTRICT, rol CHECK autoriza/aclara/deroga, nota, created_by/at)`. `UNIQUE(decision_id, rule_id, rol)`.
+- Aditivo en `withholding_rules`: `source_decision_id uuid NULL → fiscal_decisions(id) RESTRICT`; inmutable desde `approved/active` (`DECISION_LOCKED`).
+- Secuencia propia `rdf_series(company_id, year, last_number)` con `INSERT ... ON CONFLICT DO UPDATE ... RETURNING` en TX (patrón ADR-005, serie propia).
+
 ---
 
 ### Módulo `reporting`

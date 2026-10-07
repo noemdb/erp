@@ -30,6 +30,7 @@
 | `CREDIT_NOTE_EXCEEDS_BALANCE` | NC > saldo documento afectado (Inv. 3) |
 | `RETENTION_EXCEEDS_VAT` | `retained > vat + tolerancia` sin regla explícita (Inv. 2) |
 | `G2_EVENT_REVIEW_REQUIRED` | Criterio G2 sin configurar/no convergente, evento no es disparador permitido o falta asignación verificable |
+| `GATE_NO_RDF` | Activación de regla no sintética sin RDF firmado vinculado con cobertura (`rule_kind` + `concept_id`) |
 | `TOTAL_MISMATCH` | `base+iva != total` fuera de tolerancia ADR-014 (Inv. 1) |
 | `MISSING_AFFECTED_DOCUMENT` | NC/ND sin `affected_document_id` |
 | `SERIES_EXHAUSTED` / `SERIES_NOT_FOUND` | Serie inactiva o sin definir (G9 ISLR) |
@@ -142,6 +143,13 @@ Común: `fecha_fiscal` determina `fiscal_period_id`, nunca se sustituye por fech
 - Anula sin liberar número (motivo obligatorio). Sustituto con `replaces_id`. Estados: `draft→calculated→approved→issued→delivered`, `issued|delivered→voided`.
 
 ### `listWithholdings(companyId, { kind?, status?, periodId?, partyId? })` — bandejas pendiente/revisión/emitida/entregada/anulada.
+
+## rdf — decisiones fiscales (ADR-034, implementado 2026-10-06)
+
+- `createDecision(companyId, input)` / `updateDecisionDraft(id, patch)` / `submitDecision(id)` / `returnDecision(id, { motivo })` / `approveDecision(id)` / `signDecision(id, { firmante_nombre, firmante_doc, evidencia_adjunto_id? })` — máquina `draft→in_review→approved→signed→applied` (+`returned/rejected/superseded`). Solo contador aprueba/firma; administrativo prepara. Firma congela `content_sha256` (inmutable).
+- `linkDecisionToRule(decisionId, ruleId, { rol: autoriza|aclara|deroga, nota? })` / `unlinkDecisionFromRule(linkId, { motivo })` — solo contador; desvincular solo si la regla no está `active`.
+- `activateRule` extiende el gate ACC-03: regla no sintética exige cobertura RDF firmada (`GATE_NO_RDF` si falta); éxito marca decisiones `signed→applied` en la misma TX.
+- `GET /api/companies/[companyId]/decisiones/export?formato=csv` — columnas `codigo,estado,gap,titulo,resultado_esperado,firmante,firmado_en,sha256`, anti-inyección `=+-@`. Requiere `reports.read`.
 
 ## reporting — libros y resumen
 

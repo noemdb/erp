@@ -15,6 +15,7 @@ const FLOWS_BY_HREF: Record<string, FlowProcess> = {
   "/docs/datos-base/terceros": "terceros",
   "/docs/datos-base/importaciones": "importaciones",
   "/docs/datos-base/reglas": "reglas",
+  "/docs/datos-base/decisiones": "decisiones",
   "/docs/datos-base/configuracion": "configuracion",
   "/docs/datos-base/plazos": "plazos",
   "/docs/control/periodos": "periodos",

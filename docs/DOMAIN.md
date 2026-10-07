@@ -69,6 +69,7 @@ Términos ordenados por área. La columna "Sinónimos a evitar" es **vinculante*
 | **Snapshot** | Copia inmutable de los datos del comprobante al momento de emitirlo. Incluye regla aplicada, parámetros, partes, líneas, totales. | "copia", "respaldo" |
 | **Rule version / rule_version_id** | Referencia a la versión específica de la regla tributaria aplicada en un cálculo. Todo cálculo guarda su `rule_version_id` y el snapshot de los parámetros usados. | "regla aplicada" (informal) |
 | **Explanation** | Arreglo legible de pasos que muestran cómo se calculó un monto. Requisito de producto: el contador debe *ver* por qué se retuvo cada cifra. | "detalle", "log de cálculo" |
+| **Registro de Decisión Fiscal (RDF)** | Decisión fiscal firmada por el contador que autoriza una regla o criterio (G1/G2/G4/G8/G9, base ISLR, UT, mínimos). Tiene código `RDF-YYYY-####` único por empresa, estados `draft→in_review→approved→signed→applied` (+`returned/rejected/superseded`) y `content_sha256`. Firmado = inmutable; corrección = nuevo RDF con `supersedes_id`. Spec: `blueprint/rdf/`. | "acta", "acuerdo verbal", "aprobación por chat" |
 
 ### Libros y reportes
 
@@ -244,6 +245,17 @@ Términos ordenados por área. La columna "Sinónimos a evitar" es **vinculante*
   - El 75 % de IVA es un **seed**, no una constante.
   - Un tipo nuevo de regla requiere código y tests; no es un DSL genérico.
 - **Relaciones:** 1:N con `iva_withholdings` / `islr_withholdings` vía `rule_version_id`.
+
+### Registro de Decisión Fiscal (`fiscal_decisions`, ADR-034, migración 0023)
+
+- **Descripción:** decisión fiscal firmada que autoriza una o varias reglas. Cierra T03 en papel: sin RDF firmado no hay código fiscal nuevo.
+- **Atributos clave:** `id`, `company_id`, `codigo` (`RDF-YYYY-####` único por empresa), `gap`, `titulo`, `pregunta`, `alternativas[]`, `decision`, `fundamento_normativo`, `formula`, redondeo (método/etapa/precisión), `momento_fiscal`, `ejemplo_numerico`, `resultado_esperado`, `rule_kind`/`concept_id`/`vigencia_desde` (cobertura prevista), `status`, `supersedes_id`, `content_sha256`, `firmado_por/en`, `evidencia_adjunto_id?`.
+- **Reglas de negocio:**
+  - **I-RDF-1:** firmado es inmutable (app + trigger + `REVOKE` espejo); corrección = nuevo RDF.
+  - **I-RDF-3:** regla no sintética solo se activa con ≥1 RDF firmado vinculado con cobertura (`rule_kind` + `concept_id`) — fail-closed (`GATE_NO_RDF`).
+  - Asociación N:M vía `fiscal_decision_links` (`autoriza/aclara/deroga`) + atajo `withholding_rules.source_decision_id`.
+  - Todo cambio de estado escribe `audit_events` en la misma TX.
+- **Relaciones:** N:M con `withholding_rules` vía `fiscal_decision_links`; N:1 con `companies`, `users` (firmante), `attachments` (evidencia opcional).
 
 ### Serie documental (`document_series`)
 
