@@ -22,11 +22,11 @@ Cuatro propiedades que la arquitectura debe garantizar (en orden de prioridad an
 | Backend / API | Next.js Server Actions (mutaciones de UI) + Route Handlers (descargas, uploads) | Monolito modular; sin API separada en v1 (ADR-001) |
 | Base de datos | PostgreSQL ≥ 16 | `numeric` exacto, `daterange` + `EXCLUDE` para vigencias, RLS, transacciones robustas (ADR-002/003/004) |
 | ORM / queries | Drizzle (+ SQL explícito donde haga falta) | Control de transacciones y `SET LOCAL` por request; `numeric` como string (ADR-012) |
-| Auth | Auth.js o Better Auth, sesiones en DB *(elegir en F1)* | Sesiones revocables; autorización `rol × empresa` propia (ADR-010) |
+| Auth | Sesiones DB propias (ADR-030): Argon2id, recuperación asistida, revocables | Sin dependencia externa; autorización `rol × empresa` propia (ADR-010) |
 | Jobs en segundo plano | Ejecutor `render:retry` por planificador del host; `pg-boss` diferido (ADR-031, ex ADR-008) | Sin Redis; suficiente para 100–200 docs/mes |
 | Validación | Zod (cliente + **servidor**) | Esquemas compartidos; el servidor es la autoridad |
 | Aritmética monetaria | `decimal.js` | Nunca `number`/`float` para dinero (ADR-003) |
-| PDF | HTML/CSS → PDF server-side (Chromium headless en el worker) | Fidelidad a formatos del cliente; verificado en spike F1/F5 (ADR-026 cierra ADR-009) |
+| PDF | HTML/CSS → PDF server-side (Chromium headless 154, ejecutado por `render:retry` fuera de la TX, ADR-027/ADR-031) | Fidelidad a formatos del cliente; verificado en spike F1/F5 (ADR-026 cierra ADR-009) |
 | Excel | `exceljs` rellenando la plantilla original | Conserva formato del cliente (ADR-009) |
 | Almacenamiento de archivos | Sistema de archivos privado o S3-compatible ⏳ | CSV originales, soportes, PDFs/Excel emitidos; URLs firmadas |
 | Hosting / Deploy | Sin Docker: Postgres gestionado (Neon) + app/worker como procesos directos (VPS o plataforma Node) | Decisión 2026-09-30 (ADR-015). Sin dependencia realtime externa v1 |
@@ -62,7 +62,7 @@ graph TD
     end
 
     subgraph Worker["Worker (misma imagen)"]
-        Q[pg-boss jobs]
+        Q[Ejecutor render:retry por planificador]
         PDF[Render PDF/Excel]
         PARSE[Parse/validación CSV grande]
     end
@@ -224,7 +224,7 @@ Reglas: `.env` fuera del repo; `.env.example` sin valores reales; claves distint
 
 ```
 Proxy (Caddy/Nginx, TLS) → app (Next.js) ┐
-                           worker (pg-boss, PDF) ├→ PostgreSQL
+                           ejecutor (render:retry, PDF) ├→ PostgreSQL
                                                   └→ Storage privado
 ```
 - Docker no se usa en desarrollo, CI, staging ni producción. App y worker se ejecutan como procesos directos desde el mismo repo (VPS o plataforma Node) → PostgreSQL gestionado + storage privado.

@@ -19,7 +19,7 @@ describe("retenciones recibidas G3", () => {
     await db.insert(companyUser).values({ companyId: c!.id, userId: u!.id, role: "contador" });
     const ctx = { companyId: c!.id, userId: u!.id };
     try {
-      const buy = await createPurchaseDocument(ctx, { partyRif: "J-12121212-1", partyRazon: "Prov", docNumber: "F-1", controlNumber: "C-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "1000.00", ivaCausado: "160.00", total: "1160.00", alicuota: "16" });
+      const buy = await createPurchaseDocument(ctx, { partyRif: "J-12121212-1", partyRazon: "Prov", docNumber: "F-1", controlNumber: "C-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "1000.00", ivaCausado: "160.00", total: "1160.00", alicuota: "0.16" });
       expect(buy.ok).toBe(true);
       if (!buy.ok) throw new Error("setup");
 

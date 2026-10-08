@@ -11,6 +11,15 @@ const MoneySchema = z.string().regex(/^\d+(\.\d{1,2})?$/, "Monto inválido (usa 
 
 const GRAVADAS = ["general", "reduced", "additional"] as const;
 
+/** Q-05 (ENMIENDA E-2): la alícuota viaja como fracción string 0–1 ("0.16", no "16"). */
+const FRACTION_MSG = "Alícuota en fracción: usa 0.16, no 16 (entre 0 y 1).";
+
+function esEscalaInvalida(v: string | null): boolean {
+  if (v === null) return false;
+  const n = Number(v);
+  return !Number.isFinite(n) || n < 0 || n > 1;
+}
+
 const LineSchema = z.object({
   taxCategory: z.enum(["general", "reduced", "additional", "exempt", "no_subject", "no_credit"]),
   taxRate: z.string().regex(/^\d+(\.\d{1,6})?$/).nullable().default(null),
@@ -34,7 +43,7 @@ export const CreatePurchaseSchema = z.object({
   // Compatibilidad F1 (una línea gravada general); se normaliza a lines.
   baseImponible: MoneySchema.optional(),
   ivaCausado: MoneySchema.optional(),
-  alicuota: z.string().regex(/^\d+(\.\d{1,6})?$/).default("16"),
+  alicuota: z.string().regex(/^\d+(\.\d{1,6})?$/).default("0.16"),
   source: z.object({ fileId: z.string().uuid(), rowNumber: z.number(), batchId: z.string().uuid() }).optional(),
 });
 
@@ -53,6 +62,13 @@ export async function createPurchaseDocument(
   const parsed = CreatePurchaseSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, error: { code: "VALIDATION_ERROR", message: parsed.error.issues[0]!.message } };
   const input = parsed.data;
+
+  // Q-05: rechaza escala inválida en vez de normalizar en silencio (roadmapRev5 A2).
+  const lineas = input.lines ?? [{ taxCategory: "general" as const, taxRate: input.alicuota, base: input.baseImponible ?? "0.00", iva: input.ivaCausado ?? "0.00" }];
+  for (const [i, l] of lineas.entries()) {
+    if ((GRAVADAS as readonly string[]).includes(l.taxCategory) && esEscalaInvalida(l.taxRate))
+      return { ok: false, error: { code: "RATE_SCALE_INVALID", message: `Línea ${i + 1}: ${FRACTION_MSG}` } };
+  }
 
   // Normaliza a líneas: compatibilidad con la entrada plana F1 (una línea general).
   const lines = input.lines ?? [{

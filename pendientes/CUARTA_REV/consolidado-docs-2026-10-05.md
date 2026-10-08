@@ -3,7 +3,7 @@
 > **Estado:** fotografía de trabajo, no sustituye la fuente de verdad (`docs/`).
 > **Fecha:** 2026-10-05
 > **Fuentes:** `docs/PROJECT.md`, `ARCHITECTURE.md`, `DOMAIN.md`, `DATABASE.md`, `API.md`,
-> `SECURITY.md`, `CONVENTIONS.md`, `DECISIONS.md` (ADR-001–032), `TODO.md`, `CHANGELOG.md`,
+> `SECURITY.md`, `CONVENTIONS.md`, `DECISIONS.md` (ADR-001–034), `TODO.md`, `CHANGELOG.md`,
 > `docs/README.md`, `docs/anexos/pedido-F0-01.md`, `pendientes/TERCERA_REV/` (roadmap + enmienda +
 > guía + `task/T01–T15`) (+ verificación directa del repo: git, escáner, intake).
 > **Stack vigente:** Next.js 16 (build `--webpack`) + PostgreSQL ≥16 + Drizzle; **no usar Prisma ni Docker**.
@@ -150,13 +150,15 @@ reproducibilidad `sha256`.
 
 ---
 
-## 8. Decisiones (DECISIONS.md) — ADR-001–032
+## 8. Decisiones (DECISIONS.md) — ADR-001–034
 
 Ratificadas 001/002/004/006/007/010/011/012, parciales 003/005, auth propio (030);
 015/016/021/022/023/024/025/026/027/028/031 aceptadas; 008 diferida por 031;
 013/014 bloqueadas (G4/G8); 017 aceptada estructural (cálculo bloqueado);
 018/019/020 propuestas asesoría (bloqueadas); 029 aceptada (purge ejecutado 05-oct);
-032 aceptada con efecto agotado (ceguera levantada post-purge).
+032 aceptada con efecto agotado (ceguera levantada post-purge);
+033 propuesta (signo NC + `voided_at/reason/replaces_id`, sin firma);
+034 aceptada e implementada 2026-10-06 (RDF en sistema, migración 0023).
 Regla ADR: no se edita pasado; cambio de rumbo ⇒ ADR nuevo.
 
 ---
@@ -195,7 +197,7 @@ F0-01 ✅; resta T12 (rotación) + 73/73 + cierre formal.
   gatillo 1 → FUN-05 esperará layouts reales); `golden:inspect` inventaría XLSX formatos (0 `#REF!`).
 - **Tests:** cifra snapshot 73 al 2026-10-04 (convención DOC-04); TST-01 skip documentado 72/73
   (clave `app_runtime` del entorno, pendiente SEC-03).
-- **Tasks:** `TERCERA_REV/task/T01–T15` + índice (copiadas a `CUARTA_REV/taskIN/`).
+- **Tasks:** consolidadas en `CUARTA_REV/taskIN/CONSOLIDADO-TASK.md` (T01–T15 en un archivo; no existen `TERCERA_REV/task/` ni `T01–T15` sueltos).
 - **Cambios no commiteados ajenos:** `src/app/c/[companyId]/page.tsx`, `app-shell.tsx`,
   `company-drawer.tsx`, `company-nav.tsx` (aparecieron 05-oct; no incluidos en commits de esta sesión).
 
@@ -222,6 +224,6 @@ tolerancia única (T06), deudas render menores (T09), T12/T13 hardening, T15 tab
   +`API/SECURITY` endpoint sensible). Este consolidado es índice, no reemplazo.
 - Contador: `PROJECT + DOMAIN` + `anexos/pedido-F0-01.md` (carátula del envío) + matriz + checklist.
 - Auditor: `SECURITY + TODO + DECISIONS` (ADR-029–032 para el incidente).
-- Tasks ejecutables: `CUARTA_REV/taskIN/T01–T15` + `00-INDICE.md`.
+- Tasks ejecutables: `CUARTA_REV/taskIN/CONSOLIDADO-TASK.md` (sucesora vigente: `QUINTA_REV/taskIN/CONSOLIDADO-TASK.md`).
 - Operación: 10 runbooks (incl. `incidente-serverc-2026-10-04.md` con §6 firmado parcial),
   3 manuales, UAT, `go-live-checklist.md`, `acta-aceptacion.md`.

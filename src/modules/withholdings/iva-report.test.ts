@@ -27,7 +27,7 @@ async function setup() {
   const r = await createPurchaseDocument(ctx, {
     partyRif: "J-66666666-6", partyRazon: "Prov Rep", docNumber: "FR-1", controlNumber: "CR-1",
     fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05",
-    baseImponible: "1000.00", ivaCausado: "160.00", total: "1160.00", alicuota: "16",
+    baseImponible: "1000.00", ivaCausado: "160.00", total: "1160.00", alicuota: "0.16",
   });
   if (!r.ok) throw new Error("setup buy");
   return { ctx, u: u!, c: c!, docId: r.id };

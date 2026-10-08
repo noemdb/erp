@@ -10,6 +10,9 @@ import { normalizeRif } from "@/modules/fiscal-docs/service";
 
 const MoneySchema = z.string().regex(/^\d+(\.\d{1,2})?$/, "Monto inválido (usa punto decimal)");
 
+/** Q-05 (ENMIENDA E-2): la alícuota viaja como fracción string 0–1 ("0.16", no "16"). */
+const FRACTION_MSG = "Alícuota en fracción: usa 0.16, no 16 (entre 0 y 1).";
+
 export const CreateSaleSchema = z.object({
   kind: z.enum(["invoice", "credit_note", "debit_note", "export", "third_party"]).default("invoice"),
   partyRif: z.string().min(3).max(20),
@@ -22,7 +25,7 @@ export const CreateSaleSchema = z.object({
   baseImponible: MoneySchema,
   ivaCausado: MoneySchema,
   total: MoneySchema,
-  alicuota: z.string().regex(/^\d+(\.\d{1,6})?$/).default("16"),
+  alicuota: z.string().regex(/^\d+(\.\d{1,6})?$/).default("0.16"),
   source: z.object({ fileId: z.string().uuid(), rowNumber: z.number(), batchId: z.string().uuid() }).optional(),
 });
 
@@ -32,6 +35,9 @@ export async function createSalesDocument(ctx: Ctx, raw: z.input<typeof CreateSa
   const parsed = CreateSaleSchema.safeParse(raw);
   if (!parsed.success) return { ok: false as const, error: { code: "VALIDATION_ERROR", message: parsed.error.issues[0]!.message } };
   const input = parsed.data;
+  // Q-05: rechaza escala inválida en vez de normalizar en silencio (roadmapRev5 A2).
+  if (Number(input.alicuota) < 0 || Number(input.alicuota) > 1 || !Number.isFinite(Number(input.alicuota)))
+    return { ok: false as const, error: { code: "RATE_SCALE_INVALID", message: FRACTION_MSG } };
   const needsAffected = input.kind === "credit_note" || input.kind === "debit_note";
   if (needsAffected && !input.affectedDocumentId)
     return { ok: false as const, error: { code: "MISSING_AFFECTED_DOCUMENT", message: "NC/ND requieren documento afectado." } };

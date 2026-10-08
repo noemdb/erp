@@ -13,7 +13,7 @@ describe("ventas", () => {
     const [c] = await db.insert(companies).values({ rif: `J-35${s}-A`, rifOriginal: `J-35${s}-A`, razonSocial: "Sale CA", condicionIva: "ordinario" }).returning({ id: companies.id });
     await db.insert(companyUser).values({ companyId: c!.id, userId: u!.id, role: "administrativo" });
     const ctx = { companyId: c!.id, userId: u!.id };
-    const base = { kind: "invoice" as const, partyRif: "J-22222222-2", partyRazon: "Cliente Y", docNumber: "V-1", controlNumber: "VC-1", fechaDocumento: "2026-09-06", fechaFiscal: "2026-09-06", baseImponible: "200.00", ivaCausado: "32.00", total: "232.00", alicuota: "16" };
+    const base = { kind: "invoice" as const, partyRif: "J-22222222-2", partyRazon: "Cliente Y", docNumber: "V-1", controlNumber: "VC-1", fechaDocumento: "2026-09-06", fechaFiscal: "2026-09-06", baseImponible: "200.00", ivaCausado: "32.00", total: "232.00", alicuota: "0.16" };
     try {
       const ok = await createSalesDocument(ctx, base);
       expect(ok.ok).toBe(true);

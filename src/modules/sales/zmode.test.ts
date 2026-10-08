@@ -26,7 +26,7 @@ describe("G7 modo Z", () => {
         companyId: c!.id, machineId: m!.id, fiscalPeriodId: per!.id, fecha: "2026-09-01",
         zNumber: "Z-1", rangeFrom: "1000", rangeTo: "1050", ventasGravadas: "5000.00", ventasExentas: "0.00", iva: "800.00", total: "5800.00",
       });
-      const sale = await createSalesDocument(ctx, { partyRif: "J-90909090-9", partyRazon: "Cli", docNumber: "V-1", controlNumber: "VC-1", fechaDocumento: "2026-09-06", fechaFiscal: "2026-09-06", baseImponible: "200.00", ivaCausado: "32.00", total: "232.00", alicuota: "16" });
+      const sale = await createSalesDocument(ctx, { partyRif: "J-90909090-9", partyRazon: "Cli", docNumber: "V-1", controlNumber: "VC-1", fechaDocumento: "2026-09-06", fechaFiscal: "2026-09-06", baseImponible: "200.00", ivaCausado: "32.00", total: "232.00", alicuota: "0.16" });
       expect(sale.ok).toBe(true);
 
       // modo facturas: solo V-1

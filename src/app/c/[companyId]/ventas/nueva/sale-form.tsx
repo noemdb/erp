@@ -71,7 +71,7 @@ export function SaleForm({
   const [base, setBase] = useState("");
   const [iva, setIva] = useState("");
   const [total, setTotal] = useState("");
-  const [alicuota, setAlicuota] = useState("16");
+  const [alicuota, setAlicuota] = useState("0.16");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -86,7 +86,7 @@ export function SaleForm({
     const valid = !Number.isNaN(b) && !Number.isNaN(iv) && !Number.isNaN(t);
     const diff = valid ? b + iv - t : NaN;
     const cuadran = valid && Math.abs(diff) <= 0.01;
-    const esperado = !Number.isNaN(b) && !Number.isNaN(a) ? (b * a) / 100 : NaN;
+    const esperado = !Number.isNaN(b) && !Number.isNaN(a) ? b * a : NaN;
     const alicuotaOk =
       kind === "export"
         ? iv === 0
@@ -124,7 +124,7 @@ export function SaleForm({
       baseImponible: base,
       ivaCausado: iva,
       total,
-      alicuota: alicuota || (kind === "export" ? "0" : "16"),
+      alicuota: alicuota || (kind === "export" ? "0" : "0.16"),
     });
     if (!res.ok) {
       const code = res.error.code;
@@ -185,7 +185,7 @@ export function SaleForm({
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <label htmlFor="kind" className={labelCls}>Tipo</label>
-              <select id="kind" value={kind} onChange={(e) => { setKind(e.target.value); setAffectedId(""); if (e.target.value === "export") { setAlicuota("0"); setIva("0.00"); } else if (alicuota === "0") setAlicuota("16"); }} className={inputCls}>
+              <select id="kind" value={kind} onChange={(e) => { setKind(e.target.value); setAffectedId(""); if (e.target.value === "export") { setAlicuota("0"); setIva("0.00"); } else if (alicuota === "0") setAlicuota("0.16"); }} className={inputCls}>
                 {KINDS.map((k) => (
                   <option key={k.value} value={k.value}>{k.label}</option>
                 ))}
@@ -253,8 +253,8 @@ export function SaleForm({
               <input id="total" value={total} onChange={(e) => setTotal(e.target.value)} required placeholder="116.00" inputMode="decimal" autoComplete="off" pattern="^\d+(\.\d{1,2})?$" className={inputCls} />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="alicuota" className={labelCls}>Alícuota %</label>
-              <input id="alicuota" value={alicuota} onChange={(e) => setAlicuota(e.target.value)} placeholder="16" inputMode="decimal" autoComplete="off" className={inputCls} />
+              <label htmlFor="alicuota" className={labelCls}>Alícuota (fracción, ej. 0.16)</label>
+              <input id="alicuota" value={alicuota} onChange={(e) => setAlicuota(e.target.value)} placeholder="0.16" inputMode="decimal" autoComplete="off" className={inputCls} />
             </div>
             <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
               <Badge variant={calc.cuadran ? "success" : "warning"} className={cn("rounded-md")}>

@@ -1,5 +1,10 @@
 # Pool paso 2 — Completar borrador (ficha de la decisión)
 
+> ⚠️ Nota QUINTA_REV (2026-10-08): los "Fundamento" que dicen "acordado con el
+> contador" o "verificada" NO están firmados (0/7 RDF). Son propuesta del
+> preparador. Para la sesión usar `paquete-sesion-1.md` §§1–6, que los formula
+> como propuesta + referencia a verificar. G4 no es RDF (ver §7 del paquete).
+
 > **Uso:** pegar en la tarjeta **Flujo → Completar borrador** (`/c/[empresa]/decisiones/[id]`), luego **Guardar borrador** y **Enviar a revisión**.
 > **Validaciones:** decisión y fundamento ≥10 caracteres; resultado formato `0.00`.
 > Corresponde 1:1 con `pool-datos-decisiones.md` (mismo orden, mismos casos).

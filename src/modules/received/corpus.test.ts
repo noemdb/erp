@@ -21,8 +21,8 @@ describe("corpus G3", () => {
     const reg = (n: string, cert: string, monto: string, ids: string[]) =>
       registerReceived(ctx, { agentRif: "J-99999999-9", agentRazon: "Agente", certificateNumber: cert, fechaComprobante: "2026-09-20", fechaRecepcion: "2026-09-21", ivaCausado: "160.00", montoRetenido: monto, purchaseDocumentIds: ids, notes: n });
     try {
-      const b1 = await createPurchaseDocument(ctx, { partyRif: "J-20202020-2", partyRazon: "P1", docNumber: "F-1", controlNumber: "C-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "1000.00", ivaCausado: "160.00", total: "1160.00", alicuota: "16" });
-      const b2 = await createPurchaseDocument(ctx, { partyRif: "J-20202020-2", partyRazon: "P1", docNumber: "F-2", controlNumber: "C-2", fechaDocumento: "2026-09-06", fechaFiscal: "2026-09-06", baseImponible: "500.00", ivaCausado: "80.00", total: "580.00", alicuota: "16" });
+      const b1 = await createPurchaseDocument(ctx, { partyRif: "J-20202020-2", partyRazon: "P1", docNumber: "F-1", controlNumber: "C-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "1000.00", ivaCausado: "160.00", total: "1160.00", alicuota: "0.16" });
+      const b2 = await createPurchaseDocument(ctx, { partyRif: "J-20202020-2", partyRazon: "P1", docNumber: "F-2", controlNumber: "C-2", fechaDocumento: "2026-09-06", fechaFiscal: "2026-09-06", baseImponible: "500.00", ivaCausado: "80.00", total: "580.00", alicuota: "0.16" });
       expect(b1.ok && b2.ok).toBe(true);
       if (!b1.ok || !b2.ok) throw new Error("setup");
 

@@ -25,10 +25,10 @@ describe("resumen y conciliación", () => {
       await upsertParty(ctx, { rif: "J-77777777-7", razonSocial: "Prov R" });
       const [pty] = await db.select().from(parties).where(eq(parties.companyId, c!.id)).limit(1);
       await setTaxProfile(ctx, pty!.id, { tipoPersona: "juridica", residente: true, sujetoRetencionIva: true, sujetoRetencionIslr: false, effectiveFrom: "2026-01-01" });
-      const buy = await createPurchaseDocument(ctx, { partyRif: "J-77777777-7", partyRazon: "Prov R", docNumber: "F-1", controlNumber: "C-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "1000.00", ivaCausado: "160.00", total: "1160.00", alicuota: "16" });
+      const buy = await createPurchaseDocument(ctx, { partyRif: "J-77777777-7", partyRazon: "Prov R", docNumber: "F-1", controlNumber: "C-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "1000.00", ivaCausado: "160.00", total: "1160.00", alicuota: "0.16" });
       expect(buy.ok).toBe(true);
       if (!buy.ok) throw new Error("setup");
-      const sale = await createSalesDocument(ctx, { partyRif: "J-88888888-8", partyRazon: "Cli", docNumber: "V-1", controlNumber: "VC-1", fechaDocumento: "2026-09-06", fechaFiscal: "2026-09-06", baseImponible: "2000.00", ivaCausado: "320.00", total: "2320.00", alicuota: "16" });
+      const sale = await createSalesDocument(ctx, { partyRif: "J-88888888-8", partyRazon: "Cli", docNumber: "V-1", controlNumber: "VC-1", fechaDocumento: "2026-09-06", fechaFiscal: "2026-09-06", baseImponible: "2000.00", ivaCausado: "320.00", total: "2320.00", alicuota: "0.16" });
       expect(sale.ok).toBe(true);
       if (!sale.ok) throw new Error("setup sale");
       const em = await issueIva(ctx, [buy.id], "2026-09-20");
@@ -47,7 +47,7 @@ describe("resumen y conciliación", () => {
       expect(repro1.match).toBe(true);
 
       // nuevo documento → ya no reproduce v1
-      await createSalesDocument(ctx, { partyRif: "J-88888888-8", partyRazon: "Cli", docNumber: "V-2", controlNumber: "VC-2", fechaDocumento: "2026-09-07", fechaFiscal: "2026-09-07", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "16" });
+      await createSalesDocument(ctx, { partyRif: "J-88888888-8", partyRazon: "Cli", docNumber: "V-2", controlNumber: "VC-2", fechaDocumento: "2026-09-07", fechaFiscal: "2026-09-07", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "0.16" });
       const repro2 = await checkReproducible(ctx, per!.id);
       expect(repro2.match).toBe(false);
     } finally {

@@ -14,7 +14,7 @@ describe("createPurchaseDocument (esqueleto M1)", () => {
     const [c] = await db.insert(companies).values({ rif: `J-32${s}-A`, rifOriginal: `J-32${s}-A`, razonSocial: "Buy CA", condicionIva: "ordinario" }).returning({ id: companies.id });
     await db.insert(companyUser).values({ companyId: c!.id, userId: u!.id, role: "administrativo" });
     const ctx = { companyId: c!.id, userId: u!.id };
-    const base = { partyRif: "J-12345678-9", partyRazon: "Proveedor X", docNumber: "F-1", controlNumber: "C-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "16" };
+    const base = { partyRif: "J-12345678-9", partyRazon: "Proveedor X", docNumber: "F-1", controlNumber: "C-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "0.16" };
 
     const ok = await createPurchaseDocument(ctx, base);
     expect(ok.ok).toBe(true);
@@ -58,7 +58,7 @@ describe("createPurchaseDocument (esqueleto M1)", () => {
       partyRif: "J-12345678-9", partyRazon: "Proveedor X", docNumber: "F-3", controlNumber: "C-3",
       fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", total: "166.00",
       lines: [
-        { taxCategory: "general" as const, taxRate: "16", base: "100.00", iva: "16.00" },
+        { taxCategory: "general" as const, taxRate: "0.16", base: "100.00", iva: "16.00" },
         { taxCategory: "exempt" as const, taxRate: null, base: "50.00", iva: "0.00" },
       ],
     });
@@ -89,7 +89,7 @@ describe("createPurchaseDocument (esqueleto M1)", () => {
     const [c] = await db.insert(companies).values({ rif: `J-33${s}-A`, rifOriginal: `J-33${s}-A`, razonSocial: "Void CA", condicionIva: "ordinario" }).returning({ id: companies.id });
     await db.insert(companyUser).values({ companyId: c!.id, userId: u!.id, role: "administrativo" });
     const ctx = { companyId: c!.id, userId: u!.id };
-    const base = { partyRif: "J-12345678-9", partyRazon: "Proveedor X", docNumber: "F-9", controlNumber: "C-9", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "16" };
+    const base = { partyRif: "J-12345678-9", partyRazon: "Proveedor X", docNumber: "F-9", controlNumber: "C-9", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "0.16" };
 
     const ok = await createPurchaseDocument(ctx, base);
     expect(ok.ok).toBe(true);

@@ -65,7 +65,7 @@ export function PurchaseForm({ companyId, documents, suppliers }: { companyId: s
   const [affectedId, setAffectedId] = useState("");
   const [total, setTotal] = useState("");
   const [lines, setLines] = useState<Line[]>([
-    { taxCategory: "general", taxRate: "16", base: "", iva: "", description: "" },
+    { taxCategory: "general", taxRate: "0.16", base: "", iva: "", description: "" },
   ]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -278,13 +278,13 @@ export function PurchaseForm({ companyId, documents, suppliers }: { companyId: s
                     </select>
                   </div>
                   <div className="space-y-1.5">
-                    <label htmlFor={`rate-${i}`} className={labelCls}>Alícuota %</label>
+                    <label htmlFor={`rate-${i}`} className={labelCls}>Alícuota (fracción, ej. 0.16)</label>
                     <Input
                       id={`rate-${i}`}
                       value={l.taxRate}
                       onChange={(e) => setLine(i, { taxRate: e.target.value })}
                       disabled={!gravada}
-                      placeholder={gravada ? "16" : "—"}
+                      placeholder={gravada ? "0.16" : "—"}
                       inputMode="decimal"
                       autoComplete="off"
                     />
@@ -337,7 +337,7 @@ export function PurchaseForm({ companyId, documents, suppliers }: { companyId: s
                 onClick={() =>
                   setLines((prev) => [
                     ...prev,
-                    { taxCategory: "general", taxRate: "16", base: "", iva: "", description: "" },
+                    { taxCategory: "general", taxRate: "0.16", base: "", iva: "", description: "" },
                   ])
                 }
               >

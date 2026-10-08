@@ -24,7 +24,7 @@ describe("sustitución", () => {
       await upsertParty(ctx, { rif: "J-15151515-1", razonSocial: "Prov Sub" });
       const [pty] = await db.select().from(parties).where(eq(parties.companyId, c!.id)).limit(1);
       await setTaxProfile(ctx, pty!.id, { tipoPersona: "juridica", residente: true, sujetoRetencionIva: true, sujetoRetencionIslr: false, effectiveFrom: "2026-01-01" });
-      const buy = await createPurchaseDocument(ctx, { partyRif: "J-15151515-1", partyRazon: "Prov Sub", docNumber: "F-S", controlNumber: "C-S", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "500.00", ivaCausado: "80.00", total: "580.00", alicuota: "16" });
+      const buy = await createPurchaseDocument(ctx, { partyRif: "J-15151515-1", partyRazon: "Prov Sub", docNumber: "F-S", controlNumber: "C-S", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "500.00", ivaCausado: "80.00", total: "580.00", alicuota: "0.16" });
       expect(buy.ok).toBe(true);
       if (!buy.ok) throw new Error("setup");
 

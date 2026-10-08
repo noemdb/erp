@@ -32,6 +32,7 @@
 | `G2_EVENT_REVIEW_REQUIRED` | Criterio G2 sin configurar/no convergente, evento no es disparador permitido o falta asignación verificable |
 | `GATE_NO_RDF` | Activación de regla no sintética sin RDF firmado vinculado con cobertura (`rule_kind` + `concept_id`) |
 | `TOTAL_MISMATCH` | `base+iva != total` fuera de tolerancia ADR-014 (Inv. 1) |
+| `RATE_SCALE_INVALID` | Alícuota fuera de fracción 0–1 (Q-05, ENMIENDA E-2: usa `0.16`, no `16`) |
 | `MISSING_AFFECTED_DOCUMENT` | NC/ND sin `affected_document_id` |
 | `SERIES_EXHAUSTED` / `SERIES_NOT_FOUND` | Serie inactiva o sin definir (G9 ISLR) |
 | `INVALID_STATE_TRANSITION` | Transición fuera de máquina de estados DOMAIN |
@@ -160,7 +161,7 @@ Parámetros comunes: `companyId, fiscalPeriodId, branchId?, format pdf|xlsx|csv`
 - `iva_withholdings` (CSV): columnas `comprobante,emision,rif_beneficiario,razon_social,retenido,estado`; incluye anulados marcados, filtro `periodId`, neutraliza inyección `=+-@`. PDF/Excel fiel en F5.
 - `iva_summary`: débitos, créditos, exentas, exportaciones, importaciones, ajustes, excedente anterior, retenciones aplicadas/no aplicadas, cuota. Drill-down: cada total enlaza a documentos.
 - `conciliation`: libros ↔ resumen ↔ comprobantes, tolerancia 0 (salvo ADR-014).
-- Export Excel vía `exceljs` sobre plantilla original (neutralizar CSV injection `=+-@`), PDF vía HTML→Chromium en worker. Almacena con `sha256`.
+- Export Excel vía `exceljs` sobre plantilla original (neutralizar CSV injection `=+-@`), PDF vía HTML→Chromium ejecutado por `render:retry` con gatillos (>5000 filas / >10s / >5 pendientes). Cola `pg-boss` diferida por ADR-031. Almacena con `sha256`.
 
 ## periods — cierre y reapertura
 

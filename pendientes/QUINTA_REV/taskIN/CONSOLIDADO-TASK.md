@@ -62,22 +62,53 @@ silencio. No requiere firma: la ENMIENDA E-2 ya fijó fracción.
 - `CUARTA_REV/consolidado` §8 dice "ADR-001–032" → 034.
 **Aceptación:** cero rutas rotas en `pendientes/**` (verificación por enlace relativo).
 
-### Q-07 · Completar la semilla de dorados 🔲 (trabajo nuestro, no del contador)
-`diff/index.md §D` queda en la fila 12-17 sin cerrar. 17 candidatos + ISLR-07 + ABONO-01…03;
-`ISLR-09` corregido (base 900 → 306,00) sin verificar con el contador.
-**Aceptación:** tabla completa con ID, caso, esperado, fuente y estado por fila; los que dependen
-de firma marcados `⛔` explícitamente.
+### Q-07 · Completar la semilla de dorados ✅ cerrada 2026-10-08 (trabajo nuestro, no del contador)
+
+Fuentes: `PRIMERA_REV/dorados-propuestos-F0.json` (17 escenarios) +
+`SEGUNDA_REV/dorados-normalizados/*.json` (normalizados) +
+`TERCERA_REV/files/dorados-candidatos-normalizados-F0.json` (12 ejecutables, 5 no).
+Ninguno firmado: todos `PROPUESTO_NO_VALIDADO`. Meta 30 exige ~21 casos nuevos
+(`blueprint/goldenValidation/04-tests-rollout.md §2`).
+
+| # | ID | Caso | Esperado | Fuente | Estado |
+|---|---|---|---|---|---|
+| 1 | IVA-01 | Retención ordinaria 75% (Prov. 0054 art. 4) | 120.00 | fixture didáctico `fixtures/tax-scenarios/IVA-01` (CANDIDATO) + candidatos | 🟡 ejecutable, ⛔ sin firma |
+| 2 | IVA-02 | Retención 100% IVA no discriminado (art. 5.1) | 160.00 | candidatos | ⛔ sin firma; depende RDF G8 (redondeo) |
+| 3 | IVA-03 | Contribuyente formal: no retiene (art. 3.2) | 0.00 | candidatos | ⛔ sin firma; prueba regla no implementada |
+| 4 | IVA-04 | Caja chica ≤20 UT (860,00): no retiene (art. 3.7) | 0.00 | candidatos | ⛔ sin firma; regla no implementada + UT sin fijar |
+| 5 | IVA-05 | Caja chica >20 UT: retiene 75% | 120.00 | candidatos | ⛔ sin firma; depende RDF G8 + UT |
+| 6 | ISLR-01 | Servicios PN residente 1% (9.11) | 64.17 | candidatos | ⛔ sin firma; depende base ISLR (RDF#5) |
+| 7 | ISLR-02 | Honorarios PN 3% bajo mínimo (9.1.b) | 0.00 | candidatos | ⛔ sin firma; depende mínimos/UT + RDF#5 |
+| 8 | ISLR-03 | Honorarios PN 3% sobre mínimo (9.1.b) | 1392.50 | candidatos | ⛔ sin firma; depende mínimos/UT + RDF#5 |
+| 9 | ISLR-04 | Servicios PJ domiciliada 2% (9.11) | 200.00 | candidatos | ⛔ sin firma; depende RDF#5 |
+| 10 | ISLR-05 | Honorarios PJ 5% (9.1.b) | 400.00 | candidatos | ⛔ sin firma; depende RDF#5 |
+| 11 | ISLR-06 | Arrendamiento PN 3% (9.12) | 252.50 | candidatos | ⛔ sin firma; depende RDF#5 |
+| 12 | ISLR-07 | Honorarios PN 3% en 2 abonos (50.000) | — (no ejecutable) | candidatos | ⛔ no ejecutable como fixture; depende RDF G2 + sustraendo parcial |
+| 13 | ISLR-08 | Tarjeta a PJ 5% (9.14), base=monto/1.16 | 500.00 | candidatos | ⛔ sin firma; depende base con/sin IVA (RDF#5) |
+| 14 | ISLR-09 | Honorarios PN no residente 34% s/90% | 306.00 (base gravable 900) | candidatos, corregido 900→306.00 | ⛔ corregido sin verificar con contador; depende RDF#5 |
+| 15 | ABONO-01 | Causación: CxP 10/09, pago 05/10 | retención nace en abono | candidatos | ⛔ no ejecutable; depende RDF G2 |
+| 16 | ABONO-02 | Anticipo 30% antes de factura | — (no ejecutable) | candidatos | ⛔ no ejecutable; depende RDF G2 |
+| 17 | ABONO-03 | Abonos parciales post-registro | — (no ejecutable) | candidatos | ⛔ no ejecutable; depende RDF G2 + porción/sustraendo |
+
+**Aceptación:** tabla completa con ID, caso, esperado, fuente y estado por fila ✓ (arriba);
+los que dependen de firma marcados `⛔` explícitamente ✓. Siguiente: T05 (30 firmados)
+tras T04 + RDF firmados; `ISLR-09` y base con/sin IVA se verifican con el contador.
 
 ### Q-08 · Tablero semanal (T15) 🔲
 Plantilla en `diff/index.md §B` → `../seguimiento/tablero-semanal.md` con primera edición.
 **Aceptación:** archivo con métricas medidas al 10-07 y fecha de próxima edición.
 
-### Q-09 · Semilla de prueba del camino de firma 🔲
+### Q-09 · Semilla de prueba del camino de firma ⏳ bloqueada por entorno 2026-10-08
 `../decisiones/ruta-firma-rdf.md` describe 7 pasos en la UI, pero **nadie lo ejecutó de punta a
 punta con un firmante**. Probar con el rol contador sobre un RDF de prueba (y borrar después):
 `draft → in_review → approved → signed`, verificar `content_sha256`, inmutabilidad y
 `GATE_NO_RDF` bloqueando una regla sin vínculo.
 **Aceptación:** el recorrido funciona sin ayuda externa; hallazgos anotados en la ruta.
+**Nota 2026-10-08:** no ejecutable en este entorno (Neon ECONNRESET, verificado también en
+árbol limpio). Ejecutar donde haya DB + app en marcha, antes de la sesión con el contador
+(Q-09 es el ensayo general; descubrir un fallo con el contador esperando es lo más caro).
+Comando: levantar app (`npm run dev`), entrar como contador a `/c/[id]/decisiones/nueva`,
+seguir `ruta-firma-rdf.md` §§2–3 con un caso descartable, luego eliminarlo.
 
 ### Q-10 · E-3 resuelto por verificación 🟢 P3
 La ENMIENDA E-3 pregunté si `origin` existe en el schema. **Verificado 10-07: no existe.** El

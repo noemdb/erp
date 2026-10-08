@@ -26,7 +26,7 @@ async function setup(nDocs: number) {
     const r = await createPurchaseDocument(ctx, {
       partyRif: "J-55555555-5", partyRazon: "Prov Ret", docNumber: `FW-${i}`, controlNumber: `CW-${i}`,
       fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05",
-      baseImponible: "1000.00", ivaCausado: "160.00", total: "1160.00", alicuota: "16",
+      baseImponible: "1000.00", ivaCausado: "160.00", total: "1160.00", alicuota: "0.16",
     });
     if (!r.ok) throw new Error("setup buy " + i);
     ids.push(r.id);

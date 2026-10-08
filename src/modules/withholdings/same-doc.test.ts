@@ -24,7 +24,7 @@ describe("misma factura concurrente", () => {
       await upsertParty(ctx, { rif: "J-18181818-1", razonSocial: "Prov" });
       const [pty] = await db.select().from(parties).where(eq(parties.companyId, c!.id)).limit(1);
       await setTaxProfile(ctx, pty!.id, { tipoPersona: "juridica", residente: true, sujetoRetencionIva: true, sujetoRetencionIslr: false, effectiveFrom: "2026-01-01" });
-      const buy = await createPurchaseDocument(ctx, { partyRif: "J-18181818-1", partyRazon: "Prov", docNumber: "F-SD", controlNumber: "C-SD", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "16" });
+      const buy = await createPurchaseDocument(ctx, { partyRif: "J-18181818-1", partyRazon: "Prov", docNumber: "F-SD", controlNumber: "C-SD", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "0.16" });
       if (!buy.ok) throw new Error("setup");
       const [a, b] = await Promise.all([issueIva(ctx, [buy.id], "2026-09-20"), issueIva(ctx, [buy.id], "2026-09-20")]);
       expect([a.ok, b.ok].filter(Boolean)).toHaveLength(1);

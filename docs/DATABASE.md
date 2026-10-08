@@ -159,7 +159,12 @@ CREATE INDEX idx_<tabla>_company ON <tabla> (company_id);
 | rif | citext | UNIQUE NOT NULL | Normalizado |
 | rif_original | text | NOT NULL | Valor tal como se ingresó |
 | razon_social | text | NOT NULL | |
+| nombre_comercial | text | NULL | Branding (migración 0020) |
 | domicilio_fiscal | text | | |
+| telefono | text | NULL | Branding (migración 0020) |
+| email_contacto | text | NULL | Branding (migración 0020) |
+| color_distintivo | text | NULL | Branding (migración 0020) |
+| logo_url | text | NULL | Branding (migración 0020) |
 | condicion_iva | text | NOT NULL, CHECK IN ('ordinario','especial','exento','no_contribuyente') | |
 | contribuyente_especial_desde | date | NULL | |
 | agente_retencion_iva | boolean | NOT NULL DEFAULT false | |
@@ -167,7 +172,10 @@ CREATE INDEX idx_<tabla>_company ON <tabla> (company_id);
 | period_kind | text | NOT NULL, CHECK IN ('monthly','biweekly') | G1 |
 | currency_functional | text | NOT NULL DEFAULT 'VES' | G4 |
 | abono_criterion | text | NOT NULL DEFAULT 'unset', CHECK IN ('unset','payment_only','account_credit_or_payment') | G2; `unset` falla cerrado |
+| sales_mode | text | NOT NULL DEFAULT 'invoices', CHECK IN ('invoices','z') | G7 (migración 0016) |
 | status | text | NOT NULL DEFAULT 'active' | |
+| created_at | timestamptz | NOT NULL DEFAULT now() | |
+| updated_at | timestamptz | NOT NULL DEFAULT now() | |
 
 **Notas:**
 - `period_kind` es por empresa (G1). No se mezclan mensuales y quincenales.
@@ -301,7 +309,6 @@ CREATE TRIGGER trg_purchase_docs_closed
 |---|---|---|---|
 | id | uuid | PK | |
 | company_id | uuid | FK companies | |
-| branch_id | uuid | FK branches NULL | |
 | fiscal_period_id | uuid | FK fiscal_periods | |
 | kind | text | NOT NULL, CHECK IN ('invoice','credit_note','debit_note','import','exempt','no_credit') | |
 | party_id | uuid | FK parties | |
@@ -314,17 +321,13 @@ CREATE TRIGGER trg_purchase_docs_closed
 | base_imponible | numeric(18,2) | NOT NULL | |
 | iva_causado | numeric(18,2) | NOT NULL DEFAULT 0 | |
 | total | numeric(18,2) | NOT NULL | |
-| currency | text | NOT NULL DEFAULT 'VES' | G4 |
-| fx_rate | numeric(18,6) | NULL | G4 |
-| fx_rate_date | date | NULL | G4 |
+| currency | text | NOT NULL DEFAULT 'VES' | G4 (valor único en v1; FX diferido, ver ADR-013) |
 | status | text | NOT NULL DEFAULT 'draft', CHECK IN ('draft','imported','under_review','validated','included','voided') | |
-| voided_at | timestamptz | NULL | |
-| void_reason | text | NULL | |
-| replaces_id | uuid | FK purchase_documents NULL | |
 | source_file_id | uuid | FK source_files NULL | Trazabilidad |
 | source_row_number | int | NULL | |
 | import_batch_id | uuid | FK import_batches NULL | |
-| attachments_count | int | NOT NULL DEFAULT 0 | Contador denormalizado |
+
+**No existen en el físico** (`src/db/schema/fiscal-docs.ts` verificado 2026-10-08): `branch_id`, `fx_rate`, `fx_rate_date`, `attachments_count`, `voided_at`, `void_reason`, `replaces_id`. La anulación usa `status='voided'` con motivo en `audit_events.reason`; `voided_at`/`void_reason`/`replaces_id` son propuesta ADR-033 sin firma (no migrar sin decisión del contador). `affected_document_id` sí existe (no confundir con `replaces_id`).
 
 **Índices:**
 - `INDEX (company_id, fiscal_period_id, status)`
@@ -461,8 +464,8 @@ Análogo a `purchase_document_lines`.
 | source_ref | text | NULL | Referencia de asiento/pago para trazabilidad |
 | inferred | boolean | NOT NULL DEFAULT false | Marca dato inferido; no se infiere automáticamente |
 | status | text | NOT NULL DEFAULT 'active', CHECK IN ('active','voided') | |
-| voided_at | timestamptz | NULL | |
-| void_reason | text | NULL | |
+
+**No existen en el físico** (`src/db/schema/sales.ts` `settlementEvents` verificado 2026-10-08): `voided_at`, `void_reason`. Solo `status active|voided` verificado.
 
 **Migraciones 0011–0012:** 0011 añade `event_type`, `source_ref` e `inferred` sin renombrar ni descartar datos existentes; 0012 agrega `companies.abono_criterion` con default `unset` y su CHECK. Los nombres físicos `payments`, `fecha_pago`, `monto` y `metodo` se conservan transitoriamente para una migración compatible. Ambas aplicadas en Neon dev el 2026-10-01.
 
@@ -556,6 +559,11 @@ Análogo a `purchase_document_lines`.
 | conditions | jsonb | | Condiciones adicionales |
 | legal_reference | text | | Providencia/decreto/artículo |
 | status | text | NOT NULL DEFAULT 'active' | |
+| synthetic | boolean | NOT NULL DEFAULT false | Seed sintético (`--matrix-hash`); no activable en prod |
+| approved_by | uuid | FK users NULL | |
+| approved_at | timestamptz | NULL | |
+| change_reason | text | NULL | |
+| source_decision_id | uuid | FK fiscal_decisions NULL | Atajo ADR-034; inmutable desde `approved`/`active` (`DECISION_LOCKED`) |
 
 **Constraints (crítico — ADR-004):**
 ```sql
@@ -624,6 +632,7 @@ RETURNING last_number;
 | void_reason | text | NULL | |
 | replaces_id | uuid | FK iva_withholdings NULL | |
 | pdf_sha256 | text | NULL | Integridad |
+| render_status | text | NOT NULL DEFAULT 'pending' | ADR-027: `pending` → render post-commit |
 | data_snapshot | jsonb | NOT NULL | Snapshot completo al emitir |
 
 **Índices:**
@@ -663,15 +672,53 @@ ALTER TABLE iva_withholding_lines
 
 #### `islr_withholdings` y `islr_withholding_lines`
 
-Análogos, con:
+| Columna | Tipo | Restricciones | Descripción |
+|---|---|---|---|
+| id | uuid | PK | |
+| company_id | uuid | FK companies | |
+| beneficiary_id | uuid | FK parties | |
+| fiscal_period_id | uuid | FK fiscal_periods | |
+| concept_id | uuid | FK withholding_concepts NULL | Concepto ISLR |
+| payment_id | uuid | FK payments NULL | Origen legacy; propiedad de dominio `settlementEventId` |
+| certificate_number | text | UNIQUE NOT NULL | Formato pendiente G9 |
+| status | text | NOT NULL DEFAULT 'draft' | |
+| fecha_emision | date | | |
+| rule_version_id | uuid | FK withholding_rules | Invariante 7 |
+| rule_snapshot | jsonb | NOT NULL | Snapshot de parámetros |
+| total_retained | numeric(18,2) | NOT NULL | |
+| issued_by | uuid | FK users NULL | |
+| issued_at | timestamptz | NULL | |
+| voided_at | timestamptz | NULL | |
+| void_reason | text | NULL | |
+| replaces_id | uuid | FK islr_withholdings NULL | |
+| render_status | text | NOT NULL DEFAULT 'pending' | ADR-027: `pending` → render post-commit |
+| data_snapshot | jsonb | NOT NULL | Snapshot completo al emitir |
+
+**Índices:** `UNIQUE (company_id, certificate_number)`.
+
+#### `islr_withholding_lines`
+
+| Columna | Tipo | Restricciones | Descripción |
+|---|---|---|---|
+| id | uuid | PK | |
+| company_id | uuid | FK companies | |
+| withholding_id | uuid | FK islr_withholdings | |
+| base_sujeta | numeric(18,2) | NOT NULL | |
+| porcentaje | numeric(18,6) | NOT NULL | |
+| sustraendo | numeric(18,2) | NOT NULL DEFAULT 0 | |
+| retained_amount | numeric(18,2) | NOT NULL | `max(0, base*%-sustraendo)` |
+| explanation | jsonb | NOT NULL | Pasos legibles |
+
+Notas previas (vigentes):
 - `concept_id` en `islr_withholdings` (referencia a `withholding_concepts`).
 - `payment_id` en `islr_withholdings` (origen legacy; propiedad de dominio `settlementEventId`; admite `payment` siempre y `account_credit` solo bajo criterio explícito `account_credit_or_payment` según ADR-021, con asignación verificable).
 - `base_sujeta`, `porcentaje`, `sustraendo`, `retained_amount` en líneas.
+- `render_status` en `islr_withholdings` (igual que IVA, ADR-027: `pending` → render post-commit).
 - Numeración `islr_withholding` con formato pendiente G9 (bloqueante para F4).
 
-#### `fiscal_decisions` + `fiscal_decision_links` (ADR-034, migración 0023 aplicada)
+#### `fiscal_decisions` + `fiscal_decision_links` (ADR-034 aceptada e implementada, migración 0023 aplicada en Neon dev)
 
-Tablas propuestas (no crear migración hasta ADR-034 aceptado):
+Tablas implementadas (migración 0023: `fiscal_decisions` + links + `rdf_series` + `source_decision_id`, RLS + trigger `rdf_immutable`):
 - `fiscal_decisions(id, company_id, codigo RDF-YYYY-####, gap, titulo, pregunta, alternativas jsonb, decision, fundamento_normativo, formula, redondeo_metodo/etapa/precision, momento_fiscal, ejemplo_numerico jsonb, resultado_esperado text, moneda default VES, rule_kind, concept_id, vigencia_desde, impacto_sistema, status, version, supersedes_id, motivo, firmante_nombre/doc, firmado_por/en, content_sha256, evidencia_adjunto_id, created_by/at, updated_at)`. `UNIQUE(company_id, codigo)`; RLS por `company_id`; trigger `rdf_immutable` rechaza mutación en `signed/applied/superseded` salvo `signed→applied` por sistema.
 - `fiscal_decision_links(id, company_id, decision_id→fiscal_decisions RESTRICT, rule_id→withholding_rules RESTRICT, rol CHECK autoriza/aclara/deroga, nota, created_by/at)`. `UNIQUE(decision_id, rule_id, rol)`.
 - Aditivo en `withholding_rules`: `source_decision_id uuid NULL → fiscal_decisions(id) RESTRICT`; inmutable desde `approved/active` (`DECISION_LOCKED`).
@@ -742,12 +789,14 @@ GRANT INSERT, SELECT ON audit_events TO app_role;
 | entity_type | text | NOT NULL | `purchase_document`/`iva_withholding`/... |
 | entity_id | uuid | NOT NULL | |
 | original_name | text | NOT NULL | |
-| mime_type | text | NOT NULL | |
+| mime | text | NOT NULL | |
 | size_bytes | bigint | NOT NULL | |
-| storage_path | text | NOT NULL | Clave del driver (`fs:<sha>` o clave UploadThing); el binario no vive en DB |
-| uploaded_by | uuid | FK users | |
-| uploaded_at | timestamptz | NOT NULL DEFAULT now() | |
-| + `sha256` UNIQUE por empresa (dedup), `status` active/voided + `void_reason` (no se borra) | | | |
+| storage_key | text | NOT NULL | Clave del driver (`fs:<sha>` o clave UploadThing); el binario no vive en DB |
+| sha256 | text | NOT NULL | UNIQUE por empresa (dedup) |
+| status | text | NOT NULL DEFAULT 'active' | active/voided (no se borra) |
+| void_reason | text | NULL | Motivo de anulación |
+| created_by | uuid | FK users | |
+| created_at | timestamptz | NOT NULL DEFAULT now() | |
 
 **Notas:** descarga por URL firmada HMAC (attachment+empresa+usuario, TTL ≤15 min); validación por magic bytes, no por extensión.
 
@@ -878,6 +927,7 @@ export const IvaWithholdingLineSchema = z.object({
 0000–0010                  -- esquema inicial y bloques F1–F6; orden exacto en meta/_journal.json
 0011_settlement_event_fields.sql -- captura G2 aditiva: tipo de evento, referencia, inferred y RLS
 0012_company_abono_criterion.sql -- criterio G2 por empresa, default unset y CHECK
+0013–0023                   -- ver meta/_journal.json (0016 sales_mode G7, 0020 branding companies, 0022 RLS total, 0023 RDF ADR-034); el snapshot de referencia es el último en drizzle/migrations/meta/
 ```
 
 ---

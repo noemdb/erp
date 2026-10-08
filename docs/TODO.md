@@ -1,6 +1,7 @@
 # TODO.md — ERP-TributarioLite
 
 > Fuente de verdad del estado técnico y documental. F1–F6 están implementadas parcial o mayormente; faltan gates fiscales y validación operativa. Un bloque es ✅ solo con checklist Paso 04 completo. Roadmap base: `blueprint/ROADMAP-ERP-TributarioLite.md` F0–F7.
+> Verificación QUINTA_REV aplicada al código el **2026-10-08** (`7e355cb`): ver § “Verificación QUINTA_REV — 2026-10-08”. Solo documentación, sin cambios de código.
 
 ## Leyenda
 - 🔲 Por hacer — 🧪 En pruebas — ✅ Hecho — ⛔ Bloqueado
@@ -9,13 +10,13 @@
 
 | Doc | Estado | Nota |
 |---|---|---|
-| `ARCHITECTURE.md` | ✅ | Unificado a PG ≥16 + Drizzle |
+| `ARCHITECTURE.md` | ✅ | PG ≥16 + Drizzle; Q-01/Q-02 aplicados 2026-10-08 (auth propio ADR-030, `render:retry` en stack/mermaid/despliegue) |
 | `DOMAIN.md` | ✅ | Glosario, invariantes, estados |
-| `DATABASE.md` | ✅ | Schema + pendientes de definición, ahora incluye G2 abono en cuenta |
-| `API.md` | ✅ | Contrato actualizado; varias operaciones siguen pendientes |
+| `DATABASE.md` | ✅ | Q-03 aplicado 2026-10-08 (`purchase_documents`/`payments`/`attachments` alineados al físico; `companies` branding + `withholding_rules` aprobación/`source_decision_id` + `render_status` documentados; orden migraciones hasta 0023; § RDF como implementada). Deuda P3 restante: `islr_withholdings` sin tabla propia (prosa), `scripts/verify-docs-schema.ts` lo reporta |
+| `API.md` | ✅ | Contrato actualizado + `RATE_SCALE_INVALID` (Q-05); `render:retry` con gatillos y `pg-boss` diferida |
 | `SECURITY.md` | ✅ | Regenerado RBAC rol×empresa |
 | `CONVENTIONS.md` | ✅ | Regenerado |
-| `DECISIONS.md` | ✅ | ADR-001–034 (013/014 bloqueados; 018–020 propuestos; 008 diferida por 031; 021–031 aceptadas; 033–034 propuestas) |
+| `DECISIONS.md` | ✅ | ADR-001–034 (013/014 bloqueados; 018–020 propuestos; 008 diferida por 031; 021–032 aceptadas; 033 propuesta; 034 aceptada e implementada 2026-10-06) |
 | `PROJECT.md` | ✅ | Elevator pitch, alcance y métricas definidos |
 | Cuestionario PDF vs G1–G12 | ✅ | Contrastado, ver ROADMAP §3/§11 |
 | `anexos/` (matriz generada, RDF, diferimiento, roles, bitácora) | ✅ parcial | Plantillas e infra listas; falta matriz v1 + dorados firmados |
@@ -54,7 +55,7 @@
 | Catálogos + ventas/pagos mínimos + recibidas G3 | ✅ parcial | Ventas + libro + eventos pago/abono + UI/tests. **G3 implementada (1.0.2)**: `withholdings_received` + links + flujo registrada→conciliada→aplicada + línea en resumen sin neteo + UI + test. Queda: modo Z (F3), catálogos tasas (con matriz). Gate G3: caso real + validación contador |
 | Captura estructural de eventos G2 | ✅ parcial | Migración 0011 aplicada en Neon dev; columnas, RLS, políticas y constraints verificados. Pruebas de asignación concurrente y retención con fecha efectiva verde. IVA aún no consume eventos; gate fiscal permanece abierto. |
 | Criterio G2 configurable, preview dual y convergencia | ✅ parcial | Migración 0012 agrega `abono_criterion` (`unset` por defecto); solo contador puede cambiarlo con motivo auditado. Preview compara evento/fecha/período/regla, base, sustraendo/condiciones, monto y asignación bajo `payment_only` y `account_credit_or_payment`; `unset` permite emitir solo pago asignado si los resultados convergen, y bloquea divergencias/ambigüedad. Emisión serializada contra criterio/eventos; evento retroactivo tras ISLR vigente requiere anular y revisar. Criterio configurado se aplica explícitamente; no decide por sí mismo UT, base por porción ni sustraendo parcial. Pruebas integradas en Neon dev; typecheck/lint/build verdes. No cierra F0. Hoja del contador en `anexos/decision-abonos-G2-contador.md`. |
-| `computeDocumentTaxes` puro + dorados IVA 100% + property | 🔲 | Motor listo; gate: sin matriz v1 + 30–50 dorados del contador no se cierra F2 |
+| `computeDocumentTaxes` puro + dorados IVA 100% + property | 🔲 | Motor listo; gate: sin matriz v1 + 30–50 dorados del contador no se cierra F2. **Q-05 cerrado 2026-10-08**: borde manual/ventas rechaza `>1` con `RATE_SCALE_INVALID` (fracción `0.16`); formularios en fracción; `rate-scale.test.ts` 4/4; 18 tests migrados a `0.16` (suites DB no ejecutables aquí: Neon ECONNRESET preexistente verificado en árbol limpio) |
 
 ### F3 — Importación CSV (2.5 sem)
 | Bloque | Estado | Aceptación |
@@ -123,6 +124,52 @@
 | Anulación compras + corrección NC 001-00004 (fila 9 lote f785fdcc) | ✅ | `voidPurchaseDocument` + action + UI Anulación + `voided` excluido de libro/resumen/conciliación; tests 2/2 nuevos; datos dev corregidos (ND→voided, NC credit_note 2023-09-10). Checklist: typecheck + lint 0 errores + suites fiscal-docs/reporting/imports 25/25 verdes; `docs.create` reutilizado (sin permiso nuevo); motivo en auditoría, sin PII en logs. Deudas intactas: signo NC en agregados (requiere ADR → ADR-033 propuesta 2026-10-05) y `voided_at` de `DATABASE.md:321` inexistente en físico (→ ADR-033: migración aditiva propuesta) |
 | Caso práctico sim #2 en `/docs` (sección 5, 4 páginas) | ✅ | `caso-practico/resumen+carga+comprobacion+cierre` con pasos en 2 columnas (guía/práctica), cifras reales sim #2, sin tecnicismos ni URLs, rutas como `Panel → X`. Checklist: typecheck + lint 0 errores + `build` verde (4 rutas en manifiesto); sin API nueva, sin sensibles, sin ADR nuevo. Retro en `retrospectiva-sim2.md` |
 
+## Verificación QUINTA_REV — 2026-10-08 (código `7e355cb`, solo lectura)
+
+> Contraste de `pendientes/QUINTA_REV/` (consolidado + roadmapRev5 + `taskIN/CONSOLIDADO-TASK.md` + `diff/index.md` + `decisiones/` + `seguimiento/tablero-semanal.md` edición 2026-10-07) contra el repo. Q-01…Q-08 y Q-10 cerradas 2026-10-08; Q-09⏳ entorno. Cierre terminal
+de lo restante en `pendientes/QUINTA_REV/seguimiento/cierre-total.md` (acción + dueño + límite + plan B por pendiente).
+
+### A — Sin dependencia externa (trabajo disponible esta semana)
+
+| ID | Estado 2026-10-08 | Evidencia |
+|---|---|---|
+| Q-01 T14 Auth (P1) | ✅ cerrado 2026-10-08 | `ARCHITECTURE.md:25` → sesiones DB propias ADR-030 |
+| Q-02 T14 pg-boss/mermaid/API (P1) | ✅ cerrado 2026-10-08 | Stack PDF + mermaid worker + despliegue + `API.md:163` → `render:retry`/ADR-031 |
+| Q-03 DATABASE vs físico (P1/P3) | ✅ cerrado 2026-10-08 | B.1–B.4 + orden migraciones + § RDF implementada aplicados; P3 restante: `islr_withholdings` sin tabla propia (reportado por el script) |
+| Q-04 script verificación doc↔schema | ✅ cerrado 2026-10-08 | `scripts/verify-docs-schema.ts` + `npm run docs:verify-schema` verde (0 P1; P3 islr + avisos post-snapshot 0022/0023) |
+| Q-05 alícuota una escala (P2, bug latente) | ✅ cerrado 2026-10-08 | `RATE_SCALE_INVALID` en `fiscal-docs/service.ts` + `sales/service.ts`; formularios en fracción (`0.16`); `rate-scale.test.ts` 4/4; `API.md` documenta el código; 18 tests a `0.16` (DB no ejecutable aquí, ECONNRESET preexistente) |
+| Q-06 higiene referencias | ✅ cerrada 2026-10-08 | `consolidado-2026-10-05 :198/:225` → `CONSOLIDADO-TASK.md`, §8 + header → ADR-001–034, `roadmapRev4 §20` con nota de obsolescencia (RDF en DB, tablero en QUINTA_REV). Restos en QUINTA_REV son diagnóstico histórico |
+| Q-07 semilla dorados (nuestro) | ✅ cerrada 2026-10-08 | Tabla 17 filas en `CONSOLIDADO-TASK.md` (ID/caso/esperado/fuente/estado, `⛔` explícitos); ISLR-09 pendiente de verificación contador |
+| Q-08 tablero semanal (T15) | ✅ 2ª edición 2026-10-08 | A1✅ A2✅, doc↔schema 7/7, spillover Q-09/T12/T13 explícito |
+| Q-09 recorrido firma punta a punta | ⏳ no ejecutable aquí (Neon ECONNRESET) | Infra RDF verificada en código (`src/modules/rdf/`, `src/db/schema/rdf.ts`, `activation-gate.ts` con `GATE_NO_RDF`, UI `/decisiones`, migración 0023 en journal); dry-run con RDF descartable documentado en `CONSOLIDADO-TASK.md Q-09`, a ejecutar donde haya DB antes de la sesión |
+| Q-10 E-3 (`origin`) | ✅ verificable para cierre | Reportado “no existe columna `origin`” en `consolidado §5`/`CONSOLIDADO-TASK Q-10`; coherente con `seed-company-rules --matrix-hash + synthetic` citado. Solo falta dejar la nota de cierre donde corresponda; se deja aquí como cerrada por verificación |
+| T12 rotación secretos | 🔲 abierto | Runbook `incidente-serverc-2026-10-04.md §1+§3+§6` como registro (2 filas `pendiente` citadas en QUINTA_REV); sin evidencia de rotación ejecutada en este bloque |
+| T13 rol mínimo + restore drill | 🔲 abierto | `create-app-role.mjs` + `DB_LEAST_PRIVILEGE` documentados (ADR-023); sin evidencia de staging con rol mínimo ni drill con RPO/RTO en este bloque |
+
+### B — Dependencia externa (contador/cliente; sin avance registrado en código)
+
+| ID | Estado 2026-10-08 | Nota |
+|---|---|---|
+| T01 F0-01 | 🧪 sin acuse | Enviado 2026-10-05; sin canal/acuse anotado |
+| T02 M-1…M-4 (límite 16-oct) | 🧪 0/4 | Intake re-verificado 2026-10-08 sin DB: `import:autodetect` legacy 10/10 válido sin gatillo 1; `golden:inspect` XLSX inventariado 0 `#REF!`. Muestras reales sin recibir |
+| T03 Sesión 1 | 🟡 6/11 pasos (sim 06-oct) | Faltan bloques 7 (ventas/NC/ND/Z con ADR-033), 9 (libros+Excel+conciliación con datos reales) y 11 (firma) |
+| T04 matriz v1 (meta 06-nov) | ⛔ | `_manifest.matrizVersion="borrador-no-firmada"`; workflow ADR-022 listo, `GATE_NO_RDF` bloquea por diseño |
+| T05 dorados 30–50 | ⛔ 0/30 | 1 fixture didáctico sin firmar; firma file-backed Opción 1 (`modules/goldens/sign.ts` + UI `/dorados` + `goldens.sign`, CHANGELOG 2026-10-07) no cambia el conteo: sigue 0 firmados; DB (0024–0027, Opción 2, ADR-035) pendiente |
+| B1 7 RDF | 🔴 0/7 | Redactados (CUARTA_REV pools), ninguno `signed`; **paquete de sesión listo 2026-10-08** (`decisiones/paquete-sesion-1.md`: 7 casos con textos paso 1+2 + orden 60–90 min + checklist). Orden G8→G2→ADR-033→G9/G1/ISLR |
+| B2 G4 | 🔲 ambiguo | `decisiones/decision-G4-alcance.md` recomienda A (diferir, 0 código) pero sin frase firmada; **frase lista en `paquete-sesion-1.md` §7** (A con blancos fecha/firmante); `TODO` aún lo lista como bloqueo F2 y ADR-013 sigue bloqueada sin nota de diferimiento |
+| T06/T07/T08/T09/T10/T11 | ⛔ | Preparadas por ADR-034 (`g8:calibrate`, `g2:divergence`, `catalog:*`, `golden:inspect/compare`, `period-reconciliation`, UAT/manuales), bloqueadas tras firma |
+
+### Gate de coherencia QUINTA_REV (roadmapRev5 §9) el 2026-10-08
+
+- [x] A1 docs no contradicen código — **sí** (`docs:verify-schema` 0 P1)
+- [x] A2 una sola escala de alícuota con test — **sí** (`RATE_SCALE_INVALID` + `rate-scale.test.ts` 4/4)
+- [x] A3 cero rutas rotas — **sí** (Q-06 cerrada)
+- [x] A4 tablero semanal con edición — **sí** (2ª edición 2026-10-08)
+- [ ] B1 7 RDF con estado formal — **no** (0/7)
+- [ ] B2 G4 decidido por escrito — **no** (recomendación A sin firma)
+- [ ] B3 bloques 7/9/11 con evidencia — **no**
+- Criterio final (1 spec=código · 2 firmadas · 3 dorados · 4 período real · 5 evidencia): **sí · no · no · no · parcial**. Fase 0 (sin dependencias) cerrada salvo Q-09⏳ entorno y T12/T13 servidor; B1/B2/T01–T11 esperan contador/cliente.
+
 ## Checklist por bloque
 - [ ] Funciona + errores/casos límite + tests + sentido dominio
 - [ ] API documentada si expone/consume + revisado SECURITY si toca sensibles + ADR si cambia rumbo
@@ -130,8 +177,10 @@
 ## Bloqueos activos
 | Bloque | Motivo | Desde | Siguiente acción |
 |---|---|---|---|
+| T14/Q-01…Q-04 docs↔código | ✅ cerrado 2026-10-08 | Parches `diff §A–B` aplicados + `docs:verify-schema` verde (0 P1) | 2026-10-07 | — |
+| Q-05 alícuota dos escalas | ✅ cerrado 2026-10-08 | `RATE_SCALE_INVALID` + formularios en fracción + test 4/4 | 2026-10-07 | Suites DB pendientes de entorno con Neon (ECONNRESET preexistente) |
 | F2 redondeo | G8: cliente indica “8 cifras decimales significativas”; método, etapa y precisión final sin definir | 2026-10-01 | Aclarar método/etapa/precisión monetaria y recibir casos; solo después actualizar ADR-014 |
-| F2 FX | Moneda base bolívares, referencia USD y fuente oficial BCV indicadas; fecha/tipo de tasa y diferencias cambiarias sin definir | 2026-10-01 | Definir fecha y tipo de tasa BCV, diferencias y ejemplos; después resolver ADR-013 |
+| F2 FX | Moneda base bolívares, referencia USD y fuente oficial BCV indicadas; fecha/tipo de tasa y diferencias cambiarias sin definir. **B2 2026-10-08**: `pendientes/QUINTA_REV/decisiones/decision-G4-alcance.md` recomienda A (diferir formalmente, 0 código) pero sin frase firmada | 2026-10-01 | Firmar A o B (una frase en `TODO` + nota ADR-013 con fecha/firmante); si A, sacar G4 de bloqueos go-live |
 | F2/F4 abono en cuenta | Captura y comparación dual implementadas; `unset` por defecto y emisión fail-closed salvo convergencia estricta. Sin decisión del cliente sobre causación/fecha contable ni cálculo de parcialidades/sustraendo. IVA aún no usa eventos | 2026-10-01 | Revisar preview y firmar criterio/atribución por porción/sustraendo con contador; aprobar reglas y dorados antes de go-live |
 | F4 ISLR y G9 | Asesoría/escenarios proponen tasas y serie sin firma; conceptos reales, UT, base con/sin IVA, mínimos, sustraendo parcial y numeración siguen sin validar. IVA tiene posible desajuste de reinicio por verificar | 2026-10-01 | Cotejo en fuente oficial + decisión contador; no parametrizar tasas ni cambiar secuencias antes de aprobar |
 | F4 cuatro ojos | Asesoría propone aprobación separada y reglas especiales para anulaciones ya enteradas; matriz real de usuarios y política del cliente no confirmadas | 2026-10-01 | Aprobar matriz por empresa y decidir excepción si solo hay un usuario contador antes de implementar estados/aprobaciones |

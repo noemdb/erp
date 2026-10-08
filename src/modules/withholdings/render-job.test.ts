@@ -25,7 +25,7 @@ describe("render post-commit", () => {
       await upsertParty(ctx, { rif: "J-21212121-2", razonSocial: "Prov" });
       const [pty] = await db.select().from(parties).where(eq(parties.companyId, c!.id)).limit(1);
       await setTaxProfile(ctx, pty!.id, { tipoPersona: "juridica", residente: true, sujetoRetencionIva: true, sujetoRetencionIslr: false, effectiveFrom: "2026-01-01" });
-      const buy = await createPurchaseDocument(ctx, { partyRif: "J-21212121-2", partyRazon: "Prov", docNumber: "F-R", controlNumber: "C-R", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "16" });
+      const buy = await createPurchaseDocument(ctx, { partyRif: "J-21212121-2", partyRazon: "Prov", docNumber: "F-R", controlNumber: "C-R", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "0.16" });
       if (!buy.ok) throw new Error("setup");
       const em = await issueIva(ctx, [buy.id], "2026-09-20");
       if (!em.ok) throw new Error("issue");

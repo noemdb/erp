@@ -1,5 +1,10 @@
 # Pool de datos — Registro de decisiones fiscales (RDF)
 
+> ⚠️ Nota QUINTA_REV (2026-10-08): para la sesión usar
+> `pendientes/QUINTA_REV/decisiones/paquete-sesion-1.md` (7 casos corregidos:
+> añade ADR-033, saca G4 como RDF, nada pre-acordado). Este pool queda como
+> fuente de los textos base de los pasos 1, sin cambios.
+
 > **Uso:** copiar y pegar en `/c/[empresa]/decisiones/nueva` (Paso 1 · Hecho y alternativas).
 > **Validaciones del formulario:** título 5–140 caracteres; pregunta y cada opción ≥10 caracteres; impacto numérico texto libre ≤500.
 > **Fuente:** casos G1/G2/G4/G8/G9/ISLR de la cuarta revisión. El caso 1 usa cifras reales verificadas de la sim #2 (`retrospectiva-sim2.md`).

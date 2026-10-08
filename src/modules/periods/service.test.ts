@@ -14,7 +14,7 @@ describe("períodos", () => {
     const [c] = await db.insert(companies).values({ rif: `J-34${s}-A`, rifOriginal: `J-34${s}-A`, razonSocial: "Per CA", condicionIva: "ordinario" }).returning({ id: companies.id });
     await db.insert(companyUser).values({ companyId: c!.id, userId: u!.id, role: "contador" });
     const ctx = { companyId: c!.id, userId: u!.id };
-    const doc = { partyRif: "J-11111111-1", partyRazon: "P1", docNumber: "F-1", controlNumber: "C-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "16" };
+    const doc = { partyRif: "J-11111111-1", partyRazon: "P1", docNumber: "F-1", controlNumber: "C-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "0.16" };
     try {
       expect((await createPurchaseDocument(ctx, doc)).ok).toBe(true);
       const [per] = await db.select().from(fiscalPeriods).where(eq(fiscalPeriods.companyId, c!.id)).limit(1);

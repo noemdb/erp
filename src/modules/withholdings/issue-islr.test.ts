@@ -108,7 +108,7 @@ describe("emisión ISLR", () => {
           baseImponible: "100.00",
           ivaCausado: "16.00",
           total: "116.00",
-          alicuota: "16",
+          alicuota: "0.16",
         });
         expect(result.ok).toBe(true);
         if (!result.ok) throw new Error("setup purchase");
@@ -160,7 +160,7 @@ describe("emisión ISLR", () => {
         baseImponible: "100.00",
         ivaCausado: "16.00",
         total: "116.00",
-        alicuota: "16",
+        alicuota: "0.16",
       });
       expect(thirdDocumentResult.ok).toBe(true);
       if (!thirdDocumentResult.ok) throw new Error("setup unallocated purchase");

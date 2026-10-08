@@ -20,7 +20,7 @@ describe("cierre a dos niveles (F6)", () => {
     const ctx = { companyId: c!.id, userId: u!.id };
     let periodId = "";
     try {
-      const buy = await createPurchaseDocument(ctx, { partyRif: "J-99999999-9", partyRazon: "Prov", docNumber: "F-1", controlNumber: "C-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "16" });
+      const buy = await createPurchaseDocument(ctx, { partyRif: "J-99999999-9", partyRazon: "Prov", docNumber: "F-1", controlNumber: "C-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "0.16" });
       expect(buy.ok).toBe(true);
       const [per] = await db.select().from(fiscalPeriods).where(eq(fiscalPeriods.companyId, c!.id)).limit(1);
       periodId = per!.id;

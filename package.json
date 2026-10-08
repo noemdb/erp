@@ -20,6 +20,7 @@
     "acceptance:report": "node scripts/acceptance-report.mjs",
     "acceptance:evidence": "node scripts/collect-evidence.mjs",
     "goldens:check": "node --import tsx scripts/validate-goldens.mjs",
+    "docs:verify-schema": "tsx scripts/verify-docs-schema.ts",
     "secrets:scan": "node scripts/scan-secrets.mjs",
     "golden:inspect": "tsx scripts/golden-inspect.ts",
     "golden:compare": "tsx scripts/golden-compare.ts",

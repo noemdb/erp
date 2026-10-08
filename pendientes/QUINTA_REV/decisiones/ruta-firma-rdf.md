@@ -75,7 +75,7 @@ Al **activar** la regla vinculada (`Reglas → detalle → Activar`):
   *"Regla sin decisión firmada que la autorice: vincule un RDF firmado con el mismo impuesto/concepto."*
 - Al activar, las decisiones vinculadas pasan `signed → applied` en la misma TX.
 
-> Verificado en `src/modules/rules/service.ts:86` y `activation-gate.ts:57`. El orden
+> Verificado 2026-10-08 en `src/modules/rules/service.ts:87` y `activation-gate.ts:57` (tipo `GateFail` con `GATE_NO_RDF`; test en `rdf/service.test.ts:131`, requiere DB). El orden
 > dorados→RDF es deliberado: primero que el cálculo esté probado, luego que esté autorizado.
 
 ### Reglas inviolables durante el recorrido

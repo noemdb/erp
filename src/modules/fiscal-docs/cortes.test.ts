@@ -22,7 +22,7 @@ describe("cortes por período", () => {
       const buy = await createPurchaseDocument(ctx, {
         partyRif: "J-13131313-1", partyRazon: "Prov", docNumber: "F-AGO", controlNumber: "C-AGO",
         fechaDocumento: "2026-09-10", fechaFiscal: "2026-08-15",
-        baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "16",
+        baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "0.16",
       });
       expect(buy.ok).toBe(true);
       const periods = await db.select().from(fiscalPeriods).where(eq(fiscalPeriods.companyId, c!.id));
@@ -35,14 +35,14 @@ describe("cortes por período", () => {
       const sale = await createSalesDocument(ctx, {
         partyRif: "J-14141414-1", partyRazon: "Cli", docNumber: "V-AGO", controlNumber: "VC-AGO",
         fechaDocumento: "2026-09-02", fechaFiscal: "2026-08-20",
-        baseImponible: "200.00", ivaCausado: "32.00", total: "232.00", alicuota: "16",
+        baseImponible: "200.00", ivaCausado: "32.00", total: "232.00", alicuota: "0.16",
       });
       expect(sale.ok).toBe(true);
       if (!sale.ok) throw new Error("setup");
       const nc = await createSalesDocument(ctx, {
         kind: "credit_note", partyRif: "J-14141414-1", partyRazon: "Cli", docNumber: "NC-AGO", controlNumber: "NCC-AGO",
         affectedDocumentId: sale.id, fechaDocumento: "2026-09-12", fechaFiscal: "2026-08-25",
-        baseImponible: "50.00", ivaCausado: "8.00", total: "58.00", alicuota: "16",
+        baseImponible: "50.00", ivaCausado: "8.00", total: "58.00", alicuota: "0.16",
       });
       expect(nc.ok).toBe(true);
     } finally {

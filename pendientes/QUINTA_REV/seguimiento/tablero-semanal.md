@@ -57,6 +57,39 @@ avanzó porque todas esperan al contador.
 
 ---
 
+## Edición 2026-10-08 — segunda (Fase 0 en curso)
+
+**Estado de la semana:** Q-01…Q-05 + Q-07 + Q-10 cerrados; `docs:verify-schema` 7/7 sin P1;
+`RATE_SCALE_INVALID` implementado con test 4/4. Lo que falta es firma y entorno
+(Q-09 sin DB aquí, T12/T13 sin servidor).
+
+| Métrica | Fórmula | Valor | Meta | Estado | Nota |
+|---|---|---|---|---|---|
+| RDF firmados | firmados / 7 | **0/7** | 7/7 | 🔴 | redactados, ninguno firmado (B1) |
+| Dorados firmados | firmados / 30 | **0/30** | 30/30 | 🔴 | semilla Q-07 completa (17), 0 firmados |
+| Cobertura de reglas | reglas con RDF / reglas matriz | 0/9 | 9/9 | 🔴 | 9 reglas transcritas en el borrador |
+| Muestras reales | M-1…M-4 / 4 | **0/4** | 4/4 | 🔴 | límite 16-oct (8 días) |
+| Tests | verdes / total | 77/78* | 78/78 | 🟡 | *último medido 10-07; aquí puras 24/24 + rate-scale 4/4; DB no ejecutable (Neon ECONNRESET preexistente) |
+| Tablas doc↔schema | alineadas / total | 7/7 | 7/7 | 🟢 | `docs:verify-schema` 0 P1 (era 3/9); P3 islr resuelto con tabla propia |
+| Bloqueos P0/P1 | abiertos | 5 | 0 | 🔴 | G8, G2, ADR-033, G4, serie ISLR (todos fiscales, del contador) |
+| Tareas sin dependencia externa | abiertas | 4 | 0 | 🟡 | Q-08 (esta), Q-09⏳ entorno, T12/T13 servidor; Q-01…Q-07 y Q-10 cerradas |
+| Spillover | tareas movidas | Q-09, T12, T13 | explícito | — | pasan a entorno con DB/servidor |
+
+### Lectura de la semana
+
+1. **La mentira documental se cerró:** A1✅ (spec=código, verificado por script repetible) y A2✅ (una escala con test). Gate roadmapRev5 §9: A1✅ A2✅ A3❌ A4 parcial B1❌ B2❌ B3❌.
+2. **El tramo sin dependencias está casi vacío:** solo Q-09 (ensayo, necesita DB) y T12/T13 (servidor).
+3. **Riesgo fecha:** T02 vence 16-oct; matriz v1 06-nov exige sesión ≤23-oct. Palanca: Fase 1 (7 RDF en borrador + frase G4) para 1 sola sesión.
+
+### Acciones de la semana siguiente
+
+- [ ] Q-09 dry-run donde haya DB (antes de la sesión)
+- [ ] T12/T13 donde haya servidor
+- [ ] Fase 1: 7 RDF en borrador + frase G4 + acuse T01 + reclamo T02
+- [ ] Q-06 ya cerrada; Q-08 (esta edición) ✅
+
+---
+
 ## Plantilla para la próxima edición
 
 ```markdown

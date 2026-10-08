@@ -35,7 +35,7 @@ describe("matriz de fuga", () => {
       await upsertParty(ctxA, { rif: "J-17171717-1", razonSocial: "Prov A" });
       const [pty] = await db.select().from(parties).where(eq(parties.companyId, A.c.id)).limit(1);
       await setTaxProfile(ctxA, pty!.id, { tipoPersona: "juridica", residente: true, sujetoRetencionIva: true, sujetoRetencionIslr: false, effectiveFrom: "2026-01-01" });
-      const buy = await createPurchaseDocument(ctxA, { partyRif: "J-17171717-1", partyRazon: "Prov A", docNumber: "FA-1", controlNumber: "CA-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "1000.00", ivaCausado: "160.00", total: "1160.00", alicuota: "16" });
+      const buy = await createPurchaseDocument(ctxA, { partyRif: "J-17171717-1", partyRazon: "Prov A", docNumber: "FA-1", controlNumber: "CA-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "1000.00", ivaCausado: "160.00", total: "1160.00", alicuota: "0.16" });
       if (!buy.ok) throw new Error("setup buy");
       const em = await issueIva(ctxA, [buy.id], "2026-09-20");
       if (!em.ok) throw new Error("setup issue: " + em.error.code);

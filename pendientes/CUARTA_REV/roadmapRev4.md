@@ -1148,6 +1148,13 @@ P3 puede pasar a backlog post-go-live si no afecta cumplimiento.
 
 # 20. Artefactos que deben existir al final
 
+> Nota de vigencia (QUINTA_REV Q-06, 2026-10-08): este árbol quedó obsoleto.
+> El RDF vive en DB (ADR-034, migración 0023), no en `docs/rdf/RDF-G*.md`;
+> la plantilla markdown sigue en `docs/anexos/RDF-plantilla.md`.
+> `docs/operacion/`, `docs/tablero-semanal.md` y `docs/goldens/` no existen:
+> go-live en `go-live-checklist.md`, bitácora en `docs/anexos/bitacora-diferencias.md`,
+> tablero en `pendientes/QUINTA_REV/seguimiento/tablero-semanal.md`.
+
 ```text
 docs/
 ├── matriz-reglas-v1.md

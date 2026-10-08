@@ -23,7 +23,7 @@ describe("pagos", () => {
       expect(pay.ok).toBe(true);
       if (!pay.ok) throw new Error("setup");
 
-      const buy = await createPurchaseDocument(ctx, { partyRif: "J-12345678-0", partyRazon: "Prov P", docNumber: "F-1", controlNumber: "C-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "16" });
+      const buy = await createPurchaseDocument(ctx, { partyRif: "J-12345678-0", partyRazon: "Prov P", docNumber: "F-1", controlNumber: "C-1", fechaDocumento: "2026-09-05", fechaFiscal: "2026-09-05", baseImponible: "100.00", ivaCausado: "16.00", total: "116.00", alicuota: "0.16" });
       expect(buy.ok).toBe(true);
       if (!buy.ok) throw new Error("setup buy");
 
@@ -57,7 +57,7 @@ describe("pagos", () => {
         baseImponible: "100.00",
         ivaCausado: "16.00",
         total: "116.00",
-        alicuota: "16",
+        alicuota: "0.16",
       });
       expect(concurrentBuy.ok).toBe(true);
       if (!concurrentBuy.ok) throw new Error("setup concurrent buy");
