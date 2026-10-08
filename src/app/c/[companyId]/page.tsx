@@ -83,6 +83,7 @@ export default async function CompanyDashboard({ params }: { params: Promise<{ c
         ["Importaciones", `${base}/importaciones`],
         ["Reglas", `${base}/reglas`],
         ["Decisiones", `${base}/decisiones`],
+        ["Dorados", `${base}/dorados`],
         ["Configuración", `${base}/configuracion`],
         ["Plazos", `${base}/plazos`],
       ],

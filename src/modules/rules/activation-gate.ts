@@ -1,7 +1,7 @@
-import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { contentHash } from "@/modules/shared/canonical";
 import {
   computeDocumentTaxes,
   computeIvaWithholding,
@@ -57,24 +57,15 @@ export type GateOk = { ok: true; corridos: number; nota?: string };
 export type GateFail = { ok: false; code: "GATE_NO_COVERAGE" | "GATE_FAILED" | "GATE_LOAD_ERROR" | "GATE_NO_RDF"; message: string; failures?: { id: string; diff: string }[] };
 export type GateResult = GateOk | GateFail;
 
-/** Espejo de `canonical` en scripts/validate-goldens.mjs (test cruzado en scripts/validate-goldens.test.ts). */
-export function gateCanonical(v: unknown): string {
-  if (Array.isArray(v)) return `[${v.map(gateCanonical).join(",")}]`;
-  if (v && typeof v === "object")
-    return `{${Object.keys(v as Record<string, unknown>).sort().map((k) => `${JSON.stringify(k)}:${gateCanonical((v as Record<string, unknown>)[k])}`).join(",")}}`;
-  return JSON.stringify(v);
-}
-
-export function gateHash(sinFirma: unknown): string {
-  return createHash("sha256").update(gateCanonical(sinFirma)).digest("hex");
-}
+/** Canon único del proyecto (Fase 0.2, cierra D9). `gateCanonical`/`gateHash` son el mismo canon que `rdf` y `scripts/validate-goldens`. */
+export { canonical as gateCanonical, contentHash as gateHash } from "@/modules/shared/canonical";
 
 /** Solo VALIDADO_CONTADOR con hash íntegro cuenta como firmado. */
 export function isFirmado(s: GateScenario): boolean {
   if (s.estado !== "VALIDADO_CONTADOR") return false;
   const { firma, ...sinFirma } = s as GateScenario & { firma?: unknown };
   void firma;
-  return (s.firma?.sha256_contenido ?? "") === gateHash(sinFirma);
+  return (s.firma?.sha256_contenido ?? "") === contentHash(sinFirma);
 }
 
 /** Carga los firmados del directorio de fixtures. Lanza GATE_LOAD_ERROR si el dir falla. */

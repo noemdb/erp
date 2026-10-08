@@ -3,6 +3,7 @@ import { eq, and } from "drizzle-orm";
 import { withTenant } from "@/modules/tenancy/with-tenant";
 import { record } from "@/modules/audit/record";
 import { withholdingRules, withholdingConcepts } from "@/db/schema";
+import { FraccionSchema } from "@/modules/shared/schemas";
 import { checkActivationGate, loadSignedScenarios } from "./activation-gate";
 import { hasRdfCoverage, markLinkedApplied } from "../rdf/links";
 
@@ -17,7 +18,7 @@ export const DraftSchema = z.object({
   ruleKind: z.enum(["iva", "islr"]),
   conceptId: z.string().uuid().nullable().optional(),
   effectiveFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  porcentaje: z.string().regex(/^\d+(\.\d{1,6})?$/),
+  porcentaje: FraccionSchema,
   sustraendo: z.string().regex(/^\d+(\.\d{1,2})?$/).default("0"),
   baseFormulaKind: z.string().min(1).max(50),
   legalReference: z.string().min(3).max(500),

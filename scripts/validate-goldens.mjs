@@ -2,32 +2,18 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createHash } from "node:crypto";
 import Ajv from "ajv";
+import { verifyGolden } from "../src/modules/goldens/verify.ts";
+
+/** Canon único del proyecto (Fase 0.2, cierra D9): mismo canon que `rdf` y `activation-gate`. */
+export { canonical } from "../src/modules/shared/canonical.ts";
+export { verifyGolden as verifyFirma };
 
 const dir = join(dirname(fileURLToPath(import.meta.url)), "..", "fixtures", "tax-scenarios");
 const ajv = new Ajv({ allErrors: true });
 const validate = ajv.compile(JSON.parse(readFileSync(join(dir, "schema.json"), "utf8")));
 const manifest = JSON.parse(readFileSync(join(dir, "_manifest.json"), "utf8"));
 const files = readdirSync(dir).filter((f) => f.endsWith(".json") && !f.startsWith("_") && f !== "schema.json");
-
-/** JSON canónico: claves ordenadas recursivamente (firma ligada al contenido). */
-export function canonical(v) {
-  if (Array.isArray(v)) return `[${v.map(canonical).join(",")}]`;
-  if (v && typeof v === "object")
-    return `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canonical(v[k])}`).join(",")}}`;
-  return JSON.stringify(v);
-}
-
-/** Verifica la firma de un fixture. Solo VALIDADO_CONTADOR cuenta como firmado. */
-export function verifyFirma(s) {
-  if (s.estado !== "VALIDADO_CONTADOR") return { firmado: false };
-  const { firma, ...sinFirma } = s;
-  const hash = createHash("sha256").update(canonical(sinFirma)).digest("hex");
-  if (firma?.sha256_contenido !== hash)
-    return { firmado: false, error: `sha256_contenido no coincide con el contenido (esperado ${hash})` };
-  return { firmado: true };
-}
 
 let errors = 0;
 let firmados = 0;
@@ -46,7 +32,7 @@ for (const f of files) {
     continue;
   }
   if (s.estado === "VALIDADO_CONTADOR") {
-    const v = verifyFirma(s);
+    const v = verifyGolden(s);
     if (!v.firmado) {
       errors++;
       console.log(`FIRMA ${f}: ${v.error}`);

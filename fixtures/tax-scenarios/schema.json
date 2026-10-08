@@ -3,7 +3,7 @@
   "title": "Escenario dorado firmado",
   "description": "Contrato único de unidades (2.0.1 WS2): porcentaje como fracción decimal en string ('0.75'), montos con punto decimal, fechas ISO. Solo casos firmados viven en fixtures/.",
   "type": "object",
-  "required": ["id", "descripcion", "origen", "firma", "esperado"],
+  "required": ["id", "descripcion", "origen", "estado", "firma", "esperado"],
   "properties": {
     "id": { "type": "string", "pattern": "^[A-Z]+-[0-9]+$" },
     "descripcion": { "type": "string", "minLength": 10 },
@@ -19,6 +19,15 @@
         "sha256_contenido": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
       }
     },
+    "esperado": {
+      "type": "object",
+      "required": ["baseImponible", "ivaCausado", "totalValido"],
+      "properties": {
+        "baseImponible": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$" },
+        "ivaCausado": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$" },
+        "totalValido": { "type": "boolean" }
+      }
+    },
     "doc": {
       "type": "object",
       "required": ["lines", "total"],
@@ -31,7 +40,7 @@
             "required": ["taxCategory", "base"],
             "properties": {
               "taxCategory": { "type": "string" },
-              "taxRate": { "type": ["string", "null"], "pattern": "^([0-9]+(\\.[0-9]{1,6})?|null)$" },
+              "taxRate": { "type": ["string", "null"], "pattern": "^((0(\\.[0-9]{1,6})?|1(\\.0{1,6})?)|null)$" },
               "base": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$" },
               "baseGravable": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$" }
             }
@@ -51,7 +60,14 @@
         }
       }
     },
-    "ivaEsperado": { "type": "object", "required": ["retainedAmount"] },
+    "ivaEsperado": {
+      "type": "object",
+      "required": ["retainedAmount"],
+      "properties": {
+        "retainedAmount": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$" },
+        "noAplica": { "type": "boolean" }
+      }
+    },
     "islr": {
       "type": "object",
       "required": ["baseSujeta", "rule"],

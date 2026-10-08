@@ -42,7 +42,7 @@ if (!existsSync(sumPath)) {
 out.push("FISCAL");
 let gold = { fixtures: 0, firmados: 0, errores: -1 };
 try {
-  const raw = execSync("node scripts/validate-goldens.mjs --json", { cwd: root, encoding: "utf8" });
+  const raw = execSync("node --import tsx scripts/validate-goldens.mjs --json", { cwd: root, encoding: "utf8" });
   const last = raw.trim().split("\n").pop();
   gold = JSON.parse(last);
 } catch { /* errores: retiene -1 = gate caído */ }

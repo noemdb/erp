@@ -12,6 +12,7 @@ const ROLE_ACTIONS: Record<Role, string[]> = {
     "docs.create",
     "imports.run",
     "rules.edit",
+    "goldens.sign",
     "withholdings.issue",
     "periods.close",
     "reports.read",

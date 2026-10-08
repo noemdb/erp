@@ -1,16 +1,7 @@
-import { createHash } from "node:crypto";
+import { contentHash } from "@/modules/shared/canonical";
 
-/** Canónico JSON estable (claves ordenadas, arrays en orden). Espejo del patrón gateCanonical de activation-gate. */
-export function rdfCanonical(v: unknown): string {
-  if (Array.isArray(v)) return `[${v.map(rdfCanonical).join(",")}]`;
-  if (v && typeof v === "object")
-    return `{${Object.keys(v as Record<string, unknown>).sort().map((k) => `${JSON.stringify(k)}:${rdfCanonical((v as Record<string, unknown>)[k])}`).join(",")}}`;
-  return JSON.stringify(v);
-}
-
-export function rdfHash(v: unknown): string {
-  return createHash("sha256").update(rdfCanonical(v)).digest("hex");
-}
+/** Canónico JSON estable respaldado por el canon único del proyecto (Fase 0.2, cierra D9). */
+export { canonical as rdfCanonical, contentHash as rdfHash } from "@/modules/shared/canonical";
 
 /** Contenido fiscal que cubre la firma (sin metadatos de firma ni auditoría). */
 export type SignedContent = {
@@ -36,5 +27,5 @@ export type SignedContent = {
 };
 
 export function signedContentHash(c: SignedContent): string {
-  return rdfHash(c);
+  return contentHash(c);
 }

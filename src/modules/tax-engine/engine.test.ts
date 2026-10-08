@@ -23,8 +23,13 @@ describe("escenarios dorados", () => {
       expect(doc.ivaCausado).toBe(s.esperado.ivaCausado);
       expect(doc.totalValido).toBe(s.esperado.totalValido);
       const iva = computeIvaWithholding({ ...s.iva, ivaCausado: doc.ivaCausado });
-      expect(iva.applicable).toBe(true);
-      if (iva.applicable) expect(iva.retainedAmount).toBe(s.ivaEsperado.retainedAmount);
+      if (s.ivaEsperado.noAplica === true) {
+        // D6: un dorado de "no aplica" (p. ej. proveedor contribuyente formal) no exige applicable=true.
+        expect(iva.applicable).toBe(false);
+      } else {
+        expect(iva.applicable).toBe(true);
+        if (iva.applicable) expect(iva.retainedAmount).toBe(s.ivaEsperado.retainedAmount);
+      }
       const islr = computeIslrWithholding(s.islr);
       expect(islr.retainedAmount).toBe(s.islrEsperado.retainedAmount);
     });
@@ -46,5 +51,16 @@ describe("escenarios dorados", () => {
       rule: { ruleVersionId: "t", ruleSnapshot: {}, porcentaje: "0.75" },
     });
     expect(r).toEqual({ applicable: false, reason: "EMPRESA_NO_AGENTE" });
+  });
+
+  it("D6: dorado de no-aplica (ivaEsperado.noAplica) no exige applicable", () => {
+    // Escenario que el runner debe aceptar sin forzar applicable (p. ej. IVA-03: tercero no sujeto).
+    const iva = computeIvaWithholding({
+      company: { agenteRetencionIva: true, agenteRetencionIslr: true },
+      counterparty: { tipoPersona: "juridica", residente: true, sujetoRetencionIva: false, sujetoRetencionIslr: true },
+      ivaCausado: "160.00",
+      rule: { ruleVersionId: "t", ruleSnapshot: {}, porcentaje: "0.75" },
+    });
+    expect(iva.applicable).toBe(false);
   });
 });

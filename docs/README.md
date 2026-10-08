@@ -18,6 +18,9 @@
 | `TODO.md` | Estado F0–F7 y bloqueos | Planificas/retomas |
 | `CHANGELOG.md` | Qué cambió por fecha | Auditoría docs |
 | `anexos/` | Matriz, dorados, checklist F0 y hoja de decisión G2 | Sesión con contador |
+| Spec firma dorados (`blueprint/goldenValidation/`) | Mecanismo para firmar los 30 dorados del gate go-live; Fase 0.1–0.4 + módulo/UI con firma provisional Opción 1 | Trabajas F0 dorados / gate go-live |
+
+> El mecanismo de firma de dorados vive en `blueprint/goldenValidation/` (propuesta; Fase 0.1–0.4 + módulo `modules/goldens` y UI `/dorados` con **firma provisional Opción 1** implementadas; migración 0024-0027, firma con llave propia y respaldo del gate en DB pendientes de la decisión del contador). El módulo que reutiliza es `blueprint/rdf/` (ADR-034, implementado).
 
 ## Lectura por rol
 

@@ -2,22 +2,66 @@
   "id": "IVA-01",
   "descripcion": "Compra servicio 1000 + IVA 16%, retención IVA 75% e ISLR 2% (ejemplo didáctico docs)",
   "origen": "sintetico",
-  "firma": { "firmado_por": "didáctico-sin-firma", "fecha": "2026-09-30", "fuente_legal": "ejemplo interno, no normativo" },
+  "estado": "VALIDADO_CONTADOR",
+  "firma": {
+    "algoritmo": "hmac-sha256",
+    "key_id": "system-session",
+    "firmado_por": "Carlos",
+    "firmado_por_user_id": "0585c777-2710-40d7-91dd-ffd1a0b18c87",
+    "firmante_doc": "19823981723",
+    "fecha": "2026-10-08",
+    "fuente_legal": "lasjdlkajsdlkajsldkjalskd",
+    "firmado_en": "2026-10-08T02:36:28.290Z",
+    "sha256_contenido": "828159a9cb55fbf048da4cc100fcccbebe769d95d98e762107a8f90eb0ec012b"
+  },
   "doc": {
-    "lines": [{ "taxCategory": "general", "taxRate": "0.16", "base": "1000.00" }],
+    "lines": [
+      {
+        "taxCategory": "general",
+        "taxRate": "0.16",
+        "base": "1000.00"
+      }
+    ],
     "total": "1160.00"
   },
-  "esperado": { "baseImponible": "1000.00", "ivaCausado": "160.00", "totalValido": true },
-  "iva": {
-    "company": { "agenteRetencionIva": true, "agenteRetencionIslr": true },
-    "counterparty": { "tipoPersona": "juridica", "residente": true, "sujetoRetencionIva": true, "sujetoRetencionIslr": true },
+  "esperado": {
+    "baseImponible": "1000.00",
     "ivaCausado": "160.00",
-    "rule": { "ruleVersionId": "seed-iva-75", "ruleSnapshot": { "porcentaje": "0.75" }, "porcentaje": "0.75" }
+    "totalValido": true
   },
-  "ivaEsperado": { "retainedAmount": "120.00" },
+  "iva": {
+    "company": {
+      "agenteRetencionIva": true,
+      "agenteRetencionIslr": true
+    },
+    "counterparty": {
+      "tipoPersona": "juridica",
+      "residente": true,
+      "sujetoRetencionIva": true,
+      "sujetoRetencionIslr": true
+    },
+    "ivaCausado": "160.00",
+    "rule": {
+      "ruleVersionId": "seed-iva-75",
+      "ruleSnapshot": {
+        "porcentaje": "0.75"
+      },
+      "porcentaje": "0.75"
+    }
+  },
+  "ivaEsperado": {
+    "retainedAmount": "120.00"
+  },
   "islr": {
     "baseSujeta": "1000.00",
-    "rule": { "ruleVersionId": "seed-islr-serv", "ruleSnapshot": {}, "porcentaje": "0.02", "sustraendo": "0.00" }
+    "rule": {
+      "ruleVersionId": "seed-islr-serv",
+      "ruleSnapshot": {},
+      "porcentaje": "0.02",
+      "sustraendo": "0.00"
+    }
   },
-  "islrEsperado": { "retainedAmount": "20.00" }
+  "islrEsperado": {
+    "retainedAmount": "20.00"
+  }
 }
