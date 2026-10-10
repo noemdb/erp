@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   title: "ERP-TributarioLite — Del registro al cierre",
   description:
     "Registra compras, ventas, pagos y retenciones una sola vez y deriva Libro de Compras, Libro de Ventas, Resumen de IVA y comprobantes de IVA/ISLR.",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/favicon.ico", sizes: "any" }],
+    apple: [{ url: "/icon.svg" }],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
