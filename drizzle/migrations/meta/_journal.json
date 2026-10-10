@@ -1,174 +1,181 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1790800610891,
-      "tag": "0000_puzzling_expediter",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1790800733488,
-      "tag": "0001_motionless_wind_dancer",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1790800733489,
-      "tag": "0002_tenant_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1790802201298,
-      "tag": "0003_silent_wendell_rand",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1790803074944,
-      "tag": "0004_brave_adam_destine",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1790806157474,
-      "tag": "0005_premium_forge",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1790806592476,
-      "tag": "0006_cold_iron_patriot",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1790808675758,
-      "tag": "0007_mysterious_nova",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1790809381416,
-      "tag": "0008_amazing_moon_knight",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1790817976144,
-      "tag": "0009_panoramic_glorian",
-      "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "7",
-      "when": 1790817976145,
-      "tag": "0010_close_triggers",
-      "breakpoints": true
-    },
-    {
-      "idx": 11,
-      "version": "7",
-      "when": 1790857306267,
-      "tag": "0011_settlement_event_fields",
-      "breakpoints": true
-    },
-    {
-      "idx": 12,
-      "version": "7",
-      "when": 1790860399831,
-      "tag": "0012_company_abono_criterion",
-      "breakpoints": true
-    },
-    {
-      "idx": 13,
-      "version": "7",
-      "when": 1790870147111,
-      "tag": "0013_massive_cammi",
-      "breakpoints": true
-    },
-    {
-      "idx": 14,
-      "version": "7",
-      "when": 1790871564103,
-      "tag": "0014_young_angel",
-      "breakpoints": true
-    },
-    {
-      "idx": 15,
-      "version": "7",
-      "when": 1790872337061,
-      "tag": "0015_large_jocasta",
-      "breakpoints": true
-    },
-    {
-      "idx": 16,
-      "version": "7",
-      "when": 1790873975940,
-      "tag": "0016_mushy_smasher",
-      "breakpoints": true
-    },
-    {
-      "idx": 17,
-      "version": "7",
-      "when": 1790876014322,
-      "tag": "0017_steep_joseph",
-      "breakpoints": true
-    },
-    {
-      "idx": 18,
-      "version": "7",
-      "when": 1790890991404,
-      "tag": "0018_skinny_wolf_cub",
-      "breakpoints": true
-    },
-    {
-      "idx": 19,
-      "version": "7",
-      "when": 1790894918596,
-      "tag": "0019_bumpy_storm",
-      "breakpoints": true
-    },
-    {
-      "idx": 20,
-      "version": "7",
-      "when": 1790898462231,
-      "tag": "0020_add-company-branding",
-      "breakpoints": true
-    },
-    {
-      "idx": 21,
-      "version": "7",
-      "when": 1790898827512,
-      "tag": "0021_faulty_cobalt_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 22,
-      "version": "7",
-      "when": 1790900000000,
-      "tag": "0022_tenant_rls_all",
-      "breakpoints": true
-    },
-    {
-      "idx": 23,
-      "version": "7",
-      "when": 1791337675991,
-      "tag": "0023_rdf_decisions",
-      "breakpoints": true
-    }
-  ]
+ "version": "7",
+ "dialect": "postgresql",
+ "entries": [
+  {
+   "idx": 0,
+   "version": "7",
+   "when": 1790800610891,
+   "tag": "0000_puzzling_expediter",
+   "breakpoints": true
+  },
+  {
+   "idx": 1,
+   "version": "7",
+   "when": 1790800733488,
+   "tag": "0001_motionless_wind_dancer",
+   "breakpoints": true
+  },
+  {
+   "idx": 2,
+   "version": "7",
+   "when": 1790800733489,
+   "tag": "0002_tenant_rls",
+   "breakpoints": true
+  },
+  {
+   "idx": 3,
+   "version": "7",
+   "when": 1790802201298,
+   "tag": "0003_silent_wendell_rand",
+   "breakpoints": true
+  },
+  {
+   "idx": 4,
+   "version": "7",
+   "when": 1790803074944,
+   "tag": "0004_brave_adam_destine",
+   "breakpoints": true
+  },
+  {
+   "idx": 5,
+   "version": "7",
+   "when": 1790806157474,
+   "tag": "0005_premium_forge",
+   "breakpoints": true
+  },
+  {
+   "idx": 6,
+   "version": "7",
+   "when": 1790806592476,
+   "tag": "0006_cold_iron_patriot",
+   "breakpoints": true
+  },
+  {
+   "idx": 7,
+   "version": "7",
+   "when": 1790808675758,
+   "tag": "0007_mysterious_nova",
+   "breakpoints": true
+  },
+  {
+   "idx": 8,
+   "version": "7",
+   "when": 1790809381416,
+   "tag": "0008_amazing_moon_knight",
+   "breakpoints": true
+  },
+  {
+   "idx": 9,
+   "version": "7",
+   "when": 1790817976144,
+   "tag": "0009_panoramic_glorian",
+   "breakpoints": true
+  },
+  {
+   "idx": 10,
+   "version": "7",
+   "when": 1790817976145,
+   "tag": "0010_close_triggers",
+   "breakpoints": true
+  },
+  {
+   "idx": 11,
+   "version": "7",
+   "when": 1790857306267,
+   "tag": "0011_settlement_event_fields",
+   "breakpoints": true
+  },
+  {
+   "idx": 12,
+   "version": "7",
+   "when": 1790860399831,
+   "tag": "0012_company_abono_criterion",
+   "breakpoints": true
+  },
+  {
+   "idx": 13,
+   "version": "7",
+   "when": 1790870147111,
+   "tag": "0013_massive_cammi",
+   "breakpoints": true
+  },
+  {
+   "idx": 14,
+   "version": "7",
+   "when": 1790871564103,
+   "tag": "0014_young_angel",
+   "breakpoints": true
+  },
+  {
+   "idx": 15,
+   "version": "7",
+   "when": 1790872337061,
+   "tag": "0015_large_jocasta",
+   "breakpoints": true
+  },
+  {
+   "idx": 16,
+   "version": "7",
+   "when": 1790873975940,
+   "tag": "0016_mushy_smasher",
+   "breakpoints": true
+  },
+  {
+   "idx": 17,
+   "version": "7",
+   "when": 1790876014322,
+   "tag": "0017_steep_joseph",
+   "breakpoints": true
+  },
+  {
+   "idx": 18,
+   "version": "7",
+   "when": 1790890991404,
+   "tag": "0018_skinny_wolf_cub",
+   "breakpoints": true
+  },
+  {
+   "idx": 19,
+   "version": "7",
+   "when": 1790894918596,
+   "tag": "0019_bumpy_storm",
+   "breakpoints": true
+  },
+  {
+   "idx": 20,
+   "version": "7",
+   "when": 1790898462231,
+   "tag": "0020_add-company-branding",
+   "breakpoints": true
+  },
+  {
+   "idx": 21,
+   "version": "7",
+   "when": 1790898827512,
+   "tag": "0021_faulty_cobalt_man",
+   "breakpoints": true
+  },
+  {
+   "idx": 22,
+   "version": "7",
+   "when": 1790900000000,
+   "tag": "0022_tenant_rls_all",
+   "breakpoints": true
+  },
+  {
+   "idx": 23,
+   "version": "7",
+   "when": 1791337675991,
+   "tag": "0023_rdf_decisions",
+   "breakpoints": true
+  },
+  {
+   "idx": 24,
+   "version": "7",
+   "when": 1791601073094,
+   "tag": "0024_rdf_series_rls",
+   "breakpoints": true
+  }
+ ]
 }

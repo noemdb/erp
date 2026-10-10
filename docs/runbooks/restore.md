@@ -19,6 +19,10 @@ pg_dump "$DATABASE_MIGRATION_URL" -Fc -f backup-$(date +%F).dump
 pg_restore -d "$DATABASE_MIGRATION_URL" backup-FECHA.dump
 ```
 
+## Desde la app (solo admin)
+`Configuración → Restaurar`: sube el `.sql` descargado (≤100 MB), escribe `RESTAURAR` y confirma copia previa. Es todo o nada (`ON_ERROR_STOP=1`): si falla, no se aplica. Antes de aplicar, la app guarda copia previa automática en `/storage/.safety` (últimas 3; si no puede, bloquea). Tras restaurar: `Configuración → Verificar después de restaurar` (empresas, series, último `closure_hash`) + `/api/health` + `npm run series:reconcile` antes de emitir. Límite 3/hora; cada intento queda en el log.
+`Configuración → Limpiar` borra lo operativo del alcance elegido (todas o una empresa, con simulacro previo): descargar backup antes, sin deshacer.
+
 ## Drill log
 | Fecha | Responsable | Resultado |
 |---|---|---|

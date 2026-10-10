@@ -10,8 +10,8 @@ import type { IvaSummary } from "./summary";
 export const TEMPLATE_VERSIONS = {
   purchaseBook: "purchase-book/v1",
   salesBook: "sales-book/v1",
-  ivaCertificate: "iva-certificate/v1",
-  islrCertificate: "islr-certificate/v1",
+  ivaCertificate: "iva-certificate/v2",
+  islrCertificate: "islr-certificate/v2",
 } as const;
 
 function esc(s: string): string {
@@ -35,15 +35,24 @@ export function renderSalesBookHtml(meta: { empresa: string; periodo: string }, 
   return { html, sha256: createHash("sha256").update(html).digest("hex") };
 }
 
+/** B31: `borrador` imprime el banner sin validez fiscal. Fail-closed: el render-job
+ * lo activa salvo cobertura RDF firmada sobre regla no sintética. */
+export const BORRADOR_BANNER = "BORRADOR — sin validez fiscal. Comprobante de prueba: requiere matriz firmada y serie definitiva.";
+
+function banner(borrador?: boolean): string {
+  return borrador === true ? `<p><strong>${BORRADOR_BANNER}</strong></p>` : "";
+}
+
 export function renderIvaCertificateHtml(data: {
   certificateNumber: string; fechaEmision: string; agente: string; beneficiario: string;
   lines: { invoiceNumber: string; controlNumber: string; taxableBase: string; vatAmount: string; retainedAmount: string }[];
   total: string;
+  borrador?: boolean;
 }): { html: string; sha256: string } {
   const trs = data.lines.map((l) =>
     `<tr><td>${esc(l.invoiceNumber)}</td><td>${esc(l.controlNumber)}</td><td>${esc(l.taxableBase)}</td><td>${esc(l.vatAmount)}</td><td>${esc(l.retainedAmount)}</td></tr>`,
   ).join("");
-  const html = `<!DOCTYPE html><html lang="es-VE"><head><meta charset="utf-8"><title>Comprobante ${esc(data.certificateNumber)}</title></head><body><h1>Comprobante de retención IVA ${esc(data.certificateNumber)}</h1><p>Agente: ${esc(data.agente)} · Beneficiario: ${esc(data.beneficiario)} · Emisión: ${esc(data.fechaEmision)}</p><table><thead><tr><th>Factura</th><th>Control</th><th>Base</th><th>IVA</th><th>Retenido</th></tr></thead><tbody>${trs}</tbody></table><p>Total retenido: ${esc(data.total)}</p><p>Plantilla ${TEMPLATE_VERSIONS.ivaCertificate}</p></body></html>`;
+  const html = `<!DOCTYPE html><html lang="es-VE"><head><meta charset="utf-8"><title>Comprobante ${esc(data.certificateNumber)}</title></head><body><h1>Comprobante de retención IVA ${esc(data.certificateNumber)}</h1>${banner(data.borrador)}<p>Agente: ${esc(data.agente)} · Beneficiario: ${esc(data.beneficiario)} · Emisión: ${esc(data.fechaEmision)}</p><table><thead><tr><th>Factura</th><th>Control</th><th>Base</th><th>IVA</th><th>Retenido</th></tr></thead><tbody>${trs}</tbody></table><p>Total retenido: ${esc(data.total)}</p><p>Plantilla ${TEMPLATE_VERSIONS.ivaCertificate}</p></body></html>`;
   return { html, sha256: createHash("sha256").update(html).digest("hex") };
 }
 
@@ -63,8 +72,9 @@ export function renderIslrCertificateHtml(data: {
   certificateNumber: string; fechaEmision: string; fechaRetencion: string;
   beneficiario: string; concepto: string; baseSujeta: string;
   porcentaje: string; sustraendo: string; retainedAmount: string;
+  borrador?: boolean;
 }): { html: string; sha256: string } {
   const pct = `${(Number(data.porcentaje) * 100).toFixed(2)}%`;
-  const html = `<!DOCTYPE html><html lang="es-VE"><head><meta charset="utf-8"><title>Comprobante ${esc(data.certificateNumber)}</title></head><body><h1>Comprobante de retención ISLR ${esc(data.certificateNumber)}</h1><p>Beneficiario: ${esc(data.beneficiario)} · Concepto: ${esc(data.concepto)}</p><p>Emisión: ${esc(data.fechaEmision)} · Retención: ${esc(data.fechaRetencion)}</p><table><thead><tr><th>Base</th><th>%</th><th>Sustraendo</th><th>Retenido</th></tr></thead><tbody><tr><td>${esc(data.baseSujeta)}</td><td>${esc(pct)}</td><td>${esc(data.sustraendo)}</td><td>${esc(data.retainedAmount)}</td></tr></tbody></table><p>Plantilla ${TEMPLATE_VERSIONS.islrCertificate}</p></body></html>`;
+  const html = `<!DOCTYPE html><html lang="es-VE"><head><meta charset="utf-8"><title>Comprobante ${esc(data.certificateNumber)}</title></head><body><h1>Comprobante de retención ISLR ${esc(data.certificateNumber)}</h1>${banner(data.borrador)}<p>Beneficiario: ${esc(data.beneficiario)} · Concepto: ${esc(data.concepto)}</p><p>Emisión: ${esc(data.fechaEmision)} · Retención: ${esc(data.fechaRetencion)}</p><table><thead><tr><th>Base</th><th>%</th><th>Sustraendo</th><th>Retenido</th></tr></thead><tbody><tr><td>${esc(data.baseSujeta)}</td><td>${esc(pct)}</td><td>${esc(data.sustraendo)}</td><td>${esc(data.retainedAmount)}</td></tr></tbody></table><p>Plantilla ${TEMPLATE_VERSIONS.islrCertificate}</p></body></html>`;
   return { html, sha256: createHash("sha256").update(html).digest("hex") };
 }

@@ -9,11 +9,11 @@ describe("dorados service", () => {
     expect(cases.some((c) => c.id === "IVA-01")).toBe(true);
   });
 
-  it("IVA-01 reproduce el esperado y no está firmado", () => {
+  it("IVA-01 reproduce el esperado y viene firmado (demo Opción 1, 2026-10-07)", () => {
     const c = getGoldenCase("IVA-01");
     expect(c).not.toBeNull();
     expect(executeGoldenCase(c!).pass).toBe(true);
-    expect(verifyGolden(c!).firmado).toBe(false);
+    expect(verifyGolden(c!).firmado).toBe(true);
   });
 
   it("tipoDeId mapea el prefijo del id", () => {
@@ -22,11 +22,11 @@ describe("dorados service", () => {
     expect(tipoDeId("ABONO-01")).toBe("evento_retencion");
   });
 
-  it("coverageByRule suma total y firmados", () => {
+  it("coverageByRule suma total y firmados (IVA-01 demo firmada)", () => {
     const cov = coverageByRule(listGoldenCases());
     const iva = cov.find((r) => r.tipo === "iva");
     expect(iva).toBeDefined();
     expect(iva!.total).toBeGreaterThan(0);
-    expect(iva!.firmados).toBe(0);
+    expect(iva!.firmados).toBe(1);
   });
 });

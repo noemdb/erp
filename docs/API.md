@@ -159,6 +159,9 @@ Parámetros comunes: `companyId, fiscalPeriodId, branchId?, format pdf|xlsx|csv`
 ### `GET /api/companies/[companyId]/reports/purchase-book?periodId=&format=` / `sales-book` / `iva-summary` / `iva-withholdings` / `islr-withholdings` / `conciliation`
 - `purchase_book|sales_book`: columnas = plantilla golden master, cortes por clasificación/alícuota. Soporta modo factura y Z.
 - `iva_withholdings` (CSV): columnas `comprobante,emision,rif_beneficiario,razon_social,retenido,estado`; incluye anulados marcados, filtro `periodId`, neutraliza inyección `=+-@`. PDF/Excel fiel en F5.
+- `islr_withholdings` (CSV, B2 espejo del IVA): mismas columnas y reglas que `iva_withholdings` (anulados marcados, filtro `periodId`, anti-inyección). Serie con formato provisional hasta G9.
+- `closing_package` (JSON, B3/R5): `GET .../reports/closing-package?periodId=` (requiere `periodId`, 400 `VALIDATION_ERROR` sin él). Manifiesto del período: 6 secciones (`purchase_book`, `sales_book`, `iva_summary`, `conciliation`, `iva_withholdings`, `islr_withholdings`) con `count` + `sha256` c/u, resumen y conciliación embebidos, `sha256` global y enlaces de descarga CSV. Solo lectura (`reports.read`); congelar es `freezeClosingPackageAction` (solo contador, `periods.close`), que inserta `generated_reports(kind='closing_package', format='json')` versionado con auditoría en la misma TX.
+- `correlativo-gaps` (JSON, B13/R-E4): `GET .../reports/correlativo-gaps?kind=iva|islr&periodId=` (requiere `reports.read`; `kind` obligatorio, `periodId` opcional). Huecos por prefijo de serie (anulados cuentan como consumidos), totales por estado + `retenidoVigente`, y cruce contra `document_series` por prefijo (`ok` | `serie-mayor` | `serie-menor` | `sin-serie` | `varias-series`). Las bandejas IVA/ISLR muestran el KPI Secuencia con hint a `series:reconcile` si hay huecos. Nota honesta: el resumen deriva de las mismas tablas, así que el cruce independiente es correlativo ↔ serie, no contra el resumen.
 - `iva_summary`: débitos, créditos, exentas, exportaciones, importaciones, ajustes, excedente anterior, retenciones aplicadas/no aplicadas, cuota. Drill-down: cada total enlaza a documentos.
 - `conciliation`: libros ↔ resumen ↔ comprobantes, tolerancia 0 (salvo ADR-014).
 - Export Excel vía `exceljs` sobre plantilla original (neutralizar CSV injection `=+-@`), PDF vía HTML→Chromium ejecutado por `render:retry` con gatillos (>5000 filas / >10s / >5 pendientes). Cola `pg-boss` diferida por ADR-031. Almacena con `sha256`.
@@ -187,6 +190,36 @@ Estados: `open→under_review→closed→reopened→under_review→closed`.
 ## Health
 
 ### `GET /api/health` — no auth. Retorna `{ data: { status, db, boss, storage } }` para healthchecks y alertas jobs/backup.
+
+## admin — mantenimiento de base de datos (ADR-037, solo admin global)
+
+Gate: sesión + `users.manage` en ALGUNA empresa (misma regla que `/usuarios`); sin ese permiso → `FORBIDDEN`. Operador con rol migrador (`migrationUrl()`), fuera de `withTenant` (no hay tenant en backup/restore/limpieza total). Constancia en log del servidor (actor + conteos, sin PII) + resultado en UI; `audit_events` no aplica (exige `company_id`).
+
+### `GET /api/admin/database/backup` (Route Handler, descarga)
+- Ejecuta `pg_dump --no-owner --no-privileges --clean --if-exists` y retorna `.sql` (`erp-backup-YYYYMMDD-HHMMSS.sql`). Rate limit 5/hora por admin.
+- Errores: `UNAUTHENTICATED` / `FORBIDDEN` / `RATE_LIMITED` / `BACKUP_NO_PGDUMP` / `BACKUP_VERSION_MISMATCH` (cliente menor que el servidor: instalar `postgresql-client` acorde o definir `PG_DUMP_PATH`) / `BACKUP_FAILED` / `CONFIG_ERROR` (sin URL migradora).
+- El binario se autodetecta (el más nuevo entre `PG_DUMP_PATH`, `/usr/lib/postgresql/*`, `~/.local/pg18/bin` y `PATH`); en staging/prod definir `PG_DUMP_PATH`/`PSQL_PATH` al cliente ≥ servidor.
+- Cabeceras de prueba: `X-Backup-Sha256`, `X-Backup-Bytes`, `X-Backup-Tables`, `X-Backup-Complete` (verificación sin restaurar: CREATE TABLE + COPY/INSERT + marca final). Cada backup/restaura/limpieza se anota en el historial (`/storage/.maintenance-history.jsonl`, sin PII).
+
+### `GET /api/admin/database/status` (solo lectura: tamaño, conteos e historial reciente)
+
+### `POST /api/admin/database/restore` (Route Handler, multipart: `file`, `confirm=RESTAURAR`, `backupDone=true`)
+- Valida `.sql` ≤ 100 MB con heurística de dump válido; aplica con `psql -v ON_ERROR_STOP=1` (todo o nada: si falla, no se aplica). Rate limit 3/hora.
+- Red de seguridad fail-closed: antes de aplicar guarda copia previa en `/storage/.safety` (últimas 3); si no puede, bloquea con `SAFETY_FAILED`. Responde `{ ok, bytes, safety }`.
+- Tras restaurar: `GET /api/admin/database/restore-check` (empresas con conteos, series y último `closure_hash`) antes de emitir (ver `runbooks/restore.md`).
+- Errores: `VALIDATION_ERROR` (confirmación/archivo) / `RESTORE_NO_PSQL` / `RESTORE_FAILED` (+ 401/403/429).
+
+### `cleanDatabaseAction({ confirm: "ELIMINAR", reason, companyId? })` + `previewCleanAction({ companyId? })` (Server Actions)
+- `previewCleanAction` es el simulacro: conteos por tabla + usuarios a podar, sin borrar.
+- UNA transacción, borrado ordenado hijos→padres. Sin `companyId` = todas; con `companyId` = solo esa empresa (los usuarios se podan solo si quedan sin membresías y no son preservados; el storage `fs:` solo se limpia en modo total). **Elimina:** empresas en alcance + sucursales, terceros, documentos, pagos, retenciones, reglas/conceptos por empresa, series, períodos, importaciones (incluido `source_files.content`), reportes, RDF, obligaciones/feriados, adjuntos, bitácora, membresías, sesiones/tokens de eliminados, usuarios no preservados. **Conserva:** usuarios con rol `admin` + 4 cuentas `@practica.local` (con sus sesiones), conceptos ISLR globales, regla IVA 75 % global, migraciones aplicadas. Rate limit 3/hora. Tras limpiar todo, el admin queda sin empresas y debe registrar una nueva.
+
+### `POST /api/admin/database/restore` (Route Handler, multipart: `file`, `confirm=RESTAURAR`, `backupDone=true`)
+- Valida `.sql` ≤ 100 MB con heurística de dump válido; aplica con `psql -v ON_ERROR_STOP=1` (todo o nada: si falla, no se aplica). Rate limit 3/hora.
+- Tras restaurar: verificar `/api/health`, último `closure_hash` y `npm run series:reconcile` antes de emitir (ver `runbooks/restore.md`).
+- Errores: `VALIDATION_ERROR` (confirmación/archivo) / `RESTORE_NO_PSQL` / `RESTORE_FAILED` (+ 401/403/429).
+
+### `cleanDatabaseAction({ confirm: "ELIMINAR", reason })` (Server Action)
+- UNA transacción, borrado ordenado hijos→padres. **Elimina:** todas las empresas + sucursales, terceros, documentos, pagos, retenciones, reglas/conceptos por empresa, series, períodos, importaciones (incluido `source_files.content`), reportes, RDF, obligaciones/feriados, adjuntos (+ blobs `fs:` huérfanos best-effort), bitácora, membresías, sesiones/tokens de eliminados, usuarios no preservados. **Conserva:** usuarios con rol `admin` + 4 cuentas `@practica.local` (con sus sesiones), conceptos ISLR globales, regla IVA 75 % global, migraciones aplicadas. Rate limit 3/hora. Tras limpiar, el admin queda sin empresas y debe registrar una nueva.
 
 ## Pendientes que condicionan esta API (no implementar hasta ADR)
 

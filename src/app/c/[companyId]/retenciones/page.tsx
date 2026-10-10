@@ -18,6 +18,7 @@ import { AppHeader, PageFooter } from "@/components/layout/app-shell";
 import { getSessionUser, listMemberships } from "@/modules/identity/session";
 import { getCompanyContext } from "@/modules/tenancy/repo";
 import { listIva } from "@/modules/withholdings/issue-iva";
+import { findCorrelativoGaps } from "@/modules/withholdings/correlativo-gaps";
 
 const estadoComprobante: Record<string, { label: string; variant: "success" | "secondary" | "muted" | "outline" }> = {
   issued: { label: "Emitido", variant: "success" },
@@ -57,6 +58,11 @@ export default async function RetencionesPage({ params }: { params: Promise<{ co
     (acc, r) => acc.plus(new Decimal(r.totalRetained || 0)),
     new Decimal(0),
   );
+  // Huecos sobre lo cargado (límite 200): sin falsos positivos, puede omitir.
+  const gaps = findCorrelativoGaps(
+    rows.map((r) => ({ certificateNumber: r.certificateNumber, status: r.status ?? "", totalRetained: r.totalRetained ?? "0" })),
+    8,
+  );
 
   const kpis = [
     { label: "Comprobantes", value: String(vigentes.length), mono: true },
@@ -69,6 +75,11 @@ export default async function RetencionesPage({ params }: { params: Promise<{ co
     {
       label: "Entregados",
       value: String(rows.filter((r) => r.status === "delivered").length),
+      mono: true,
+    },
+    {
+      label: "Secuencia",
+      value: gaps.faltantesTotal === 0 && gaps.noComparables.length === 0 ? "Sin huecos" : `Faltan ${gaps.faltantesTotal}`,
       mono: true,
     },
   ];
@@ -130,7 +141,7 @@ export default async function RetencionesPage({ params }: { params: Promise<{ co
 
         {/* Indicadores */}
         <section className="mt-8" aria-label="Totales de retenciones">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
             {kpis.map((k, i) => (
               <Reveal key={k.label} delay={(i % 4) * 80} className="h-full">
                 <Card className="h-full rounded-lg">
@@ -152,6 +163,15 @@ export default async function RetencionesPage({ params }: { params: Promise<{ co
               </Reveal>
             ))}
           </div>
+          {gaps.faltantesTotal > 0 && (
+            <p className="mt-3 text-sm text-periwinkle-500" role="status">
+              Faltan {gaps.faltantesTotal} número(s) en la secuencia
+              {gaps.groups.some((g) => g.faltantes.length > 0)
+                ? `: ${gaps.groups.flatMap((g) => g.faltantes).slice(0, 5).join(", ")}${gaps.faltantesTotal > 5 ? "…" : ""}`
+                : ""}
+              . Revisa anulados frente a huecos reales y corre `series:reconcile` antes de emitir.
+            </p>
+          )}
         </section>
 
         {/* Tabla */}

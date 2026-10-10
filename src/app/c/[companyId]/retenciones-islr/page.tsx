@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import Decimal from "decimal.js";
 import Add from "@mui/icons-material/Add";
+import Download from "@mui/icons-material/Download";
 import Approval from "@mui/icons-material/Approval";
 import Settings from "@mui/icons-material/Settings";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ import { AppHeader, PageFooter } from "@/components/layout/app-shell";
 import { getSessionUser, listMemberships } from "@/modules/identity/session";
 import { getCompanyContext } from "@/modules/tenancy/repo";
 import { listIslrBandeja } from "@/modules/withholdings/issue-islr";
+import { findCorrelativoGaps } from "@/modules/withholdings/correlativo-gaps";
 import { getAbonoCriterion } from "@/modules/withholdings/g2-criterion";
 import { AbonoCriterionForm } from "./abono-criterion-form";
 
@@ -68,11 +70,21 @@ export default async function RetencionesIslrPage({ params }: { params: Promise<
   const emitidos = sorted.filter((r) => r.status === "issued" || r.status === "delivered");
   const totRetenido = emitidos.reduce((acc, r) => acc.plus(new Decimal(r.totalRetained || 0)), new Decimal(0));
   const pendientes = sorted.filter((r) => !["issued", "delivered", "voided"].includes(r.status ?? "")).length;
+  // Huecos sobre lo cargado (límite 200): sin falsos positivos, puede omitir. ISLR = 6 dígitos.
+  const gaps = findCorrelativoGaps(
+    sorted.map((r) => ({ certificateNumber: r.certificateNumber, status: r.status ?? "", totalRetained: r.totalRetained ?? "0" })),
+    6,
+  );
 
   const kpis = [
     { label: "Comprobantes", value: String(sorted.length), mono: true },
     { label: "Retenido emitido", value: fmtMonto(totRetenido.toFixed(2)) },
     { label: "Sin emitir", value: String(pendientes), mono: true },
+    {
+      label: "Secuencia",
+      value: gaps.faltantesTotal === 0 && gaps.noComparables.length === 0 ? "Sin huecos" : `Faltan ${gaps.faltantesTotal}`,
+      mono: true,
+    },
   ];
 
   return (
@@ -119,13 +131,22 @@ export default async function RetencionesIslrPage({ params }: { params: Promise<
                   Nuevo comprobante
                 </Link>
               </Button>
+              <Button asChild variant="outline">
+                <a
+                  href={`/api/companies/${companyId}/reports/islr-withholdings?format=csv`}
+                  download
+                >
+                  <Download aria-hidden />
+                  Descargar CSV
+                </a>
+              </Button>
             </div>
           </div>
         </section>
 
         {/* Indicadores */}
         <section className="mt-8" aria-label="Totales ISLR">
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {kpis.map((k, i) => (
               <Reveal key={k.label} delay={(i % 3) * 80} className="h-full">
                 <Card className="h-full rounded-lg">
@@ -147,6 +168,15 @@ export default async function RetencionesIslrPage({ params }: { params: Promise<
               </Reveal>
             ))}
           </div>
+          {gaps.faltantesTotal > 0 && (
+            <p className="mt-3 text-sm text-periwinkle-500" role="status">
+              Faltan {gaps.faltantesTotal} número(s) en la secuencia
+              {gaps.groups.some((g) => g.faltantes.length > 0)
+                ? `: ${gaps.groups.flatMap((g) => g.faltantes).slice(0, 5).join(", ")}${gaps.faltantesTotal > 5 ? "…" : ""}`
+                : ""}
+              . Revisa anulados frente a huecos reales y corre `series:reconcile` antes de emitir. Serie provisional hasta G9.
+            </p>
+          )}
         </section>
 
         {/* Criterio G2 */}

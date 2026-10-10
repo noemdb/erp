@@ -152,6 +152,14 @@ export default async function PeriodoDetallePage({
                 <MenuBook aria-hidden style={{ fontSize: 16 }} />
                 Libros
               </Link>
+              <a
+                href={`/api/companies/${companyId}/reports/closing-package?periodId=${per.id}`}
+                download={`paquete-cierre-${per.id}.json`}
+                className="inline-flex items-center gap-2 whitespace-nowrap rounded-md border border-periwinkle-300 bg-white px-5 text-sm font-medium text-[#120c27] transition-colors hover:bg-periwinkle-50 h-9"
+              >
+                <ArrowForward aria-hidden style={{ fontSize: 16 }} />
+                Paquete (JSON)
+              </a>
             </div>
           </div>
         </section>

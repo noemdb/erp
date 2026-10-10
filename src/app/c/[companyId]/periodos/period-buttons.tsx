@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Lock from "@mui/icons-material/Lock";
 import LockOpen from "@mui/icons-material/LockOpen";
+import Archive from "@mui/icons-material/Archive";
 import RateReview from "@mui/icons-material/RateReview";
 import Undo from "@mui/icons-material/Undo";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
   closePeriodAction,
   reopenPeriodAction,
 } from "@/modules/periods/actions";
+import { freezeClosingPackageAction } from "@/modules/reporting/actions";
 
 type ActionResult = { ok: boolean; error?: unknown };
 
@@ -50,6 +52,7 @@ export function PeriodButtons({
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [frozen, setFrozen] = useState<{ version: number; sha256: string } | null>(null);
   const [modal, setModal] = useState<"devolver" | "reabrir" | "cerrar" | null>(
     null,
   );
@@ -66,6 +69,22 @@ export function PeriodButtons({
       } else {
         setModal(null);
         setReason("");
+        router.refresh();
+      }
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function freezePackage() {
+    setBusy("paquete");
+    setError(null);
+    try {
+      const r = await freezeClosingPackageAction(companyId, periodId);
+      if (!r.ok) {
+        setError(toMessage((r as { error?: unknown }).error));
+      } else {
+        setFrozen({ version: r.version, sha256: r.sha256 });
         router.refresh();
       }
     } finally {
@@ -167,7 +186,24 @@ export function PeriodButtons({
             </Button>
           </>
         )}
+        {(status === "under_review" || status === "closed") && (
+          <Button
+            variant="outline"
+            disabled={loading}
+            onClick={() => void freezePackage()}
+          >
+            <Archive aria-hidden />
+            {busy === "paquete" ? "Congelando…" : "Congelar paquete"}
+          </Button>
+        )}
       </div>
+
+      {frozen && (
+        <p className="mt-2 text-xs text-periwinkle-500">
+          Paquete v{frozen.version} congelado · sha{" "}
+          <span className="font-mono">{frozen.sha256.slice(0, 12)}…</span>
+        </p>
+      )}
 
       <p className="mt-2 text-xs text-periwinkle-500">
         Cerrar congela libros y comprobantes con hash. Reabrir y devolver

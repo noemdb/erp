@@ -685,3 +685,28 @@ La sesión práctica de 6 pasos (T03 operativo OK) deja su resultado en actas su
 
 ### Consecuencias
 Sin ADR-034 aceptado no hay migración ni código RDF. Aceptarlo desbloquea Fase 1 (RDF standalone) y Fase 2 (gate) del spec `blueprint/rdf/04-tests-rollout.md`; los valores fiscales reales siguen exigiendo matriz v1 firmada.
+
+---
+
+## ADR-037 — Sección Configuración admin: backup / restore / limpieza de DB
+**Fecha:** 2026-10-09
+**Estado:** Aceptada e implementada 2026-10-09 (pedido cliente)
+
+### Contexto
+El menú de admin necesita una sección de Configuración con funciones de base de datos: descargar backup SQL, restaurar y limpiar todos los datos operativos (dejando admins, cuentas de `seed-practica.ts` y datos funcionales). Son operaciones globales, sin tenant.
+
+### Alternativas consideradas
+| Opción | Pros | Contras |
+|---|---|---|
+| Operador global con rol migrador + gate `users.manage` (elegida) | Backup lee todas las empresas (RLS lo impediría con rol app); limpieza cross-tenant en 1 TX | Excepción documentada a "todo por `withTenant`": sin tenant no hay alternativa |
+| Reutilizar rol app + `withTenant` por empresa | Sin excepción | Backup parcial por RLS; limpieza N empresas frágil; restore DDL sin permisos |
+| Tabla `maintenance_events` para auditoría | Constancia consultable | Migración + RLS + UI por 3 acciones; sobrediseño a esta escala |
+
+### Decisión
+1. Nuevo módulo `maintenance` (`service.ts` puro + `repo.ts` con cliente migrador + `actions.ts`): backup `GET /api/admin/database/backup` (`pg_dump` plano, 5/hora), restore `POST .../restore` (`.sql` ≤100 MB validado, `psql ON_ERROR_STOP=1` todo o nada, 3/hora + confirmación `RESTAURAR` + copia previa), limpieza `cleanDatabaseAction` (`ELIMINAR` + motivo, 1 TX ordenada, 3/hora).
+2. Limpieza elimina empresas + todo lo operativo + usuarios no preservados; conserva admins, 4 cuentas `@practica.local` (con sesiones), conceptos globales, regla IVA 75 % global y migraciones. Limpia blobs `fs:` huérfanos (best-effort con guardas).
+3. Constancia en log estructurado (actor + conteos, sin PII: el motivo no se loguea) + resultado en UI. Sin `audit_events` (exige `company_id`).
+4. UI `/configuracion` (misma guarda que `/usuarios`) + item "Configuración" en el menú admin. Zod en servidor; `tax-engine` intacto; sin permiso nuevo.
+
+### Consecuencias
+El restore reemplaza la bitácora con la del backup (documentado en `runbooks/restore.md`); tras limpiar hay que registrar empresa nueva. Integración DB pendiente de entorno con Neon (mismo ECONNRESET preexistente).

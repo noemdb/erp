@@ -1,13 +1,28 @@
 import { createHash } from "node:crypto";
 import { eq } from "drizzle-orm";
-import { withTenant } from "@/modules/tenancy/with-tenant";
+import { withTenant, type DrizzleTx } from "@/modules/tenancy/with-tenant";
 import { record } from "@/modules/audit/record";
-import { ivaWithholdings, islrWithholdings } from "@/db/schema";
+import { ivaWithholdings, islrWithholdings, withholdingRules } from "@/db/schema";
+import { hasRdfCoverage } from "@/modules/rdf/links";
 import { renderIvaCertificateHtml, renderIslrCertificateHtml } from "@/modules/reporting/render";
 import { renderPdf } from "@/modules/reporting/pdf";
 import { uploadAttachment } from "@/modules/attachments/service";
 
 export type Ctx = { companyId: string; userId: string };
+
+/**
+ * B31 fail-closed: el PDF lleva BORRADOR salvo regla no sintética de la empresa
+ * con cobertura RDF firmada del mismo impuesto y concepto. Ante cualquier duda,
+ * el banner se imprime.
+ */
+export async function isBorrador(
+  tx: DrizzleTx, companyId: string, ruleKind: string, conceptId: string | null, ruleVersionId: string | null,
+): Promise<boolean> {
+  if (!ruleVersionId) return true;
+  const [rule] = await tx.select().from(withholdingRules).where(eq(withholdingRules.id, ruleVersionId)).limit(1);
+  if (!rule || rule.companyScopeKey !== companyId || rule.synthetic) return true;
+  return !(await hasRdfCoverage(tx, { companyId, ruleKind, conceptId }));
+}
 
 type IvaSnapshot = {
   certificateNumber: string;
@@ -28,7 +43,8 @@ export async function renderIvaPdf(ctx: Ctx, id: string, attempt = 1): Promise<{
     const [w] = await tx.select().from(ivaWithholdings).where(eq(ivaWithholdings.id, id)).limit(1);
     if (!w || w.companyId !== ctx.companyId) return null;
     if (w.renderStatus === "done") return "done" as const;
-    return { snapshot: w.dataSnapshot as unknown as IvaSnapshot };
+    const borrador = await isBorrador(tx, ctx.companyId, "iva", null, w.ruleVersionId);
+    return { snapshot: w.dataSnapshot as unknown as IvaSnapshot, borrador };
   });
   if (!head) return { ok: false as const, error: { code: "NOT_FOUND", message: "No existe." } };
   if (head === "done") return { ok: false as const, error: { code: "VALIDATION_ERROR", message: "Ya renderizado; descarga el archivo guardado." } };
@@ -39,7 +55,7 @@ export async function renderIvaPdf(ctx: Ctx, id: string, attempt = 1): Promise<{
   const { html } = renderIvaCertificateHtml({
     certificateNumber: snap.certificateNumber, fechaEmision: snap.fechaEmision,
     agente: "", beneficiario: `${snap.beneficiary.razon} (${snap.beneficiary.rif})`,
-    lines, total,
+    lines, total, borrador: head.borrador,
   });
   let pdf: Buffer;
   try {
@@ -96,7 +112,8 @@ export async function renderIslrPdf(ctx: Ctx, id: string, attempt = 1): Promise<
     const [w] = await tx.select().from(islrWithholdings).where(eq(islrWithholdings.id, id)).limit(1);
     if (!w || w.companyId !== ctx.companyId) return null;
     if (w.renderStatus === "done") return "done" as const;
-    return { snapshot: w.dataSnapshot as unknown as IslrSnapshot };
+    const borrador = await isBorrador(tx, ctx.companyId, "islr", w.conceptId, w.ruleVersionId);
+    return { snapshot: w.dataSnapshot as unknown as IslrSnapshot, borrador };
   });
   if (!head) return { ok: false as const, error: { code: "NOT_FOUND", message: "No existe." } };
   if (head === "done") return { ok: false as const, error: { code: "VALIDATION_ERROR", message: "Ya renderizado; descarga el archivo guardado." } };
@@ -107,7 +124,7 @@ export async function renderIslrPdf(ctx: Ctx, id: string, attempt = 1): Promise<
     beneficiario: `${snap.beneficiary.razon} (${snap.beneficiary.rif})`,
     concepto: `${snap.concept.codigo} — ${snap.concept.nombre}`,
     baseSujeta: snap.baseSujeta, porcentaje: snap.porcentaje, sustraendo: snap.sustraendo,
-    retainedAmount: snap.retainedAmount,
+    retainedAmount: snap.retainedAmount, borrador: head.borrador,
   });
   let pdf: Buffer;
   try {

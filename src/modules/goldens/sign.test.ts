@@ -17,6 +17,12 @@ describe("signGoldenCase", () => {
 
   it("firma con identidad de sesión y hash verificable", () => {
     copyFileSync(join(DIR, "IVA-01-compra-gravada.json"), join(dir, "IVA-01-compra-gravada.json"));
+    // El fixture del repo viene firmado (demo Opción 1, 2026-10-07): se revierte
+    // la copia a CANDIDATO para probar el flujo de firma sin tocar el original.
+    const draft = JSON.parse(readFileSync(join(dir, "IVA-01-compra-gravada.json"), "utf8"));
+    delete draft.firma;
+    draft.estado = "CANDIDATO";
+    writeFileSync(join(dir, "IVA-01-compra-gravada.json"), JSON.stringify(draft));
     const res = signGoldenCase("IVA-01", "user-contador", {
       firmanteNombre: "Contador Test",
       firmanteDoc: "V-12345678",
@@ -35,6 +41,10 @@ describe("signGoldenCase", () => {
 
   it("no vuelve a firmar un dorado ya firmado (GOLDEN_ALREADY_SIGNED)", () => {
     copyFileSync(join(DIR, "IVA-01-compra-gravada.json"), join(dir, "IVA-01-compra-gravada.json"));
+    const draft = JSON.parse(readFileSync(join(dir, "IVA-01-compra-gravada.json"), "utf8"));
+    delete draft.firma;
+    draft.estado = "CANDIDATO";
+    writeFileSync(join(dir, "IVA-01-compra-gravada.json"), JSON.stringify(draft));
     signGoldenCase("IVA-01", "u1", { firmanteNombre: "Contador A", firmanteDoc: "V-11111111", fuenteLegal: "Norma A" }, dir);
     const res = signGoldenCase("IVA-01", "u2", { firmanteNombre: "Contador B", firmanteDoc: "V-22222222", fuenteLegal: "Norma B" }, dir);
     expect(res.ok).toBe(false);

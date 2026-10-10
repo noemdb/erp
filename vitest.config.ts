@@ -12,5 +12,8 @@ export default defineConfig({
     testTimeout: 60000,
     // Los tests nunca procesan CSS (redundante con css.postcss vacío).
     css: false,
+    // Los specs e2e/* son de Playwright (`npm run e2e`); vitest los excluye
+    // para no reportarlos como fallos de runner (B35).
+    exclude: ["e2e/**", "node_modules/**"],
   },
 });

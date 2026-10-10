@@ -40,6 +40,7 @@ Evaluada en una sola capa `authorize(ctx, action, resource)` + RLS como defensa 
 | Ver reportes, drill-down, conciliación, bitácora | ✅ | ✅ propia empresa | ✅ | ✅ solo lectura |
 | Descargar PDF/Excel/adjuntos (URL firmada HMAC+TTL, permiso revalidado) | ✅ | ✅ | ✅ | ✅ |
 | Generar enlace de restablecimiento | ✅ (admin) | — | — | — |
+| Mantenimiento DB: backup / restore / limpieza (`/configuracion`, ADR-037) | ✅ (admin global `users.manage`) | — | — | — |
 
 `*` Decidir en F0: administrativo solo prepara vs emite. Por defecto solo contador emite.
 
@@ -66,6 +67,8 @@ Reglas: cambio de empresa activa reconstruye contexto, sin caché cross-tenant. 
 | `upload` / `validateBatch` / `confirmImport` | medio por usuario/empresa | 429 + job diferido |
 | `issueWithholding`, `closePeriod` | estricto por empresa (evita doble emisión) + `Idempotency-Key` | 429, sin consumir número |
 | `reports` export PDF/Excel | medio (reintento `render:retry`; cola diferida ADR-031) | 429 / reintentar |
+| `admin-backup` / `admin-restore` / `admin-clean` | estricto por admin: 5/hora, 3/hora, 3/hora | 429 `RATE_LIMITED` |
+| Backups en servidor | Copias previas al restore en `/storage/.safety` (últimas 3, fail-closed si no se puede guardar); historial en `/storage/.maintenance-history.jsonl` (actor + conteos, sin PII ni motivos) | Ambos fuera del repo (gitignorados), sin secretos |
 
 Ajustar valores en F7 con pruebas. Todo 429 usa `RATE_LIMITED`.
 

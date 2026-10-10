@@ -735,7 +735,7 @@ Tablas implementadas (migración 0023: `fiscal_decisions` + links + `rdf_series`
 | id | uuid | PK | |
 | company_id | uuid | FK companies | |
 | fiscal_period_id | uuid | FK fiscal_periods | |
-| kind | text | NOT NULL, CHECK IN ('purchase_book','sales_book','iva_summary','iva_withholdings','islr_withholdings','conciliation') | |
+| kind | text | NOT NULL, CHECK IN ('purchase_book','sales_book','iva_summary','iva_withholdings','islr_withholdings','conciliation','closing_package') | B3: `closing_package` = manifiesto versionado del paquete de cierre (secciones + hashes, filas por sus rutas CSV) | |
 | version | int | NOT NULL | |
 | format | text | NOT NULL, CHECK IN ('pdf','xlsx','csv') | |
 | data_snapshot | jsonb | NOT NULL | Datos congelados |
@@ -928,6 +928,7 @@ export const IvaWithholdingLineSchema = z.object({
 0011_settlement_event_fields.sql -- captura G2 aditiva: tipo de evento, referencia, inferred y RLS
 0012_company_abono_criterion.sql -- criterio G2 por empresa, default unset y CHECK
 0013–0023                   -- ver meta/_journal.json (0016 sales_mode G7, 0020 branding companies, 0022 RLS total, 0023 RDF ADR-034); el snapshot de referencia es el último en drizzle/migrations/meta/
+0024_rdf_series_rls.sql    -- RLS + tenant_isolation en rdf_series (omitida en 0023; la exige catalog-invariant). Nota: 0024–0027 estaban reservadas para goldens (ADR-035); goldens pasa a 0025+ al activarse
 ```
 
 ---

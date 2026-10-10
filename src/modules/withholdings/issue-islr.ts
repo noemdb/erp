@@ -417,6 +417,63 @@ export async function listIslr(ctx: Ctx) {
   return withTenant(ctx, (tx) => tx.select().from(islrWithholdings).where(eq(islrWithholdings.companyId, ctx.companyId)).limit(200));
 }
 
+export type IslrWithholdingsReportRow = {
+  certificateNumber: string;
+  fechaEmision: string;
+  rif: string;
+  razonSocial: string;
+  totalRetained: string;
+  status: string;
+};
+
+/** Filas del reporte de retenciones ISLR (incluye anulados, marcados en `status`). Filtra por período si se indica. Espejo del IVA (B2, R-E4). */
+export async function getIslrWithholdingsReport(ctx: Ctx, periodId?: string): Promise<IslrWithholdingsReportRow[]> {
+  return withTenant(ctx, async (tx) => {
+    const heads = await tx
+      .select()
+      .from(islrWithholdings)
+      .where(
+        periodId
+          ? and(eq(islrWithholdings.companyId, ctx.companyId), eq(islrWithholdings.fiscalPeriodId, periodId))
+          : eq(islrWithholdings.companyId, ctx.companyId),
+      )
+      .limit(500);
+    const out: IslrWithholdingsReportRow[] = [];
+    for (const h of heads) {
+      const [p] = await tx.select().from(parties).where(eq(parties.id, h.beneficiaryId)).limit(1);
+      out.push({
+        certificateNumber: h.certificateNumber,
+        fechaEmision: h.fechaEmision ?? "",
+        rif: p?.rifOriginal ?? "",
+        razonSocial: p?.razonSocial ?? "",
+        totalRetained: h.totalRetained,
+        status: h.status,
+      });
+    }
+    return out.sort((a, b) => (a.fechaEmision < b.fechaEmision ? -1 : 1));
+  });
+}
+
+export const ISLR_WITHHOLDINGS_CSV_HEAD = "comprobante,emision,rif_beneficiario,razon_social,retenido,estado";
+
+/** Celda CSV con comillas + neutralización de inyección (=+-@). Pura, testeable sin DB. */
+export function islrWithholdingsCell(v: string): string {
+  const t = /^[=+\-@]/.test(v) ? `'${v}` : v;
+  return `"${t.replace(/"/g, '""')}"`;
+}
+
+/** CSV del reporte (cabecera + filas). Puro, testeable sin DB. */
+export function toIslrWithholdingsCsv(rows: IslrWithholdingsReportRow[]): string {
+  const body = rows
+    .map((r) =>
+      [r.certificateNumber, r.fechaEmision, r.rif, r.razonSocial, r.totalRetained, r.status]
+        .map(islrWithholdingsCell)
+        .join(","),
+    )
+    .join("\n");
+  return `${ISLR_WITHHOLDINGS_CSV_HEAD}\n${body}`;
+}
+
 /** Bandeja enriquecida: beneficiario + concepto por comprobante, en bloque (sin N+1). */
 export async function listIslrBandeja(ctx: Ctx) {
   return withTenant(ctx, async (tx) => {

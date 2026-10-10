@@ -127,6 +127,16 @@ export function UserMenu({
                 Gestión de usuarios
               </Link>
             )}
+            {(canManageUsers || role === "admin") && (
+              <Link
+                role="menuitem"
+                href="/configuracion"
+                onClick={() => setOpen(false)}
+                className="block rounded-md px-3 py-2 text-sm text-periwinkle-700 transition-colors hover:bg-periwinkle-100 hover:text-[#120c27]"
+              >
+                Configuración
+              </Link>
+            )}
             <Link
               role="menuitem"
               href="/docs"
@@ -142,6 +152,14 @@ export function UserMenu({
               className="block rounded-md px-3 py-2 text-sm text-periwinkle-700 transition-colors hover:bg-periwinkle-100 hover:text-[#120c27]"
             >
               Manual de Usuario
+            </Link>
+            <Link
+              role="menuitem"
+              href="/casos-uso"
+              onClick={() => setOpen(false)}
+              className="block rounded-md px-3 py-2 text-sm text-periwinkle-700 transition-colors hover:bg-periwinkle-100 hover:text-[#120c27]"
+            >
+              Casos de Uso
             </Link>
             <Link
               role="menuitem"

@@ -1536,9 +1536,27 @@ const canvas = document.querySelector(".canvas");
 const btnFullscreen = document.getElementById("btnFullscreen");
 
 function toggleFullscreen(){
+  /* Fullscreen real cuando el navegador lo permite (también dentro del
+     diálogo: el iframe lleva allowFullScreen). Si no, repliegue a la
+     clase CSS como antes. */
+  if(document.fullscreenElement){
+    if(document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+    return;
+  }
+  if(canvas.requestFullscreen && document.fullscreenEnabled !== false){
+    canvas.requestFullscreen().catch(()=>{
+      canvas.classList.toggle("is-fullscreen");
+      setTimeout(()=>{ drawWires(); applyStep(); }, 50);
+    });
+    return;
+  }
   canvas.classList.toggle("is-fullscreen");
   setTimeout(()=>{ drawWires(); applyStep(); }, 50);
 }
+document.addEventListener("fullscreenchange", ()=>{
+  canvas.classList.toggle("is-fullscreen", !!document.fullscreenElement);
+  setTimeout(()=>{ drawWires(); applyStep(); }, 50);
+});
 btnFullscreen.addEventListener("click", toggleFullscreen);
 
 /* ─── keyboard ─────────────────────────────────────────────────────── */

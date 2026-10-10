@@ -1,5 +1,74 @@
 # CHANGELOG docs/
 
+- 2026-10-10: **B14** mejoras `/configuracion` (4 elegidas): panel de estado (tamaño + conteos + historial JSONL sin PII) + backup con sha256/tablas en headers y botón copiar + restore con copia previa fail-closed en `/storage/.safety` y checklist `restore-check` + limpieza con simulacro y alcance por empresa (poda de huérfanos). Checklist: typecheck 0 + lint 0 + puras 13/13 + boundaries 0 nuevas; integración DB pendiente de Neon. Sin permiso nuevo, sin ADR (extiende ADR-037).
+
+- 2026-10-10: **B13** R-E4 correlativo quincenal (contenido + diagrama `r-e4-correlativo` + detector de huecos + cruce contra serie): retoques tarjeta R-E4, diagrama validado (0 `{{}}`, nodos 5/5, JS_OK, humo 3 flujos + captura), `correlativo-gaps.ts` puro 7/7 + endpoint + KPI Secuencia en bandejas + `API.md` al día. Checklist: typecheck 0 + lint 0 + boundaries 0 nuevas; integración DB pendiente de Neon. Sin permiso nuevo, sin ADR.
+
+- 2026-10-09: **B12** sección Configuración admin (ADR-037): `/configuracion` + item en menú + `modules/maintenance` (backup `pg_dump` / restore `psql` todo o nada / limpieza total con preservados) + `API.md`/`SECURITY.md`/`TODO.md` al día. Checklist: typecheck 0 + lint 0 + puras 8/8 + boundaries 0 nuevas; integración DB pendiente de Neon. Sin permiso nuevo (`users.manage` reutilizado).
+- 2026-10-09: **B12-fix** `BACKUP_VERSION_MISMATCH` (servidor PG 18.6 vs pg_dump 16 del sistema): `resolvePgBin` autodetecta el cliente más nuevo (`PG_DUMP_PATH`/`PSQL_PATH` → `/usr/lib/postgresql/*` → `~/.local/pg18/bin` → PATH) + código de error accionable; cliente 18 PGDG en espacio de usuario (sin root) y backup real verificado contra Neon (173 KB, `Dumped by pg_dump 18.6`). Checklist: typecheck 0 + lint 0 + puras 9/9. `.env.example` documenta `PG_DUMP_PATH`/`PSQL_PATH` para staging/prod.
+
+- 2026-10-09: **B37** buscador + filtro + scroll en Casos de Uso. Checklist: typecheck 0 + lint 0. Sin DB, sin API nueva, sin ADR.
+
+- 2026-10-09: **B33–B36** A+D: pack sesión piloto, D técnico (migración 0024 + rol mínimo + runner e2e + gates al día, suite `src` 139/139 en Neon) y ficha SENIAT XML/TXT como propuesta. Checklist: migraciones OK + suites verdes + typecheck/lint en tocados. Sin ADR.
+
+- 2026-10-09: **B32** sección amplia Decisiones en `/docs` (ruta clic a clic + G9 A/B + cobertura + fail-closed). Checklist: typecheck 0 + lint 0. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B31** marca BORRADOR fail-closed en PDFs + primera corrida completa en Neon real (138/144; 6 fallos preexistentes documentados). Checklist: typecheck 0 + lint 0 + puras 3/3 + integración B2/B31 verdes en DB. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B30** diagrama V-6 (skill generar-diagrama; último de la serie V). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B29** diagrama V-5 (skill generar-diagrama). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B28** diagrama V-4 (skill generar-diagrama). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B27** diagrama V-3 (skill generar-diagrama). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B26** diagrama V-2 (skill generar-diagrama). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B25** diagrama V-1 (skill generar-diagrama). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B22–B24** recomendación A+B+D: hoja firmable G9+matriz (`docs/anexos/hoja-firma-G9-ISLR.md`), página `/c/[id]/estado-fiscal` (gates DB + expediente, solo lectura, enlace en panel) y grupo Contador validador V-1…V-6 en `/casos-uso`. Checklist: typecheck 0 + lint 0 en tocados (aviso img preexistente en dashboard). Sin API nueva, sin ADR.
+
+- 2026-10-09: **B21** diagrama Cierre quincenal (skill generar-diagrama). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B20** diagrama Cierre mensual (skill generar-diagrama). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B19** diagrama R-E8 (skill generar-diagrama; proceso diseñado con gate Q14 visible, sin código). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B18** diagrama R-E7 (skill generar-diagrama; proceso diseñado con gate Q14 visible, sin código). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B17** diagrama R-E6 (skill generar-diagrama). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B16** diagrama R-E5 (skill generar-diagrama). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B15** diagrama R-E4 (skill generar-diagrama). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B14** diagrama R-E3 (skill generar-diagrama). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B13** diagrama R-E2 (skill generar-diagrama). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B12** diagrama R-E1 (skill generar-diagrama). Checklist: validación del skill + humo + captura + lint 0 + tsc 0 en tocados. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B11** diagrama R-O4 (skill generar-diagrama; proceso diseñado con gate Q14 visible, sin código). Checklist: validación del skill + humo + captura + typecheck 0 + lint 0. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B10** diagrama R-O3 (skill generar-diagrama). Checklist: validación del skill + humo + captura + typecheck 0 + lint 0. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B9** diagrama R-O2 (skill generar-diagrama; fix de `data-*-online` con guion aplicado a R-O1 también). Checklist: validación del skill + humo + captura + typecheck 0 + lint 0. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B8** pantalla completa real en diagramas (Fullscreen API + `allowFullScreen` en el diálogo; parche en 17 html + plantilla del skill). Checklist: humo standalone + iframe + captura + typecheck 0 + lint 0. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B7** diagrama R-O1 (flujo interactivo `r-o1-libro-compras` + `.md`, registro en `_flows.tsx`, botón en tarjeta R-O1). Checklist: typecheck 0 + lint 0 + captura sin errores JS. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B6** sección Casos de Uso: item en menú + `/casos-uso` con los 12 casos (R-O1…R-E8, descripción + pasos + ejemplo ficticio + pantalla + estado) espejo de `/manual` + flujos de cierre. Checklist: typecheck 0 + lint 0; sin PII, sin API nueva, sin ADR.
+
+- 2026-10-09: **B5** botón Congelar paquete (cierra loop B3): `PeriodButtons` en under_review/closed dispara `freezeClosingPackageAction` y muestra versión+sha. Checklist: typecheck 0 + lint 0; runtime pendiente de Neon. Sin API nueva, sin ADR.
+
+- 2026-10-09: **B3** paquete de cierre (R5): `closing-package.ts` + ruta `GET .../reports/closing-package` + `freezeClosingPackageAction` + CTA en período + test (3 puras) + `API.md`/`DATABASE.md` al día. Checklist: typecheck 0 + lint 0 + puras 3/3 + `docs:verify-schema` sin P1 + `boundaries` 0 nuevas (72 preexistentes). Sin permiso nuevo, sin ADR.
+
+- 2026-10-09: **B2** correlativo ISLR en CSV (R-E4, espejo del IVA): `getIslrWithholdingsReport`/`toIslrWithholdingsCsv` en `issue-islr.ts` + ruta `GET .../reports/islr-withholdings` + CTA en bandeja + `islr-report.test.ts` + `API.md` al día. Checklist: typecheck 0 + lint 0 + puras 2/2; integración pendiente de Neon. Sin permiso nuevo, sin ADR.
+
+- 2026-10-09: Roadmap R0–R5 (`blueprint/requerimiento/` README + 01 + 02) + inicio de ejecución ordenada: sección `TODO.md` “Roadmap R0–R5 — ejecución” (B1✅/B2🔲/B3🔲/B4⛔) y **B1** endurecimiento `src/db/client.ts` (singleton `globalThis` dev + `connect_timeout:15`/`idle_timeout:20`/`max_lifetime:600`; `prepare:false` intacto). Checklist: typecheck 0 nuevos + lint 0 + import singleton OK + puras 8/8 con env. Sin API nueva, sin ADR.
+
 - 2026-10-08: Cierre total QUINTA_REV: Q-04 al pre-commit (`scripts/hooks/pre-commit` ejecuta `docs:verify-schema` fail-closed, verificado verde) + `seguimiento/cierre-total.md` (acción terminal + dueño + límite + plan B para Q-09/T12/T13/T01/T02/B1/B2/T03–T11/commits, con 3 cartas listas: sesión, reclamo M-1…M-4, G4 por defecto del dueño). Sin servidor accesible desde aquí (T12/T13) ni DB (Q-09/carga). Orden de commits GIT-01 pendiente del dueño.
 
 - 2026-10-08: T02 intake re-verificado sin DB (`autodetect` legacy 10/10 sin gatillo 1; `golden:inspect` XLSX 0 `#REF!`); cita `GATE_NO_RDF` corregida a `rules/service.ts:87` (`activation-gate.ts:57` + test `:131` confirmados). DB Neon sigue inalcanzable desde aquí (Q-09 y carga de borradores pendientes de entorno con DB).

@@ -31,7 +31,27 @@ export type FlowProcess =
   | "libro-compras"
   | "libro-ventas"
   | "resumen-iva"
-  | "bitacora";
+  | "bitacora"
+  | "r-o1-libro-compras"
+  | "r-o2-libro-ventas"
+  | "r-o3-resumen-iva"
+  | "r-o4-xml-islr"
+  | "r-e1-compras-quincenal"
+  | "r-e2-ventas-quincenal"
+  | "r-e3-resumen-quincenal"
+  | "r-e4-correlativo"
+  | "r-e5-comprobante-iva"
+  | "r-e6-comprobante-islr"
+  | "r-e7-xml-mensual"
+  | "r-e8-txt-iva"
+  | "cierre-mensual"
+  | "cierre-quincenal"
+  | "v-1-estado-fiscal"
+  | "v-2-firma-g9"
+  | "v-3-matriz-islr"
+  | "v-4-flujo-rdf"
+  | "v-5-activar-reglas"
+  | "v-6-mes-piloto";
 
 const FLOWS: Record<FlowProcess, Flow> = {
   compras: {
@@ -222,6 +242,226 @@ const FLOWS: Record<FlowProcess, Flow> = {
       </>
     ),
   },
+  "r-o1-libro-compras": {
+    id: "r-o1-libro-compras",
+    process: "R-O1 · Libro de Compras",
+    subtitle: "Cierras enero paso a paso",
+    footer: (
+      <>
+        Mes abierto para cargar, mes cerrado para congelar. La NC siempre
+        cita su documento afectado; el paquete congelado reproduce el mismo hash.
+      </>
+    ),
+  },
+  "r-o2-libro-ventas": {
+    id: "r-o2-libro-ventas",
+    process: "R-O2 · Libro de Ventas",
+    subtitle: "Por factura o por Z, cierras enero",
+    footer: (
+      <>
+        Una sola forma por sucursal y mes: factura una a una o Z con rango.
+        Los saltos se avisan; el paquete congelado reproduce el mismo hash.
+      </>
+    ),
+  },
+  "r-o3-resumen-iva": {
+    id: "r-o3-resumen-iva",
+    process: "R-O3 · Resumen de IVA",
+    subtitle: "Revisas, concilias y congelas enero",
+    footer: (
+      <>
+        Insumo para declarar, no la declaración. Recibidas sin neteo;
+        la versión congelada reproduce el mismo hash.
+      </>
+    ),
+  },
+  "r-o4-xml-islr": {
+    id: "r-o4-xml-islr",
+    process: "R-O4 · XML de ISLR",
+    subtitle: "Diseñado, pendiente Q14",
+    footer: (
+      <>
+        Proceso diseñado, no construido: requiere Q14 afirmativo más layout
+        oficial del SENIAT. Sin spec no se escribe ni una línea.
+      </>
+    ),
+  },
+  "r-e1-compras-quincenal": {
+    id: "r-e1-compras-quincenal",
+    process: "R-E1 · Compras quincenal",
+    subtitle: "Q1 y Q2, cada una con su libro",
+    footer: (
+      <>
+        La fecha fiscal decide la quincena, no la fecha de registro.
+        Cada quincena congela su propio paquete reproducible.
+      </>
+    ),
+  },
+  "r-e2-ventas-quincenal": {
+    id: "r-e2-ventas-quincenal",
+    process: "R-E2 · Ventas quincenal",
+    subtitle: "Q1 y Q2, factura o Z por sucursal",
+    footer: (
+      <>
+        Una sola forma por sucursal y quincena. Los saltos del Z se avisan;
+        cada quincena congela su propio paquete reproducible.
+      </>
+    ),
+  },
+  "r-e3-resumen-quincenal": {
+    id: "r-e3-resumen-quincenal",
+    process: "R-E3 · Resumen quincenal",
+    subtitle: "Q1 y Q2 con arrastre de excedente",
+    footer: (
+      <>
+        El excedente de Q1 viaja a Q2 con trazabilidad. Cada quincena
+        concilia y congela su propia versión reproducible.
+      </>
+    ),
+  },
+  "r-e4-correlativo": {
+    id: "r-e4-correlativo",
+    process: "R-E4 · Correlativo quincenal",
+    subtitle: "IVA e ISLR, sin huecos",
+    footer: (
+      <>
+        Anulados marcados sin liberar número. ISLR con serie provisional
+        hasta G9; el paquete ya trae ambas secciones y el CSV queda como respaldo.
+      </>
+    ),
+  },
+  "r-e5-comprobante-iva": {
+    id: "r-e5-comprobante-iva",
+    process: "R-E5 · Comprobante IVA",
+    subtitle: "Elegibles, preview, emisión y entrega",
+    footer: (
+      <>
+        El número nace y muere en la transacción: fallo no consume, anulado
+        no se reutiliza. Entrega con fecha dentro del plazo.
+      </>
+    ),
+  },
+  "r-e6-comprobante-islr": {
+    id: "r-e6-comprobante-islr",
+    process: "R-E6 · Comprobante ISLR",
+    subtitle: "Evento, preview dual, emisión y entrega",
+    footer: (
+      <>
+        Nace del pago o abono, lo que ocurra primero; solo se emite si ambos
+        escenarios convergen. Serie provisional hasta G9.
+      </>
+    ),
+  },
+  "r-e7-xml-mensual": {
+    id: "r-e7-xml-mensual",
+    process: "R-E7 · XML mensual Q1+Q2",
+    subtitle: "Diseñado, pendiente Q14",
+    footer: (
+      <>
+        Aunque la empresa cierre por quincena, este archivo es mensual.
+        Requiere Q14 afirmativo más layout oficial del SENIAT.
+      </>
+    ),
+  },
+  "r-e8-txt-iva": {
+    id: "r-e8-txt-iva",
+    process: "R-E8 · TXT quincenal",
+    subtitle: "Diseñado, pendiente Q14",
+    footer: (
+      <>
+        Un archivo por quincena para el especial. Requiere Q14 afirmativo
+        más layout oficial del SENIAT.
+      </>
+    ),
+  },
+  "cierre-mensual": {
+    id: "cierre-mensual",
+    process: "Cierre mensual",
+    subtitle: "Ordinario: 4 reportes más paquete",
+    footer: (
+      <>
+        Cerrado no se toca: solo reapertura con motivo y responsable.
+        Regenerar da el mismo hash.
+      </>
+    ),
+  },
+  "cierre-quincenal": {
+    id: "cierre-quincenal",
+    process: "Cierre quincenal",
+    subtitle: "Especial: 8 reportes, XML mensual",
+    footer: (
+      <>
+        Q1 y Q2 cierran por separado; el XML mensual las suma.
+        TXT/XML requieren Q14 más layout oficial.
+      </>
+    ),
+  },
+  "v-1-estado-fiscal": {
+    id: "v-1-estado-fiscal",
+    process: "V-1 · Estado fiscal",
+    subtitle: "Firmado en sistema, pendiente en expediente",
+    footer: (
+      <>
+        Lo no firmado no activa reglas ni valida comprobantes.
+        Prioriza por bloqueo: G9 y matriz liberan R-E6.
+      </>
+    ),
+  },
+  "v-2-firma-g9": {
+    id: "v-2-firma-g9",
+    process: "V-2 · Firma G9",
+    subtitle: "Serie ISLR: A sin migrar o B con ejemplo",
+    footer: (
+      <>
+        Con A no hay migración; con B se planifica convivencia antes de
+        emitir. Firmado, R-E6 deja de ser provisional.
+      </>
+    ),
+  },
+  "v-3-matriz-islr": {
+    id: "v-3-matriz-islr",
+    process: "V-3 · Matriz ISLR",
+    subtitle: "Por concepto, con cotejo y firma",
+    footer: (
+      <>
+        Lo propuesto se coteja contra Gaceta: no es valor final hasta tu
+        firma. Cada fila aprobada genera su RDF y activa su regla.
+      </>
+    ),
+  },
+  "v-4-flujo-rdf": {
+    id: "v-4-flujo-rdf",
+    process: "V-4 · Flujo RDF",
+    subtitle: "Borrador, firma y sustitución",
+    footer: (
+      <>
+        Solo el contador aprueba y firma. Lo firmado no se edita:
+        se sustituye con una nueva que cita a la anterior.
+      </>
+    ),
+  },
+  "v-5-activar-reglas": {
+    id: "v-5-activar-reglas",
+    process: "V-5 · Activar reglas",
+    subtitle: "Sin cobertura rechaza, con cobertura activa",
+    footer: (
+      <>
+        El gate es fail-closed: nada se activa a medias. Activar cierra
+        la vigencia anterior sin borrar historia.
+      </>
+    ),
+  },
+  "v-6-mes-piloto": {
+    id: "v-6-mes-piloto",
+    process: "V-6 · Mes piloto",
+    subtitle: "Muestras, cotejo a 0 y acta",
+    footer: (
+      <>
+        Mismo mes en M-1…M-4 o no hay aceptación. Diferencia 0 o
+        justificada por escrito; dorados firmados 1 a 1.
+      </>
+    ),
+  },
 };
 
 export function FlowButton({ process }: { process: FlowProcess }) {
@@ -271,6 +511,7 @@ export function FlowButton({ process }: { process: FlowProcess }) {
           title={`Diagrama interactivo: ${flow.process}`}
           className="mt-4 h-[68vh] w-full rounded-md border border-periwinkle-200 bg-white"
           loading="lazy"
+          allowFullScreen
         />
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs text-periwinkle-500">

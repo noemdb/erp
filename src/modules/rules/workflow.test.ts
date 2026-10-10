@@ -4,13 +4,23 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { users, companies, companyUser, withholdingRules, withholdingConcepts, auditEvents } from "@/db/schema";
 import { createDraft, submitRule, approveRule, activateRule } from "./service";
+import { checkActivationGate } from "./activation-gate";
+import { listConcepts } from "@/modules/withholdings/issue-islr";
 import { resolveIvaRule } from "@/modules/withholdings/rules";
 import { GLOBAL_SCOPE } from "@/modules/withholdings/constants";
 
 const s = randomUUID().slice(0, 8);
 
 describe("Fiscal Change Control", () => {
-  it("borrador→revisión→aprobación→activación cierra vigencia anterior sin editarla", async () => {
+  it("ACC-03 puro: sin dorados firmados no hay cobertura (GATE_NO_COVERAGE)", () => {
+    // El fixture demo IVA-01 cubre iva+islr; con cero firmados el gate es NO_COVERAGE.
+    const g = checkActivationGate(
+      { ruleKind: "islr", porcentaje: "0.02", sustraendo: "0.00", synthetic: false },
+      [],
+    );
+    expect(g.ok).toBe(false);
+    if (!g.ok) expect(g.code).toBe("GATE_NO_COVERAGE");
+  });  it("borrador→revisión→aprobación→activación cierra vigencia anterior sin editarla", async () => {
     const [u] = await db.insert(users).values({ email: `rw-${s}@test.local`, passwordHash: "x", name: "R" }).returning({ id: users.id });
     const [c] = await db.insert(companies).values({ rif: `J-47${s}-A`, rifOriginal: `J-47${s}-A`, razonSocial: "Rw CA", condicionIva: "ordinario" }).returning({ id: companies.id });
     await db.insert(companyUser).values({ companyId: c!.id, userId: u!.id, role: "contador" });
@@ -57,12 +67,23 @@ describe("Fiscal Change Control", () => {
     }
   });
 
-  it("ACC-03: lo no sintético no activa sin dorados firmados (fail-closed)", async () => {
+  it("ACC-03: lo no sintético no activa sin cobertura firmada (fail-closed)", async () => {
     const [u] = await db.insert(users).values({ email: `g3-${s}@test.local`, passwordHash: "x", name: "G" }).returning({ id: users.id });
     const [c] = await db.insert(companies).values({ rif: `J-48${s}-A`, rifOriginal: `J-48${s}-A`, razonSocial: "G3 CA", condicionIva: "ordinario" }).returning({ id: companies.id });
     await db.insert(companyUser).values({ companyId: c!.id, userId: u!.id, role: "contador" });
     const ctx = { companyId: c!.id, userId: u!.id };
     try {
+      // El demo IVA-01 cubre islr 2% sin sustraendo: pasa dorados, falta RDF → GATE_NO_RDF.
+      const hon = (await listConcepts(ctx)).find((x) => x.codigo === "HON")!;
+      const isl = await createDraft(ctx, { ruleKind: "islr", conceptId: hon.id, baseFormulaKind: "monto_pagado", legalReference: "Providencia X", changeReason: "gate", effectiveFrom: "2026-01-01", porcentaje: "0.02" });
+      expect(isl.ok).toBe(true);
+      if (!isl.ok) throw new Error("setup islr");
+      await submitRule(ctx, isl.id);
+      await approveRule(ctx, isl.id);
+      const actIslr = await activateRule(ctx, isl.id);
+      expect(actIslr.ok).toBe(false);
+      if (!actIslr.ok) expect(actIslr.error.code).toBe("GATE_NO_RDF");
+      // Con dorado firmado que cubre (IVA-01 demo 2026-10-07) pero sin RDF vinculado → GATE_NO_RDF (cobertura después).
       const d = await createDraft(ctx, { ruleKind: "iva", baseFormulaKind: "iva_causado", legalReference: "Providencia X", changeReason: "gate", effectiveFrom: "2026-01-01", porcentaje: "0.75" });
       expect(d.ok).toBe(true);
       if (!d.ok) throw new Error("setup");
@@ -70,7 +91,7 @@ describe("Fiscal Change Control", () => {
       await approveRule(ctx, d.id);
       const act = await activateRule(ctx, d.id);
       expect(act.ok).toBe(false);
-      if (!act.ok) expect(act.error.code).toBe("GATE_NO_COVERAGE");
+      if (!act.ok) expect(act.error.code).toBe("GATE_NO_RDF");
     } finally {
       await db.delete(withholdingRules).where(eq(withholdingRules.companyScopeKey, c!.id));
       await db.delete(auditEvents).where(eq(auditEvents.companyId, c!.id));

@@ -59,7 +59,7 @@ export function ManualLayout({ roles, children }: { roles: ManualNavRole[]; chil
     <div className="pt-10 lg:flex lg:gap-8">
       <aside
         className={cn(
-          "mb-8 lg:mb-0 lg:sticky lg:top-24 lg:self-start lg:shrink-0",
+          "mb-8 lg:mb-0 lg:sticky lg:top-24 lg:self-start lg:shrink-0 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pb-4",
           collapsed ? "lg:w-14" : "lg:w-60"
         )}
       >
