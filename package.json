@@ -35,6 +35,7 @@
     "series:reconcile": "tsx scripts/reconcile-series.ts",
     "render:retry": "tsx --env-file=.env scripts/render-retry.ts",
     "acceptance:gate": "node scripts/acceptance-gate.mjs",
+    "audit:check": "node scripts/audit-check.mjs",
     "e2e": "playwright test",
     "e2e:seed": "tsx --env-file=.env e2e/seed.ts",
     "e2e:install": "playwright install --with-deps chromium",

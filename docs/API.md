@@ -53,6 +53,10 @@
 ### `listCompanyUsers(companyId)` / `setUserRole(companyId, userId, role)`
 - Roles: `admin | administrativo | contador | auditor | supplier(reservado)`. Solo `admin sistema` gestiona (matriz ROADMAP §8). Emisión/anulación y cierre solo `contador` (+motivo).
 
+### `updateUserAction({ userId, name?, email?, password? })` (solo admin, `/usuarios`)
+- Zod servidor: ≥1 cambio; correo único (excluye al propio); clave ≥10 (argon2). Clave nueva revoca **todas** las sesiones del usuario (como `consumeResetLink`) y nunca se audita el hash: `audit_events(action:user.update)` con antes/después + `passwordChanged`.
+- Errores: `FORBIDDEN`, `VALIDATION_ERROR`, `NOT_FOUND`.
+
 ## tenancy — empresas y sucursales
 
 ### `createCompany(input)` / `updateCompanyFiscalProfile(companyId, input)`

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getSessionUser, listMemberships } from "./session";
 import { authorize } from "@/modules/tenancy/authorize";
-import { createUserWithMembership, setMembership, removeMembership, setUserStatus } from "./users";
+import { createUserWithMembership, setMembership, removeMembership, setUserStatus, updateUserProfile } from "./users";
 
 async function adminCtx() {
   const user = await getSessionUser();
@@ -51,6 +51,14 @@ export async function setUserStatusAction(input: Parameters<typeof setUserStatus
   const ctx = await adminCtx();
   if (!ctx) return { ok: false as const, error: { code: "FORBIDDEN", message: "Solo admin." } };
   const res = await setUserStatus(ctx, input);
+  if (res.ok) revalidatePath("/usuarios");
+  return res;
+}
+
+export async function updateUserAction(input: Parameters<typeof updateUserProfile>[1]) {
+  const ctx = await adminCtx();
+  if (!ctx) return { ok: false as const, error: { code: "FORBIDDEN", message: "Solo admin." } };
+  const res = await updateUserProfile(ctx, input);
   if (res.ok) revalidatePath("/usuarios");
   return res;
 }

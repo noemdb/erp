@@ -18,7 +18,7 @@ import { listUsersForAdmin } from "@/modules/identity/recovery";
 import { listUserCompanies } from "@/modules/tenancy/repo";
 import { ResetForm } from "./reset-form";
 import { NewUserDialog } from "./new-user-dialog";
-import { UserManagerRow } from "./user-manager-row";
+import { UserCard } from "./user-card";
 
 export default async function UsuariosPage() {
   const user = await getSessionUser();
@@ -95,10 +95,10 @@ export default async function UsuariosPage() {
           </div>
         </section>
 
-        {/* Tabla */}
+        {/* Tarjetas */}
         <section className="mt-8" aria-label="Lista de usuarios">
           <Reveal>
-            <Card className="overflow-hidden rounded-lg">
+            <Card className="rounded-lg">
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -108,7 +108,9 @@ export default async function UsuariosPage() {
                     <CardDescription>
                       {users.length === 0
                         ? "No hay usuarios registrados."
-                        : `${users.length} ${users.length === 1 ? "cuenta" : "cuentas"} con sus accesos por empresa.`}
+                        : `${users.length} ${users.length === 1 ? "cuenta" : "cuentas"} con sus accesos por empresa.`}{" "}
+                      Administrativo registra · Contador valida, emite y cierra · Auditor solo lectura ·
+                      Admin gestiona empresa y usuarios.
                     </CardDescription>
                   </div>
                   {manageableCompanies.length > 0 && (
@@ -116,33 +118,26 @@ export default async function UsuariosPage() {
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[46rem] text-sm">
-                    <thead>
-                      <tr className="border-y border-periwinkle-200 bg-periwinkle-50/70 text-left text-[11px] font-semibold uppercase tracking-wider text-periwinkle-500">
-                        <th scope="col" className="px-4 py-3">Usuario</th>
-                        <th scope="col" className="px-4 py-3">Empresas y roles</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+              <CardContent>
+                {users.length === 0 ? null : (
+                  <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                       {users.map((u) => (
-                        <UserManagerRow
-                          key={u.id}
-                          user={{
-                            id: u.id,
-                            name: u.name,
-                            email: u.email,
-                            status: u.status,
-                            companies: u.companies,
-                          }}
-                          allCompanies={manageableCompanies}
-                          isSelf={u.id === user.id}
-                        />
+                        <li key={u.id}>
+                          <UserCard
+                            user={{
+                              id: u.id,
+                              name: u.name,
+                              email: u.email,
+                              status: u.status,
+                              companies: u.companies,
+                            }}
+                            allCompanies={manageableCompanies}
+                            isSelf={u.id === user.id}
+                          />
+                        </li>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
+                  </ul>
+                )}
               </CardContent>
             </Card>
           </Reveal>

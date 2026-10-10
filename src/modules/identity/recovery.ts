@@ -60,11 +60,12 @@ export async function listUsersForAdmin() {
   const mems = await db.select().from(companyUser).limit(1000);
   const cos = await db.select().from(companies).limit(200);
   const nameOf = new Map(cos.map((c) => [c.id, c.razonSocial]));
+  const brandOf = new Map(cos.map((c) => [c.id, { logoUrl: c.logoUrl, colorDistintivo: c.colorDistintivo }]));
   return us.map((u) => ({
     ...u,
     passwordHash: undefined,
     companies: mems
       .filter((m) => m.userId === u.id)
-      .map((m) => ({ companyId: m.companyId, razonSocial: nameOf.get(m.companyId) ?? "—", role: m.role })),
+      .map((m) => ({ companyId: m.companyId, razonSocial: nameOf.get(m.companyId) ?? "—", role: m.role, ...brandOf.get(m.companyId) })),
   }));
 }

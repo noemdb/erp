@@ -1,0 +1,19 @@
+{
+  "tinypool": "critical",
+  "vitest": "critical",
+  "@uploadthing/react": "high",
+  "@uploadthing/shared": "high",
+  "braces": "high",
+  "drizzle-orm": "high",
+  "effect": "high",
+  "micromatch": "high",
+  "uploadthing": "high",
+  "vite": "high",
+  "@esbuild-kit/core-utils": "moderate",
+  "@esbuild-kit/esm-loader": "moderate",
+  "@vitest/mocker": "moderate",
+  "drizzle-kit": "moderate",
+  "esbuild": "moderate",
+  "eslint-plugin-boundaries": "moderate",
+  "vite-node": "moderate"
+}
