@@ -170,6 +170,7 @@
 | B35 — D runner e2e + ACC-03 + goldens drift | ✅ 2026-10-09 | Vitest excluye `e2e/` (runner correcto: `npm run e2e`); ACC-03 en 2 ramas (NO_COVERAGE pura + NO_RDF en DB, orden documentado dorados→RDF); goldens al día con demo firmada (sign resetea copia, service refleja firmado, coverage=1). Checklist: workflow 3/3 + goldens 7/7 + suite `src` 139/139 en Neon real. Sin cambio semántico, sin ADR |
 | B36 — Ficha layouts SENIAT XML/TXT (propuesta, sin código) | ✅ 2026-10-09 | `04-ficha-seniat-xml-txt.md`: XML (Forma 99074, Prov. 0095, fecha operación, validaciones, UT) + TXT (Forma 35, tabulaciones, prueba de carga, irreversibilidad, calendario quincenal) con qué pedir en Q14 y fuentes. Sin código hasta spec oficial |
 | B37 — Buscador + filtro por estado en Casos de Uso + scroll del aside | ✅ 2026-10-09 | `casos-explorer.tsx` (cliente): texto (título/pasos/pantalla/ejemplo) + estado Disponible/Parcial/Requiere + conteo + vacío + limpiar; índice sincronizado (grupos vacíos se ocultan); aside con `max-h + overflow-y-auto` en desktop (vale para `/manual`). Checklist: typecheck 0 + lint 0; sin DB, sin API nueva, sin ADR |
+| B38 — Email honesto al cliente (invitación al piloto) | ✅ 2026-10-09 | `blueprint/requerimiento/05-email-cliente.md` (qué probar, dónde orientarse, pendientes y reglas del piloto) + índice al día. Checklist: tono honesto verificado (nada vendido sin respaldo), sin código, sin ADR |
 
 ## Verificación QUINTA_REV — 2026-10-08 (código `7e355cb`, solo lectura)
 

@@ -9,6 +9,8 @@
 
 - 2026-10-09: **B37** buscador + filtro + scroll en Casos de Uso. Checklist: typecheck 0 + lint 0. Sin DB, sin API nueva, sin ADR.
 
+- 2026-10-09: **B38** email honesto al cliente + **B37** buscador/filtro/scroll en Casos de Uso. Checklist: typecheck 0 + lint 0. Sin DB, sin API nueva, sin ADR.
+
 - 2026-10-09: **B33–B36** A+D: pack sesión piloto, D técnico (migración 0024 + rol mínimo + runner e2e + gates al día, suite `src` 139/139 en Neon) y ficha SENIAT XML/TXT como propuesta. Checklist: migraciones OK + suites verdes + typecheck/lint en tocados. Sin ADR.
 
 - 2026-10-09: **B32** sección amplia Decisiones en `/docs` (ruta clic a clic + G9 A/B + cobertura + fail-closed). Checklist: typecheck 0 + lint 0. Sin API nueva, sin ADR.

@@ -14,6 +14,7 @@
 | `02-roadmap-fases.md` | Roadmap inicial por fases R0–R5: alcance, aceptación, dependencias y mapeo a F0–F7 |
 | `03-pendientes-cliente.md` | Especificación detallada de cada dependencia externa (M-1…M-4, matriz v1, G9, Q14, G1/G7): qué entregar, formato, aceptación, a qué bloquea y dueño (con estado a 2026-10-09) |
 | `04-ficha-seniat-xml-txt.md` | Propuesta documental de layouts SENIAT (XML Forma 99074 + TXT Forma 35) con qué pedir en Q14; sin código hasta spec oficial |
+| `05-email-cliente.md` | Borrador de email honesto al cliente (piloto, docs, casos de uso, pendientes y reglas) listo para completar y enviar |
 
 ## Lectura rápida
 
